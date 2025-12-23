@@ -52,7 +52,7 @@ class CarView extends PIXI.Container {
             length * Math.cos(angle), 
             length * Math.sin(angle)
           );
-          this.radar.stroke({ color: 0xffffff, width: 1 });
+          this.radar.stroke({ color: 0xffffff, width: 1, alpha: 0.5 });
         }
     }
 }

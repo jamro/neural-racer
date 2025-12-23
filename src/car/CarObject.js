@@ -30,12 +30,13 @@ class CarObject extends SimulationObject {
       this.view.y = this.metersToPixels(this.y);
       this.view.rotation = this.direction;
 
+      const beamLengths = 40
       this.view.renderRadar([
-        this.metersToPixels(6),
-        this.metersToPixels(6),
-        this.metersToPixels(6),
-        this.metersToPixels(6),
-        this.metersToPixels(6),
+        this.metersToPixels(beamLengths),
+        this.metersToPixels(beamLengths),
+        this.metersToPixels(beamLengths),
+        this.metersToPixels(beamLengths),
+        this.metersToPixels(beamLengths),
       ]);
     }
 }

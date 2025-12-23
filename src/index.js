@@ -1,7 +1,7 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
 import CarObject from './car/CarObject';
-import WallObject from './sim/WallObject';
+import TrackObject from './sim/TrackObject';
 import Simulation from './sim/Simulation';
 
 // Create and initialize the application
@@ -24,10 +24,11 @@ masterContainer.x = app.screen.width / 2;
 masterContainer.y = app.screen.height / 2;
 app.stage.addChild(masterContainer);
 const car = new CarObject();
-const wall = new WallObject(0, 0, 10, 1);
+const track = new TrackObject();
+track.buildTestTrack();
 car.y = 10
 car.x = -10
-masterContainer.addChild(wall.view);
+masterContainer.addChild(track.view);
 masterContainer.addChild(car.view);
 
 console.log('PixiJS application initialized!');
@@ -35,7 +36,7 @@ console.log('PixiJS application initialized!');
 // Create simulation instance (runs at 120 FPS, 2x faster than typical 60 FPS render)
 const simulation = new Simulation(120, app);
 simulation.addObject(car);
-simulation.addObject(wall);
+simulation.addObject(track);
 simulation.start(); // Start simulation loop
 simulation.startRender(); // Start render loop
 
