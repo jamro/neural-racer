@@ -35,6 +35,15 @@ class CarObject extends SimulationObject {
         const angle = this.radarAngularRange / 2 - angleStep * index + this.direction
         this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.x, this.y, angle);
       }
+
+      // check for collisions
+      if (this.track.isBoxColliding(this.x, this.y, this.width, this.height, this.direction)) {
+        if (this.speed > 0) {
+          console.log('Collision detected, stopping car');
+        }
+        this.speed = 0;
+        this.turnRate = 0;
+      }
     }
 
     render(delta) { // delta is in seconds
