@@ -27,8 +27,6 @@ app.stage.addChild(simulation.view);
 const track = new TrackObject();
 const car = new CarObject(track);
 track.buildTestTrack();
-car.y = 10
-car.x = -10
 simulation.masterContainer.addChild(track.view);
 simulation.masterContainer.addChild(car.view);
 simulation.followCamera(car);
