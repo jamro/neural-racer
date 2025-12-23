@@ -1,5 +1,7 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
+import CarObject from './car/CarObject';
+import Simulation from './sim/Simulation';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -16,29 +18,28 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Create a simple test graphic to verify everything works
-const graphics = new PIXI.Graphics();
-graphics.circle(0, 0, 50);
-graphics.fill(0xffff00);
-app.stage.addChild(graphics);
-
-// Center the graphic
-const centerGraphic = () => {
-    graphics.x = app.screen.width / 2;
-    graphics.y = app.screen.height / 2;
-};
-
-centerGraphic();
-
-// Update position on resize
-app.renderer.on('resize', centerGraphic);
+const masterContainer = new PIXI.Container();
+masterContainer.x = app.screen.width / 2;
+masterContainer.y = app.screen.height / 2;
+app.stage.addChild(masterContainer);
+const car = new CarObject();
+masterContainer.addChild(car.view);
 
 console.log('PixiJS application initialized!');
+
+// Create simulation instance (runs at 120 FPS, 2x faster than typical 60 FPS render)
+const simulation = new Simulation(120, app);
+simulation.addObject(car);
+simulation.start(); // Start simulation loop
+simulation.startRender(); // Start render loop
 
 // Hot Module Replacement
 if (module.hot) {
     module.hot.accept();
     
     module.hot.dispose(() => {
+        simulation.stop();
+        simulation.stopRender();
         app.destroy(true, {
             children: true,
             texture: true,
