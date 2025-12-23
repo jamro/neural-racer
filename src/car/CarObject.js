@@ -16,6 +16,7 @@ class CarObject extends SimulationObject {
         this.radarBeamCount = 5;
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
         this.radarAngularRange = Math.PI*0.8;
+        this.isCrashed = false;
 
         // create view
         this.view = new CarView(
@@ -44,6 +45,8 @@ class CarObject extends SimulationObject {
     }
 
     update(delta) { // delta is in seconds
+      if (this.isCrashed) return;
+
       const dragDeceleration = 1; // meters/second^2
 
       const maxSpeed = 40; // meters/second, 140 km/h
@@ -67,6 +70,7 @@ class CarObject extends SimulationObject {
       if (this.track.isBoxColliding(this.x, this.y, this.width, this.height, this.direction)) {
         if (this.speed > 0) {
           console.log('Collision detected, stopping car');
+          this.isCrashed = true;
         }
         this.speed = 0;
         this.turnRate = 0;
@@ -77,6 +81,7 @@ class CarObject extends SimulationObject {
       this.view.x = this.metersToPixels(this.x);
       this.view.y = this.metersToPixels(this.y);
       this.view.rotation = this.direction;
+      this.view.alpha = this.isCrashed ? 0.2 : 1;
 
       const beamMaxLength = 40
       this.view.renderRadar(
