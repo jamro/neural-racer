@@ -23,6 +23,8 @@ class TrackObject extends SimulationObject {
       this.addSegment(-40, -15, -20, -20)
       this.addSegment(-20, -20, -20, -10)
       this.addSegment(-20, -10, 0, -15)
+
+      this.addSegment(-14, 5, -14, 15)
     }
 
     addSegment(ax, ay, bx, by) {
@@ -44,6 +46,44 @@ class TrackObject extends SimulationObject {
 
     update(delta) {
         // nothing to update, tracks don't move
+    }
+
+    rayIntersectionsMinLength(ox, oy, angle) {
+      let minLength = null;
+      for (let i = 0; i < this.ax.length; i++) {
+        const length = this.raySegmentIntersectionLength(ox, oy, angle, this.ax[i], this.ay[i], this.bx[i], this.by[i]);
+        if (length !== null) {
+          if (minLength === null || length < minLength) {
+            minLength = length;
+          }
+        }
+      }
+      return minLength;
+    }
+
+    raySegmentIntersectionLength(ox, oy, angle, x1, y1, x2, y2) {
+        // ray direction
+        const dx = Math.cos(angle);
+        const dy = Math.sin(angle);
+
+        // segment vector
+        const ex = x2 - x1;
+        const ey = y2 - y1;
+
+        // cross products
+        const rxs = dx * ey - dy * ex;
+        if (Math.abs(rxs) < 1e-8) return null; // parallel, no intersection
+
+        const qpx = x1 - ox;
+        const qpy = y1 - oy;
+
+        const t = (qpx * ey - qpy * ex) / rxs; // ray parameter
+        if (t < 0) return null; // behind ray origin
+
+        const u = (qpx * dy - qpy * dx) / rxs; // ray parameter
+        if (u < 0 || u > 1) return null; // not on segment
+
+        return t; // length of intersection
     }
 }
 

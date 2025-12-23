@@ -1,11 +1,11 @@
 import * as PIXI from 'pixi.js';
 
 class CarView extends PIXI.Container {
-    constructor(w, h) {
+    constructor(w, h, radarAngularRange) {
         super();
         this.body = new PIXI.Graphics();
 
-        this.radarAngularRange = Math.PI;
+        this.radarAngularRange = radarAngularRange;
 
         // wheels
         this.body.rect(5, -2, 10, 29);
@@ -52,7 +52,7 @@ class CarView extends PIXI.Container {
             length * Math.cos(angle), 
             length * Math.sin(angle)
           );
-          this.radar.stroke({ color: 0xffffff, width: 1, alpha: 0.5 });
+          this.radar.stroke({ color: 0xffffff, width: 3, alpha: 0.3 });
         }
     }
 }

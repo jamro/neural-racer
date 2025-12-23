@@ -23,8 +23,8 @@ const masterContainer = new PIXI.Container();
 masterContainer.x = app.screen.width / 2;
 masterContainer.y = app.screen.height / 2;
 app.stage.addChild(masterContainer);
-const car = new CarObject();
 const track = new TrackObject();
+const car = new CarObject(track);
 track.buildTestTrack();
 car.y = 10
 car.x = -10
