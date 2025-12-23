@@ -9,8 +9,8 @@ class CarObject extends SimulationObject {
         this.height = 2; // meters
         this.x = 0; // meters
         this.y = 0; // meters
-        this.speed = 14; // meters/second
-        this.turnRate = -1.5; // radians/second 
+        this.speed = 0; // meters/second
+        this.turnRate = 0; // radians/second 
         this.direction = 0 // radians
         this.radarBeamCount = 5;
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
@@ -22,6 +22,22 @@ class CarObject extends SimulationObject {
           this.metersToPixels(this.height),
           this.radarAngularRange
         );
+    }
+
+    throttle(v) {
+      const maxSpeed = 40; // meters/second, 140 km/h
+      v = Math.max(Math.min(v, 1), 0);
+      this.speed = v * maxSpeed
+    }
+
+    breakCar(v) {
+      this.speed = 0
+    }
+
+    turn(v) {
+      const maxTurnRate = Math.PI*0.5; // radians/second
+      v = Math.max(Math.min(v, 1), -1);
+      this.turnRate = v * maxTurnRate;
     }
 
     update(delta) { // delta is in seconds

@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import CarObject from './car/CarObject';
 import TrackObject from './sim/TrackObject';
 import Simulation from './sim/Simulation';
+import KeyboardController from './car/KeyboardController';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -31,6 +32,9 @@ car.x = -10
 simulation.masterContainer.addChild(track.view);
 simulation.masterContainer.addChild(car.view);
 simulation.followCamera(car);
+
+// Initialize keyboard controller
+const keyboardController = new KeyboardController(car);
 
 console.log('PixiJS application initialized!');
 
