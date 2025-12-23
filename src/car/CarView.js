@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
 class CarView extends PIXI.Container {
-    constructor() {
+    constructor(w, h) {
         super();
         this.body = new PIXI.Graphics();
 
@@ -26,6 +26,12 @@ class CarView extends PIXI.Container {
 
         this.body.x = -25;
         this.body.y = -12.5;
+
+        this.body.scale.set(w / 50, h / 25);
+        this.body.x = -25 * (w / 50);
+        this.body.y = -12.5 * (h / 25);
+
+
         this.addChild(this.body);
     }
 }

@@ -1,3 +1,7 @@
+
+const PIXELS_PER_METER_SCALE = 50 / 4;  // 50 pixels is 4 meters5
+
+
 /**
  * Base class for all simulation objects.
  * All objects added to the simulation must implement update() and render() methods.
@@ -26,6 +30,14 @@ class SimulationObject {
      */
     render(delta) {
         throw new Error('render() method must be implemented by subclass');
+    }
+
+    pixelsToMeters(pixels) {
+        return pixels / PIXELS_PER_METER_SCALE;
+    }
+
+    metersToPixels(meters) {
+        return meters * PIXELS_PER_METER_SCALE;
     }
 }
 
