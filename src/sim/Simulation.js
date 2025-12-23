@@ -1,7 +1,9 @@
+import * as PIXI from 'pixi.js';
 import SimulationObject from './SimulationObject';
 
-class Simulation {
+class Simulation extends SimulationObject {
     constructor(fps = 120, app = null) {
+        super();
         this.fps = fps;
         this.delta = 1000 / fps; // Delta time in milliseconds
         this.deltaSeconds = this.delta / 1000; // Delta time in seconds
@@ -12,6 +14,21 @@ class Simulation {
         this.renderRunning = false;
         this.objects = [];
         this.app = app;
+        this.view = new PIXI.Container();
+        this.masterContainer = new PIXI.Container();
+        this.view.addChild(this.masterContainer);
+        this.followCameraObject = null;
+    }
+
+    followCamera(object) {
+        this.followCameraObject = object;
+    }
+
+    updateCamera() {
+        if (this.followCameraObject) {
+            this.masterContainer.x = this.metersToPixels(-this.followCameraObject.x);
+            this.masterContainer.y = this.metersToPixels(-this.followCameraObject.y);
+        }
     }
 
     /**
@@ -84,6 +101,7 @@ class Simulation {
             // All objects are validated to have render method
             object.render(deltaSeconds);
         }
+        this.updateCamera();
     }
 
     simulationLoop = (currentTime) => {

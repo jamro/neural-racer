@@ -19,22 +19,23 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Create a simple test graphic to verify everything works
-const masterContainer = new PIXI.Container();
-masterContainer.x = app.screen.width / 2;
-masterContainer.y = app.screen.height / 2;
-app.stage.addChild(masterContainer);
+const simulation = new Simulation(120, app);
+simulation.view.x = app.screen.width / 2;
+simulation.view.y = app.screen.height / 2;
+app.stage.addChild(simulation.view);
 const track = new TrackObject();
 const car = new CarObject(track);
 track.buildTestTrack();
 car.y = 10
 car.x = -10
-masterContainer.addChild(track.view);
-masterContainer.addChild(car.view);
+simulation.masterContainer.addChild(track.view);
+simulation.masterContainer.addChild(car.view);
+simulation.followCamera(car);
 
 console.log('PixiJS application initialized!');
 
 // Create simulation instance (runs at 120 FPS, 2x faster than typical 60 FPS render)
-const simulation = new Simulation(120, app);
+
 simulation.addObject(car);
 simulation.addObject(track);
 simulation.start(); // Start simulation loop
