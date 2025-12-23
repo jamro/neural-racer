@@ -18,37 +18,54 @@ class KeyboardController {
     handleKeyDown(event) {
         if (event.key in this.keys && !this.keys[event.key]) {
             this.keys[event.key] = true;
-            this.updateCarControls();
+            
+            // Handle state change: key pressed
+            if (event.key === 'ArrowUp') {
+                this.car.throttle(1);
+            } else if (event.key === 'ArrowDown') {
+                this.car.breakCar(1);
+            } else if (event.key === 'ArrowLeft') {
+                // If right is also pressed, cancel turn
+                if (this.keys.ArrowRight) {
+                    this.car.turn(0);
+                } else {
+                    this.car.turn(-1);
+                }
+            } else if (event.key === 'ArrowRight') {
+                // If left is also pressed, cancel turn
+                if (this.keys.ArrowLeft) {
+                    this.car.turn(0);
+                } else {
+                    this.car.turn(1);
+                }
+            }
         }
     }
 
     handleKeyUp(event) {
-        if (event.key in this.keys) {
+        if (event.key in this.keys && this.keys[event.key]) {
             this.keys[event.key] = false;
-            this.updateCarControls();
-        }
-    }
-
-    updateCarControls() {
-        // Handle throttle (up arrow)
-        if (this.keys.ArrowUp) {
-            this.car.throttle(0.5);
-        } else {
-            this.car.throttle(0);
-        }
-
-
-
-        // Handle turning (left/right arrows)
-        if (this.keys.ArrowLeft && this.keys.ArrowRight) {
-            // Both pressed - no turn
-            this.car.turn(0);
-        } else if (this.keys.ArrowLeft) {
-            this.car.turn(-1);
-        } else if (this.keys.ArrowRight) {
-            this.car.turn(1);
-        } else {
-            this.car.turn(0);
+            
+            // Handle state change: key released
+            if (event.key === 'ArrowUp') {
+                this.car.throttle(0);
+            } else if (event.key === 'ArrowDown') {
+                this.car.breakCar(0);
+            } else if (event.key === 'ArrowLeft') {
+                // If right is still pressed, turn right
+                if (this.keys.ArrowRight) {
+                    this.car.turn(1);
+                } else {
+                    this.car.turn(0);
+                }
+            } else if (event.key === 'ArrowRight') {
+                // If left is still pressed, turn left
+                if (this.keys.ArrowLeft) {
+                    this.car.turn(-1);
+                } else {
+                    this.car.turn(0);
+                }
+            }
         }
     }
 

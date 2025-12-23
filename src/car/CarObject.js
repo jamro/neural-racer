@@ -10,6 +10,7 @@ class CarObject extends SimulationObject {
         this.x = 0; // meters
         this.y = 0; // meters
         this.speed = 0; // meters/second
+        this.acceleration = 0; // meters/second^2
         this.turnRate = 0; // radians/second 
         this.direction = 0 // radians
         this.radarBeamCount = 5;
@@ -25,13 +26,15 @@ class CarObject extends SimulationObject {
     }
 
     throttle(v) {
-      const maxSpeed = 40; // meters/second, 140 km/h
+      const maxAcceleration = 4.5; // meters/second^2 6sec 0-100km/h
       v = Math.max(Math.min(v, 1), 0);
-      this.speed = v * maxSpeed
+      this.acceleration = v * maxAcceleration
     }
 
     breakCar(v) {
-      this.speed = 0
+      const maxDeceleration = 8; // meters/second^2 6sec 0-100km/h
+      v = Math.max(Math.min(v, 1), 0);
+      this.acceleration = -v * maxDeceleration
     }
 
     turn(v) {
@@ -41,7 +44,15 @@ class CarObject extends SimulationObject {
     }
 
     update(delta) { // delta is in seconds
-      this.direction += this.turnRate * delta;
+      const dragDeceleration = 1; // meters/second^2
+
+      const maxSpeed = 40; // meters/second, 140 km/h
+      this.speed += (this.acceleration - dragDeceleration) * delta;
+      this.speed = Math.max(Math.min(this.speed, maxSpeed), 0);
+
+      const turnCoefficient = Math.min(1, this.speed / 8); // avoid turning in place at low speed
+      this.direction += this.turnRate * delta * turnCoefficient;
+
       this.x += this.speed * Math.cos(this.direction) * delta;
       this.y += this.speed * Math.sin(this.direction) * delta;
 
