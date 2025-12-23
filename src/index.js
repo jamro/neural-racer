@@ -22,14 +22,25 @@ const masterContainer = new PIXI.Container();
 masterContainer.x = app.screen.width / 2;
 masterContainer.y = app.screen.height / 2;
 app.stage.addChild(masterContainer);
-const car = new CarObject();
-masterContainer.addChild(car.view);
+const car1 = new CarObject();
+const car2 = new CarObject();
+car1.y = 10
+car2.y = -10
+car1.x = -10
+car2.x = 10
+car1.speed = 15
+car2.speed = 10
+car1.turnRate = -1.5
+car2.turnRate = 1
+masterContainer.addChild(car1.view);
+masterContainer.addChild(car2.view);
 
 console.log('PixiJS application initialized!');
 
 // Create simulation instance (runs at 120 FPS, 2x faster than typical 60 FPS render)
 const simulation = new Simulation(120, app);
-simulation.addObject(car);
+simulation.addObject(car1);
+simulation.addObject(car2);
 simulation.start(); // Start simulation loop
 simulation.startRender(); // Start render loop
 

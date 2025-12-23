@@ -5,6 +5,8 @@ class CarView extends PIXI.Container {
         super();
         this.body = new PIXI.Graphics();
 
+        this.radarAngularRange = Math.PI;
+
         // wheels
         this.body.rect(5, -2, 10, 29);
         this.body.rect(35, -2, 10, 29);
@@ -31,8 +33,27 @@ class CarView extends PIXI.Container {
         this.body.x = -25 * (w / 50);
         this.body.y = -12.5 * (h / 25);
 
-
         this.addChild(this.body);
+
+        this.radar = new PIXI.Graphics();
+        this.radar.scale.set(w / 50, h / 25);
+        this.radar.moveTo(0, 0);
+        this.addChild(this.radar);
+    }
+
+    renderRadar(beamsLengths) {
+        this.radar.clear();
+        const angleStep = this.radarAngularRange / (beamsLengths.length - 1);
+        for (let index = 0; index < beamsLengths.length; index++) {
+          const length = beamsLengths[index];
+          const angle = this.radarAngularRange / 2 - angleStep * index;
+          this.radar.moveTo(0, 0);
+          this.radar.lineTo(
+            length * Math.cos(angle), 
+            length * Math.sin(angle)
+          );
+          this.radar.stroke({ color: 0xffffff, width: 1 });
+        }
     }
 }
 
