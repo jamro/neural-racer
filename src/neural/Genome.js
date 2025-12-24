@@ -14,8 +14,8 @@ class Genome {
   }
 
   mutate({
-    rate = 0.05,       // percentage of genes to mutate
-    sigma = 0.1,       // strength of noise
+    rate = 0.03,       // percentage of genes to mutate
+    sigma = 0.12,       // strength of noise
     rng = Math.random
   } = {}) {
     const g = this.genes;

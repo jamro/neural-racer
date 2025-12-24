@@ -3,7 +3,7 @@ import TrackObject from '../sim/TrackObject';
 import Generation from './Generation';
 
 class Evolution {
-  constructor(pixiApp, epochLimit=5) {
+  constructor(pixiApp, epochLimit=Infinity) {
     this.pixiApp = pixiApp;
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);

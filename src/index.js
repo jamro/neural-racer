@@ -21,7 +21,7 @@ document.getElementById('app').appendChild(app.canvas);
 
 // Create a simple test graphic to verify everything works
 const evolution = new Evolution(app);
-evolution.initialize(100);
+evolution.initialize(150);
 
 // Initialize keyboard controller
 //const keyboardController = new KeyboardController(car);
