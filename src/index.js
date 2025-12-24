@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import TrackObject from './sim/TrackObject';
 import Simulation from './sim/Simulation';
 import Generation from './neural/Generation';
+import Evolution from './neural/Evolution';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -19,31 +20,22 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Create a simple test graphic to verify everything works
-const simulation = new Simulation(app);
-simulation.scaleView(app.screen.width, app.screen.height);
-app.stage.addChild(simulation.view);
-const track = new TrackObject();
-const generation = new Generation(track);
-generation.initialize(100);
-track.buildTestTrack();
-simulation.setTrack(track);
-simulation.setGeneration(generation);
+const evolution = new Evolution(app);
+evolution.initialize(100);
 
 // Initialize keyboard controller
 //const keyboardController = new KeyboardController(car);
 
 console.log('PixiJS application initialized!');
 
-simulation.start(); // Start simulation loop
-simulation.startRender(); // Start render loop
+evolution.start();
 
 // Hot Module Replacement
 if (module.hot) {
     module.hot.accept();
     
     module.hot.dispose(() => {
-        simulation.stop();
-        simulation.stopRender();
+        evolution.stop();
         app.destroy(true, {
             children: true,
             texture: true,

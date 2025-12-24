@@ -26,6 +26,7 @@ class Generation {
       for (let i = 0; i < populationSize; i++) {
         this.cars.push(new NeuralCarObject(this.track));
       }
+      this.genomes = this.cars.map(car => car.genome);
     }
 
     findLeader() {
@@ -39,6 +40,24 @@ class Generation {
         }
       }
       return leader;
+    }
+
+    calculateScores() {
+      this.scores = Array(this.cars.length).fill(null);
+      for (let i = 0; i < this.cars.length; i++) {
+        const car = this.cars[i];
+        this.scores[i] = car.calculateScore();
+      }
+    }
+
+    resetScores() {
+      this.scores = Array(this.cars.length).fill(null);
+    }
+
+    evolve() {
+      const newGenomes = this.genomes;
+      const newGeneration = new Generation(this.track, newGenomes, this.epoch + 1);
+      return newGeneration;
     }
 }
 

@@ -16,6 +16,7 @@ class Simulation extends SimulationObject {
         this.cars = [];
         this.track = null;
         this.generation = null;
+        this.onComplete = () => {}
     }
 
     setTrack(track) {
@@ -151,6 +152,13 @@ class Simulation extends SimulationObject {
         for (const object of this.objects) {
             object.update(this.deltaSeconds);
         }
+
+        // end condition
+        if (this.generation.activeCount === 0) {
+            console.log('Generation completed');
+            this.onComplete();
+            return
+        }
         
         // Continue simulation loop
         requestAnimationFrame(this.simulationLoop);
@@ -160,6 +168,20 @@ class Simulation extends SimulationObject {
         this.view.x = width / 2;
         this.view.y = height / 2;
         this.view.scaleView(width, height);
+    }
+
+    removeAndDispose() {
+        this.stop();
+        this.stopRender();
+        if (this.view.parent) {
+            this.view.parent.removeChild(this.view);
+        }
+        this.view.destroy();
+        this.objects.forEach(object => object.destroy());
+        this.objects = [];
+        this.cars = [];
+        this.track = null;
+        this.generation = null;
     }
 }
 

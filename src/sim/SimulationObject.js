@@ -32,6 +32,13 @@ class SimulationObject {
         throw new Error('render() method must be implemented by subclass');
     }
 
+    destroy() {
+        if (this.view.parent) {
+            this.view.parent.removeChild(this.view);
+        }
+        this.view.destroy();
+    }
+
     pixelsToMeters(pixels) {
         return pixels / PIXELS_PER_METER_SCALE;
     }
