@@ -25,6 +25,7 @@ class CarObject extends SimulationObject {
         this.brakeValue = 0;
         this.turnValue = 0;
         this.staleCounter = 50
+        this.maxSpeed = 40; // meters/second, 140 km/h
 
         // create view
         this.view = new CarView(
@@ -63,9 +64,8 @@ class CarObject extends SimulationObject {
       const dragCoefficient = Math.min(1, this.speed / 8); // avoid drag at low speed to not block the car
       const dragDeceleration = 1 * dragCoefficient; // meters/second^2
 
-      const maxSpeed = 40; // meters/second, 140 km/h
       this.speed += (this.acceleration - dragDeceleration) * delta;
-      this.speed = Math.max(Math.min(this.speed, maxSpeed), 0);
+      this.speed = Math.max(Math.min(this.speed, this.maxSpeed), 0);
 
       const turnCoefficient = Math.min(1, this.speed / 8); // avoid turning in place at low speed
       this.direction += this.turnRate * delta * turnCoefficient;

@@ -7,7 +7,7 @@ class NeuralCarObject extends CarObject {
         super(track);
 
         this.neuralNet = new NeuralNet(
-          [9, 32, 32, 2],
+          [10, 32, 32, 2],
           ["relu", "relu", "tanh"]
         );
         if (genome) {
@@ -22,12 +22,18 @@ class NeuralCarObject extends CarObject {
     update(delta) {
       super.update(delta);
 
+      if (this.isCrashed) {
+        return;
+      }
+
       const inputs = []
       const k = 0.3; // empirical value, recommended value between 0.2 and 0.4
       for (let i = 0; i < this.radarBeamCount; i++) {
         const d = this.radarBeams[i] // meters
         inputs[i] = d === null ? 0 : Math.exp(-k * d) // 0 means no obstacle, 1 means close to obstacle
       }
+      // use speed as input
+      inputs[this.radarBeamCount + 1] = Math.min(this.speed / this.maxSpeed, 1);
 
       const outputs = this.neuralNet.forward(this.genome, inputs);
       
