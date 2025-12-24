@@ -4,6 +4,9 @@ import SimulationObject from '../sim/SimulationObject';
 class CarObject extends SimulationObject {
     constructor(track) {
         super();
+        if (!track) {
+          throw new Error('Track is required');
+        }
         this.track = track;
         this.width = 4; // meters
         this.height = 2; // meters
@@ -21,6 +24,7 @@ class CarObject extends SimulationObject {
         this.throttleValue = 0;
         this.brakeValue = 0;
         this.turnValue = 0;
+        this.staleCounter = 50
 
         // create view
         this.view = new CarView(
@@ -34,6 +38,7 @@ class CarObject extends SimulationObject {
       const maxAcceleration = 4.5; // meters/second^2 6sec 0-100km/h
       v = Math.max(Math.min(v, 1), 0);
       this.throttleValue = v;
+      this.brakeValue = 0;
       this.acceleration = v * maxAcceleration
     }
 
@@ -41,6 +46,7 @@ class CarObject extends SimulationObject {
       const maxDeceleration = 8; // meters/second^2 6sec 0-100km/h
       v = Math.max(Math.min(v, 1), 0);
       this.brakeValue = v;
+      this.throttleValue = 0;
       this.acceleration = -v * maxDeceleration
     }
 
@@ -89,22 +95,37 @@ class CarObject extends SimulationObject {
       if (checkpointIndex !== false) {
         this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
       }
+
+      // check for staleness
+      const staleThreshold = 1; //  meters/second
+      if (this.speed < staleThreshold) {
+        this.staleCounter--;
+      }
+      if (this.staleCounter < 0) {
+        this.isCrashed = true;
+      }
     }
 
     calculateCheckpointProgress() {
       return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.x, this.y)-1) / (this.track.checkpoints.checkpointCount-1)
     }
 
+    calculateScore() {
+      return this.calculateCheckpointProgress()
+    }
+
     render(delta) { // delta is in seconds
       this.view.x = this.metersToPixels(this.x);
       this.view.y = this.metersToPixels(this.y);
       this.view.rotation = this.direction;
-      this.view.alpha = this.isCrashed ? 0.2 : 1;
+      this.view.setCrashed(this.isCrashed);
 
-      const beamMaxLength = 40
-      this.view.renderRadar(
-        this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength))
-      );
+      if (!this.isCrashed) {  // only render radar if the car is not crashed
+        const beamMaxLength = 40
+        this.view.renderRadar(
+          this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength))
+        );
+      }
     }
 }
 

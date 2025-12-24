@@ -39,9 +39,43 @@ class CarView extends PIXI.Container {
         this.radar.scale.set(w / 50, h / 25);
         this.radar.moveTo(0, 0);
         this.addChild(this.radar);
+
+        this.crash = new PIXI.Graphics();
+        this.crash.moveTo(-15, -15);
+        this.crash.lineTo(15, 15);
+        this.crash.stroke({ color: 0xff0000, width: 5 });
+        this.crash.moveTo(-15, 15);
+        this.crash.lineTo(15, -15);
+        this.crash.stroke({ color: 0xff0000, width: 5 });
+        this.addChild(this.crash);
+        this.crash.visible = false;
+
+        this._isActive = false;
+        this.active = false;
+    }
+
+    setCrashed(isCrashed) {
+        if (isCrashed) {
+            this.crash.visible = true;
+            this.radar.visible = false;
+            this.body.visible = false;
+        } else {
+            this.crash.visible = false;
+            this.body.visible = true;
+        }
+    }
+
+    set active(isActive) {
+        this.radar.visible = isActive && !this.crash.visible;
+        this._isActive = isActive;
+    }
+
+    get active() {
+      return this._isActive;
     }
 
     renderRadar(beamsLengths) {
+        if (!this.radar.visible) return;
         this.radar.clear();
         const angleStep = this.radarAngularRange / (beamsLengths.length - 1);
         for (let index = 0; index < beamsLengths.length; index++) {

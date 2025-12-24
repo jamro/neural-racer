@@ -1,25 +1,21 @@
-import * as PIXI from 'pixi.js';
 import SimulationObject from './SimulationObject';
-import CarDetailsView from './CarDetailsView';
 import SimulationView from './SimulationView';
 
 class Simulation extends SimulationObject {
-    constructor(fps = 120, app = null) {
+    constructor(app = null, deltaSeconds = 0.05) {
         super();
-        this.fps = fps;
-        this.delta = 1000 / fps; // Delta time in milliseconds
-        this.deltaSeconds = this.delta / 1000; // Delta time in seconds
+
+        this.deltaSeconds = deltaSeconds
         
-        this.lastSimulationTime = performance.now();
-        this.simulationAccumulator = 0;
         this.running = false;
         this.renderRunning = false;
         this.objects = [];
         this.app = app;
         this.view = new SimulationView();
-        this.focusedCar = null;
+        this.leaderCar = null;
         this.cars = [];
         this.track = null;
+        this.generation = null;
     }
 
     setTrack(track) {
@@ -27,24 +23,32 @@ class Simulation extends SimulationObject {
             throw new Error('Track already set');
         }
         this.track = track;
+        this.addObject(track);
         this.view.setTrack(track);
     }
 
     addCar(car) {
         this.cars.push(car);
+        this.addObject(car);
         this.view.addCar(car);
     }
 
-    followCar(carObject) {
-        this.focusedCar = carObject;
-        this.view.carDetailsView.car = carObject;
+    setGeneration(generation) {
+        if (this.generation) {
+            throw new Error('Generation already set');
+        }
+        this.generation = generation;
+
+        for (const car of generation.cars) {
+            this.addCar(car);
+        }
     }
 
     updateCamera() {
-      if (this.focusedCar) {
+      if (this.leaderCar) {
           this.view.setCameraPosition(
-          this.metersToPixels(-this.focusedCar.x),
-          this.metersToPixels(-this.focusedCar.y)
+          this.metersToPixels(-this.leaderCar.x),
+          this.metersToPixels(-this.leaderCar.y)
         );
       }
     }
@@ -81,7 +85,6 @@ class Simulation extends SimulationObject {
     start() {
         if (this.running) return;
         this.running = true;
-        this.lastSimulationTime = performance.now();
         requestAnimationFrame(this.simulationLoop);
     }
 
@@ -119,26 +122,33 @@ class Simulation extends SimulationObject {
             // All objects are validated to have render method
             object.render(deltaSeconds);
         }
+
+
+        // find leader and set it as focused car
+        if (Math.random() < 0.3) { // 30% chance to find a new leader
+            const leader = this.generation.findLeader();
+            if (leader) {
+              if (this.leaderCar) {
+                this.leaderCar.view.active = false;
+              }
+              this.leaderCar = leader;
+              this.view.carDetailsView.car = leader;
+              this.leaderCar.view.active = true;
+            }
+          }
+
         this.updateCamera();
         this.view.carDetailsView.render();
+        
     }
 
     simulationLoop = (currentTime) => {
         if (!this.running) return;
         
-        const frameTime = currentTime - this.lastSimulationTime;
-        this.lastSimulationTime = currentTime;
-        
-        // Accumulate time and run simulation steps
-        this.simulationAccumulator += frameTime;
-        
         // Run simulation at fixed timestep
-        while (this.simulationAccumulator >= this.delta) {
-            // Update all objects (all objects are validated to have update method)
-            for (const object of this.objects) {
-                object.update(this.deltaSeconds);
-            }
-            this.simulationAccumulator -= this.delta;
+        // Update all objects (all objects are validated to have update method)
+        for (const object of this.objects) {
+            object.update(this.deltaSeconds);
         }
         
         // Continue simulation loop
