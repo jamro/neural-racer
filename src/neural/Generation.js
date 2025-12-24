@@ -1,13 +1,24 @@
 import NeuralCarObject from '../car/NeuralCarObject';
 
 class Generation {
-    constructor(track, genomes=null) {
+    constructor(track, genomes=null, epoch=0) {
       this.track = track;
       if (genomes) {
         this.cars = genomes.map(genome => new NeuralCarObject(track, genome));
       } else {
         this.cars = [];
       }
+      this.genomes = this.cars.map(car => car.genome);
+      this.epoch = epoch;
+      this.scores = Array(this.cars.length).fill(null);
+    }
+
+    get activeCount() {
+      return this.cars.filter(car => !car.isCrashed).length;
+    }
+
+    get totalCount() {
+      return this.cars.length;
     }
 
     initialize(populationSize=100) {

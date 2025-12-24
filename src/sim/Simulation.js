@@ -42,6 +42,7 @@ class Simulation extends SimulationObject {
         for (const car of generation.cars) {
             this.addCar(car);
         }
+        this.view.setGeneration(generation);
     }
 
     updateCamera() {
@@ -138,7 +139,7 @@ class Simulation extends SimulationObject {
           }
 
         this.updateCamera();
-        this.view.carDetailsView.render();
+        this.view.render();
         
     }
 
@@ -158,8 +159,7 @@ class Simulation extends SimulationObject {
     scaleView(width, height) {
         this.view.x = width / 2;
         this.view.y = height / 2;
-        this.view.carDetailsView.x = - width / 2;
-        this.view.carDetailsView.y = - height / 2;
+        this.view.scaleView(width, height);
     }
 }
 

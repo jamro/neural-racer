@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import CarDetailsView from './CarDetailsView';
+import GenerationDetailsView from './GenerationDetailsView';
 
 class SimulationView extends PIXI.Container {
     constructor() {
@@ -8,9 +9,17 @@ class SimulationView extends PIXI.Container {
         this.addChild(this.masterContainer);
 
         this.carDetailsView = new CarDetailsView();
+        this.generationDetailsView = new GenerationDetailsView();
         this.addChild(this.carDetailsView);
+        this.addChild(this.generationDetailsView);
         this.track = null;
         this.cars = [];
+        this.generation = null;
+    }
+
+    setGeneration(generation) {
+        this.generation = generation;
+        this.generationDetailsView.generation = generation;
     }
 
     setCameraPosition(x, y, immidiate = false) {
@@ -34,6 +43,18 @@ class SimulationView extends PIXI.Container {
     addCar(car) {
         this.cars.push(car);
         this.masterContainer.addChild(car.view);
+    }
+
+    render() {
+        this.carDetailsView.render();
+        this.generationDetailsView.render();
+    }
+
+    scaleView(width, height) {
+      this.carDetailsView.x = - width / 2;
+      this.carDetailsView.y = - height / 2 + 100;
+      this.generationDetailsView.x = - width / 2;
+      this.generationDetailsView.y = -height / 2;
     }
 }
 

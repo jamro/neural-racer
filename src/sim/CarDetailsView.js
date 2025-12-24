@@ -6,7 +6,7 @@ class CarDetailsView extends PIXI.Container {
     super();
     this.car = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(0, 0, 200, 200);
+    this.bg.rect(2, 2, 198, 113);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
