@@ -2,14 +2,13 @@ import Simulation from '../sim/Simulation';
 import TrackObject from '../sim/TrackObject';
 import Generation from './Generation';
 
-class Evolution {
-  constructor(pixiApp, epochLimit=Infinity) {
+class Evolution { 
+  constructor(pixiApp, track, epochLimit=Infinity) {
     this.pixiApp = pixiApp;
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
-    this.track = new TrackObject();
-    this.track.buildTestTrack();
+    this.track = track;
     this.simulation.setTrack(this.track);
     this.simulation.onComplete = () => this.onEpochComplete();
     this.epochLimit = epochLimit;
@@ -42,13 +41,12 @@ class Evolution {
     if(this.generation.epoch > this.epochLimit) return;
 
     // run new simulation
+    this.simulation.removeObject(this.track);
     this.simulation.removeAndDispose();
 
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
-    this.track = new TrackObject();
-    this.track.buildTestTrack();
     this.simulation.setTrack(this.track);
     this.simulation.onComplete = () => this.onEpochComplete();
     this.generation.resetScores();

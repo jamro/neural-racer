@@ -29,8 +29,9 @@ class TrackObject extends SimulationObject {
       this.addSegment(80, -90, 110, -90)
       this.addSegment(45, -70, 80, -90)
       this.addSegment(40, -55, 45, -70)
-      this.addSegment(20, -20, 40, -55)
-      this.addSegment(-4, -15, 20, -20)
+      this.addSegment(50, -25, 40, -55)
+      this.addSegment(35, -15, 50, -25)
+      this.addSegment(-4, -15, 35, -15)
       this.addSegment(-4, -15, -4, 15) // start wall
       this.addSegment(-4, 15, 30, 15)
       this.addSegment(30, 15, 80, 0)
@@ -58,8 +59,8 @@ class TrackObject extends SimulationObject {
       // checkpoints
       this.addCheckpoint(0, -16, 0, 15)
       this.addCheckpoint(4, -17, 4, 15)
-      this.addCheckpoint(20, -20, 28, 15)
-      this.addCheckpoint(30, -40, 70, 5)
+      this.addCheckpoint(20, -15, 28, 15)
+      this.addCheckpoint(45, -23, 70, 5)
       this.addCheckpoint(40, -60, 70, -45)
       this.addCheckpoint(80, -90, 85, -55)
       this.addCheckpoint(120, -80, 90, -50)

@@ -1,9 +1,7 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
-import TrackObject from './sim/TrackObject';
-import Simulation from './sim/Simulation';
-import Generation from './neural/Generation';
 import Evolution from './neural/Evolution';
+import loadTrackFromSvg from './sim/loadTrackFromSvg';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -20,7 +18,8 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Create a simple test graphic to verify everything works
-const evolution = new Evolution(app);
+const track = await loadTrackFromSvg('assets/track.svg');
+const evolution = new Evolution(app, track);
 evolution.initialize();
 
 // Initialize keyboard controller
