@@ -21,8 +21,7 @@ document.getElementById('app').appendChild(app.canvas);
 
 // Create a simple test graphic to verify everything works
 const simulation = new Simulation(120, app);
-simulation.view.x = app.screen.width / 2;
-simulation.view.y = app.screen.height / 2;
+simulation.scaleView(app.screen.width, app.screen.height);
 app.stage.addChild(simulation.view);
 const track = new TrackObject();
 const car = new NeuralCarObject(track);

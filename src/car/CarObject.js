@@ -18,6 +18,9 @@ class CarObject extends SimulationObject {
         this.radarAngularRange = Math.PI;
         this.isCrashed = false;
         this.checkpointsPassed = 0;
+        this.throttleValue = 0;
+        this.brakeValue = 0;
+        this.turnValue = 0;
 
         // create view
         this.view = new CarView(
@@ -30,18 +33,21 @@ class CarObject extends SimulationObject {
     throttle(v) {
       const maxAcceleration = 4.5; // meters/second^2 6sec 0-100km/h
       v = Math.max(Math.min(v, 1), 0);
+      this.throttleValue = v;
       this.acceleration = v * maxAcceleration
     }
 
     breakCar(v) {
       const maxDeceleration = 8; // meters/second^2 6sec 0-100km/h
       v = Math.max(Math.min(v, 1), 0);
+      this.brakeValue = v;
       this.acceleration = -v * maxDeceleration
     }
 
     turn(v) {
       const maxTurnRate = Math.PI*0.5; // radians/second
       v = Math.max(Math.min(v, 1), -1);
+      this.turnValue = v;
       this.turnRate = v * maxTurnRate;
     }
 

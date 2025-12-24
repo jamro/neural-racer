@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import SimulationObject from './SimulationObject';
+import CarDetailsView from './CarDetailsView';
 
 class Simulation extends SimulationObject {
     constructor(fps = 120, app = null) {
@@ -18,10 +19,14 @@ class Simulation extends SimulationObject {
         this.masterContainer = new PIXI.Container();
         this.view.addChild(this.masterContainer);
         this.followCameraObject = null;
+
+        this.carDetailsView = new CarDetailsView();
+        this.view.addChild(this.carDetailsView);
     }
 
-    followCamera(object) {
-        this.followCameraObject = object;
+    followCamera(carObject) {
+        this.followCameraObject = carObject;
+        this.carDetailsView.car = carObject;
     }
 
     updateCamera() {
@@ -102,6 +107,7 @@ class Simulation extends SimulationObject {
             object.render(deltaSeconds);
         }
         this.updateCamera();
+        this.carDetailsView.render();
     }
 
     simulationLoop = (currentTime) => {
@@ -124,6 +130,13 @@ class Simulation extends SimulationObject {
         
         // Continue simulation loop
         requestAnimationFrame(this.simulationLoop);
+    }
+
+    scaleView(width, height) {
+        this.view.x = width / 2;
+        this.view.y = height / 2;
+        this.carDetailsView.x = - width / 2;
+        this.carDetailsView.y = - height / 2;
     }
 }
 
