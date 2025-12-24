@@ -13,9 +13,14 @@ class SimulationView extends PIXI.Container {
         this.cars = [];
     }
 
-    setCameraPosition(x, y) {
-        this.masterContainer.x = x;
-        this.masterContainer.y = y;
+    setCameraPosition(x, y, immidiate = false) {
+        if (immidiate) {
+            this.masterContainer.x = x;
+            this.masterContainer.y = y;
+        } else {
+            this.masterContainer.x += (x - this.masterContainer.x) * 0.1;
+            this.masterContainer.y += (y - this.masterContainer.y) * 0.1;
+        }
     }
 
     setTrack(track) {
