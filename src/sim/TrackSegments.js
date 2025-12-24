@@ -154,7 +154,7 @@ class TrackSegments {
                     if (!testedSegments.has(i)) {
                         testedSegments.add(i);
                         if (this.isBoxCollidingSegment(ox, oy, width, height, angle, this.ax[i], this.ay[i], this.bx[i], this.by[i])) {
-                            return true;
+                            return i; // Return segment index from ax,ay,bx,by arrays
                         }
                     }
                 }

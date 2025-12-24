@@ -17,6 +17,7 @@ class CarObject extends SimulationObject {
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
         this.radarAngularRange = Math.PI;
         this.isCrashed = false;
+        this.checkpointsPassed = 0;
 
         // create view
         this.view = new CarView(
@@ -68,7 +69,7 @@ class CarObject extends SimulationObject {
       }
 
       // check for collisions
-      if (this.track.isBoxColliding(this.x, this.y, this.width, this.height, this.direction)) {
+      if (this.track.isBoxCollidingWithWall(this.x, this.y, this.width, this.height, this.direction) !== false) {
         if (this.speed > 0) {
           console.log('Collision detected, stopping car');
           this.isCrashed = true;
@@ -76,6 +77,16 @@ class CarObject extends SimulationObject {
         this.speed = 0;
         this.turnRate = 0;
       }
+
+      // check for checkpoints
+      const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.x, this.y, this.width, this.height, this.direction);
+      if (checkpointIndex !== false) {
+        this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
+      }
+    }
+
+    calculateCheckpointProgress() {
+      return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.x, this.y)-1) / (this.track.checkpoints.checkpointCount-1)
     }
 
     render(delta) { // delta is in seconds

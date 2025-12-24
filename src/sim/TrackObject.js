@@ -1,13 +1,14 @@
 import SimulationObject from './SimulationObject';
 import TrackView from './TrackView';
 import TrackSegments from './TrackSegments';
-
+import Checkpoints from './Checkpoints';
 
 class TrackObject extends SimulationObject {
     constructor(cellSize = 4) {
         super();
         this.view = new TrackView(this.metersToPixels(0.5));
-        this.segments = new TrackSegments(cellSize);
+        this.wallSegments = new TrackSegments(cellSize);
+        this.checkpoints = new Checkpoints(cellSize);
     }
 
     buildTestTrack() {
@@ -51,14 +52,36 @@ class TrackObject extends SimulationObject {
       this.addSegment(20, 50, -10, 50)
       this.addSegment(-10, 50, -20, 0)
       this.addSegment(-20, 0, -20, -30)
-
       // end wall
       this.addSegment(-20, -30, -60, -30)
+
+      // checkpoints
+      this.addCheckpoint(0, -17, 0, 15)
+      this.addCheckpoint(4, -17, 4, 15)
+      this.addCheckpoint(20, -20, 28, 15)
+      this.addCheckpoint(30, -40, 70, 5)
+      this.addCheckpoint(40, -60, 70, -45)
+      this.addCheckpoint(80, -90, 85, -55)
+      this.addCheckpoint(120, -80, 90, -50)
+      this.addCheckpoint(92, -35, 127, -35)
+      this.addCheckpoint(97, 5, 130, -10)
+      this.addCheckpoint(120, 45, 153, 30)
+      this.addCheckpoint(125, 85, 170, 85)
+    }
+
+    addCheckpoint(ax, ay, bx, by) {
+      this.checkpoints.addSegment(ax, ay, bx, by);
+      this.view.addCheckpoint(
+        this.metersToPixels(ax),
+        this.metersToPixels(ay),
+        this.metersToPixels(bx),
+        this.metersToPixels(by)
+      );
     }
 
 
     addSegment(ax, ay, bx, by) {
-      this.segments.addSegment(ax, ay, bx, by);
+      this.wallSegments.addSegment(ax, ay, bx, by);
       this.view.addSegment(
         this.metersToPixels(ax),
         this.metersToPixels(ay),
@@ -76,11 +99,15 @@ class TrackObject extends SimulationObject {
     }
 
     rayIntersectionsMinLength(ox, oy, angle) {
-        return this.segments.rayIntersectionsMinLength(ox, oy, angle);
+        return this.wallSegments.rayIntersectionsMinLength(ox, oy, angle);
     }
 
-    isBoxColliding(ox, oy, width, height, angle) {
-        return this.segments.isBoxColliding(ox, oy, width, height, angle);
+    isBoxCollidingWithWall(ox, oy, width, height, angle) {
+        return this.wallSegments.isBoxColliding(ox, oy, width, height, angle);
+    }
+
+    isBoxCollidingWithCheckpoint(ox, oy, width, height, angle) {
+        return this.checkpoints.isBoxColliding(ox, oy, width, height, angle);
     }
 }
 
