@@ -26,9 +26,9 @@ app.stage.addChild(simulation.view);
 const track = new TrackObject();
 const car = new NeuralCarObject(track);
 track.buildTestTrack();
-simulation.masterContainer.addChild(track.view);
-simulation.masterContainer.addChild(car.view);
-simulation.followCamera(car);
+simulation.setTrack(track);
+simulation.addCar(car);
+simulation.followCar(car);
 
 // Initialize keyboard controller
 //const keyboardController = new KeyboardController(car);

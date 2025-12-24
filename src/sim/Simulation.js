@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import SimulationObject from './SimulationObject';
 import CarDetailsView from './CarDetailsView';
+import SimulationView from './SimulationView';
 
 class Simulation extends SimulationObject {
     constructor(fps = 120, app = null) {
@@ -15,25 +16,37 @@ class Simulation extends SimulationObject {
         this.renderRunning = false;
         this.objects = [];
         this.app = app;
-        this.view = new PIXI.Container();
-        this.masterContainer = new PIXI.Container();
-        this.view.addChild(this.masterContainer);
-        this.followCameraObject = null;
-
-        this.carDetailsView = new CarDetailsView();
-        this.view.addChild(this.carDetailsView);
+        this.view = new SimulationView();
+        this.focusedCar = null;
+        this.cars = [];
+        this.track = null;
     }
 
-    followCamera(carObject) {
-        this.followCameraObject = carObject;
-        this.carDetailsView.car = carObject;
+    setTrack(track) {
+        if (this.track) {
+            throw new Error('Track already set');
+        }
+        this.track = track;
+        this.view.setTrack(track);
+    }
+
+    addCar(car) {
+        this.cars.push(car);
+        this.view.addCar(car);
+    }
+
+    followCar(carObject) {
+        this.focusedCar = carObject;
+        this.view.carDetailsView.car = carObject;
     }
 
     updateCamera() {
-        if (this.followCameraObject) {
-            this.masterContainer.x = this.metersToPixels(-this.followCameraObject.x);
-            this.masterContainer.y = this.metersToPixels(-this.followCameraObject.y);
-        }
+      if (this.focusedCar) {
+          this.view.setCameraPosition(
+          this.metersToPixels(-this.focusedCar.x),
+          this.metersToPixels(-this.focusedCar.y)
+        );
+      }
     }
 
     /**
@@ -107,7 +120,7 @@ class Simulation extends SimulationObject {
             object.render(deltaSeconds);
         }
         this.updateCamera();
-        this.carDetailsView.render();
+        this.view.carDetailsView.render();
     }
 
     simulationLoop = (currentTime) => {
@@ -135,8 +148,8 @@ class Simulation extends SimulationObject {
     scaleView(width, height) {
         this.view.x = width / 2;
         this.view.y = height / 2;
-        this.carDetailsView.x = - width / 2;
-        this.carDetailsView.y = - height / 2;
+        this.view.carDetailsView.x = - width / 2;
+        this.view.carDetailsView.y = - height / 2;
     }
 }
 

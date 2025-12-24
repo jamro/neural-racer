@@ -56,7 +56,7 @@ class TrackObject extends SimulationObject {
       this.addSegment(-20, -30, -60, -30)
 
       // checkpoints
-      this.addCheckpoint(0, -17, 0, 15)
+      this.addCheckpoint(0, -16, 0, 15)
       this.addCheckpoint(4, -17, 4, 15)
       this.addCheckpoint(20, -20, 28, 15)
       this.addCheckpoint(30, -40, 70, 5)
