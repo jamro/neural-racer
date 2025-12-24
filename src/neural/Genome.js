@@ -25,11 +25,32 @@ class Genome {
     return this;
   }
 
+  static crossoverHybrid(a, b, blendRatio=0.7, rng = Math.random) {
+    if (rng() < blendRatio) {
+      return this.crossoverBlend(a, b, null, rng);
+    } else {
+      return this.crossoverUniform(a, b, rng);
+    }
+  }
+
   static crossoverUniform(a, b, rng = Math.random) {
     const ga = a.genes, gb = b.genes;
     const child = new Genome(ga.length);
     const gc = child.genes;
     for (let i = 0; i < ga.length; i++) gc[i] = (rng() < 0.5) ? ga[i] : gb[i];
+    return child;
+  }
+
+  static crossoverBlend(a, b, alpha = null, rng = Math.random) {
+    const ga = a.genes, gb = b.genes;
+    const child = new Genome(ga.length);
+    const gc = child.genes;
+    for (let i = 0; i < ga.length; i++) {
+      // Blend between parent genes: child = α * a + (1-α) * b
+      // If alpha is provided, use fixed blend; otherwise use random blend per gene
+      const blend = alpha !== null ? alpha : rng();
+      gc[i] = blend * ga[i] + (1 - blend) * gb[i];
+    }
     return child;
   }
 }

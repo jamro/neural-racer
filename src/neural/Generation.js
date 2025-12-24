@@ -79,7 +79,7 @@ class Generation {
       return this.genomes[winnerIndex];
     }
 
-    evolve(eliteCount=2, eliminationEpochs=10, eliminationRate=0.1) {
+    evolve(eliteCount=2, eliminationEpochs=7, eliminationRate=0.15) {
       const populationSize = this.genomes.length;
       
       // Get elite genomes (top performers)
@@ -119,7 +119,7 @@ class Generation {
         }
         
         // Create child through crossover
-        const child = Genome.crossoverUniform(parent1, parent2);
+        const child = Genome.crossoverHybrid(parent1, parent2);
         
         // Apply mutation
         child.mutate();
