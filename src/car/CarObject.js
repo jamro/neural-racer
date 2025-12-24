@@ -13,9 +13,9 @@ class CarObject extends SimulationObject {
         this.acceleration = 0; // meters/second^2
         this.turnRate = 0; // radians/second 
         this.direction = 0 // radians
-        this.radarBeamCount = 5;
+        this.radarBeamCount = 9;
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
-        this.radarAngularRange = Math.PI*0.8;
+        this.radarAngularRange = Math.PI;
         this.isCrashed = false;
 
         // create view
@@ -47,7 +47,8 @@ class CarObject extends SimulationObject {
     update(delta) { // delta is in seconds
       if (this.isCrashed) return;
 
-      const dragDeceleration = 1; // meters/second^2
+      const dragCoefficient = Math.min(1, this.speed / 8); // avoid drag at low speed to not block the car
+      const dragDeceleration = 1 * dragCoefficient; // meters/second^2
 
       const maxSpeed = 40; // meters/second, 140 km/h
       this.speed += (this.acceleration - dragDeceleration) * delta;

@@ -1,9 +1,9 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
-import CarObject from './car/CarObject';
+import NeuralCarObject from './car/NeuralCarObject';
 import TrackObject from './sim/TrackObject';
 import Simulation from './sim/Simulation';
-import KeyboardController from './car/KeyboardController';
+import KeyboardController from './controller/KeyboardController';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -25,14 +25,14 @@ simulation.view.x = app.screen.width / 2;
 simulation.view.y = app.screen.height / 2;
 app.stage.addChild(simulation.view);
 const track = new TrackObject();
-const car = new CarObject(track);
+const car = new NeuralCarObject(track);
 track.buildTestTrack();
 simulation.masterContainer.addChild(track.view);
 simulation.masterContainer.addChild(car.view);
 simulation.followCamera(car);
 
 // Initialize keyboard controller
-const keyboardController = new KeyboardController(car);
+//const keyboardController = new KeyboardController(car);
 
 console.log('PixiJS application initialized!');
 

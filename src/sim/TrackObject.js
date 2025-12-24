@@ -29,9 +29,9 @@ class TrackObject extends SimulationObject {
       this.addSegment(45, -70, 80, -90)
       this.addSegment(40, -55, 45, -70)
       this.addSegment(20, -20, 40, -55)
-      this.addSegment(-10, -15, 20, -20)
-      this.addSegment(-10, -15, -10, 15)
-      this.addSegment(-10, 15, 30, 15)
+      this.addSegment(-4, -15, 20, -20)
+      this.addSegment(-4, -15, -4, 15) // start wall
+      this.addSegment(-4, 15, 30, 15)
       this.addSegment(30, 15, 80, 0)
       this.addSegment(80, 0, 80, -35)
       this.addSegment(80, -35, 70, -45)
