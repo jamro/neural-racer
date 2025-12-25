@@ -1,9 +1,6 @@
 import CarView from './CarView';
 import SimulationObject from '../sim/SimulationObject';
 
-const SPPEDING_LIMIT = 60/3.6; // meters
-
-
 class CarObject extends SimulationObject {
     constructor(track, scoreWeights) {
         super();
@@ -121,8 +118,9 @@ class CarObject extends SimulationObject {
       }
 
       // track average speed
+      const speedingLimitValue = this.scoreWeights.speedingLimitValue || 60/3.6; // meters/second, 60 km/h
       this.speedSum += this.speed;
-      if (this.speed > SPPEDING_LIMIT) {
+      if (this.speed > speedingLimitValue) {
         this.speedingCounter++;
       }
     }
