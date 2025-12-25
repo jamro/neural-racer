@@ -20,7 +20,21 @@ document.getElementById('app').appendChild(app.canvas);
 // Create a simple test graphic to verify everything works
 const track = await loadTrackFromSvg('assets/track.svg');
 const evolution = new Evolution(app, track);
-evolution.initialize();
+evolution.initialize({
+  populationSize: 100,
+  evolve: {
+    eliteRatio: 0.02, 
+    eliminationEpochs: 5, 
+    eliminationRate: 0.10,
+    crossover: {
+      blendRatio: 0.7
+    },
+    mutation: {
+      rate: 0.03,
+      sigma: 0.12
+    }
+  }
+});
 
 // Initialize keyboard controller
 //const keyboardController = new KeyboardController(car);

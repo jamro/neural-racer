@@ -12,9 +12,13 @@ class Evolution {
     this.simulation.setTrack(this.track);
     this.simulation.onComplete = () => this.onEpochComplete();
     this.epochLimit = epochLimit;
+
+    this.evolveConfig = {}
   }
 
-  initialize(populationSize=100) {
+  initialize(config = {}) {
+    const { populationSize = 100 } = config;
+    this.evolveConfig = config.evolve || {};
     this.generation = new Generation(this.track);
     this.generation.initialize(populationSize);
     this.simulation.setGeneration(this.generation);
@@ -36,7 +40,7 @@ class Evolution {
 
     // evolve generation
     this.generation.calculateScores();
-    this.generation = this.generation.evolve();
+    this.generation = this.generation.evolve(this.evolveConfig);
 
     if(this.generation.epoch > this.epochLimit) return;
 

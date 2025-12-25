@@ -89,7 +89,9 @@ class Generation {
       return indexedGenomes;
     }
 
-    riseOffsprings(count) {
+    riseOffsprings(count, crossoverConfig, mutationConfig) {
+      const { blendRatio = 0.7 } = crossoverConfig;
+      const { rate = 0.03, sigma = 0.12 } = mutationConfig;
       const offsprings = [];
       for (let i = 0; i < count; i++) {
         // Select two different parents using tournament selection
@@ -104,10 +106,10 @@ class Generation {
         }
         
         // Create child through crossover
-        const child = Genome.crossoverHybrid(parent1, parent2);
+        const child = Genome.crossoverHybrid(parent1, parent2, blendRatio);
         
         // Apply mutation
-        child.mutate();
+        child.mutate(rate, sigma);
         
         offsprings.push(child);
       }
@@ -126,7 +128,15 @@ class Generation {
       return randomGenomes;
     }
 
-    evolve(eliteRatio=0.02, eliminationEpochs=5, eliminationRate=0.10) {
+    evolve(config = {}) {
+      const { 
+        eliteRatio = 0.02, 
+        eliminationEpochs = 5, 
+        eliminationRate = 0.10 
+      } = config;
+      const crossoverConfig = config.crossover || {};
+      const mutationConfig = config.mutation || {};
+      
       const populationSize = this.genomes.length;
       const eliteCount = Math.ceil(populationSize * eliteRatio);
       
@@ -148,7 +158,7 @@ class Generation {
         remainingCount -= Math.ceil(remainingCount * eliminationRate);
       }
       
-      const offsprings = this.riseOffsprings(remainingCount);
+      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig);
       newGenomes.push(...offsprings);
 
       // Fill the rest of the population with random genomes
