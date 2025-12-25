@@ -1,6 +1,7 @@
 import Simulation from '../sim/Simulation';
-import TrackObject from '../sim/TrackObject';
 import Generation from './Generation';
+
+const CURRENT_SNAPSHOT_FILENAME = 'current-snapshot';
 
 class Evolution { 
   constructor(pixiApp, track, epochLimit=Infinity) {
@@ -21,6 +22,7 @@ class Evolution {
     this.evolveConfig = config.evolve || {};
     this.generation = new Generation(this.track);
     this.generation.initialize(populationSize);
+    this.generation.load(CURRENT_SNAPSHOT_FILENAME);
     this.simulation.setGeneration(this.generation);
   }
 
@@ -40,6 +42,7 @@ class Evolution {
 
     // evolve generation
     this.generation.calculateScores();
+    this.generation.store(CURRENT_SNAPSHOT_FILENAME);
     this.generation = this.generation.evolve(this.evolveConfig);
 
     if(this.generation.epoch > this.epochLimit) return;

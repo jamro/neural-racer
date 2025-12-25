@@ -15,6 +15,56 @@ class Generation {
       this.scores = Array(this.cars.length).fill(null);
     }
 
+    store(filename) {
+      try {
+        // Serialize genomes (convert Float32Array to regular array)
+        const serializedGenomes = this.genomes.map(genome => 
+          Array.from(genome.genes)
+        );
+        
+        const data = {
+          genomes: serializedGenomes,
+          epoch: this.epoch,
+          scores: this.scores
+        };
+        
+        localStorage.setItem(filename, JSON.stringify(data));
+        return true;
+      } catch (error) {
+        console.error('Failed to store generation:', error);
+        return false;
+      }
+    }
+
+    load(filename) {
+      try {
+        const storedData = localStorage.getItem(filename);
+        if (!storedData) {
+          return false;
+        }
+        
+        const data = JSON.parse(storedData);
+        
+        // Deserialize genomes (convert arrays back to Float32Array and create Genome objects)
+        const genomes = data.genomes.map(genesArray => 
+          new Genome(genesArray.length, new Float32Array(genesArray))
+        );
+        
+        // Restore epoch and scores
+        this.epoch = data.epoch;
+        this.scores = data.scores;
+        
+        // Restore cars
+        this.cars = genomes.map(genome => new NeuralCarObject(this.track, genome));
+        this.genomes = this.cars.map(car => car.genome);
+        
+        return true;
+      } catch (error) {
+        console.error('Failed to load generation:', error);
+        return false;
+      }
+    }
+
     get activeCount() {
       return this.cars.filter(car => !car.isCrashed).length;
     }
