@@ -1,7 +1,7 @@
 import CarView from './CarView';
 import SimulationObject from '../sim/SimulationObject';
 
-const WALL_DANGER_DISTANCE = 5; // meters
+const SPPEDING_LIMIT = 60/3.6; // meters
 
 
 class CarObject extends SimulationObject {
@@ -37,6 +37,7 @@ class CarObject extends SimulationObject {
         this.lifetimeSeconds = 0;
         this.speedSum = 0;
         this.debug = ""
+        this.speedingCounter = 0;
 
         // create view
         this.view = new CarView(
@@ -121,6 +122,9 @@ class CarObject extends SimulationObject {
 
       // track average speed
       this.speedSum += this.speed;
+      if (this.speed > SPPEDING_LIMIT) {
+        this.speedingCounter++;
+      }
     }
 
     calculateCheckpointProgress() {
@@ -139,16 +143,16 @@ class CarObject extends SimulationObject {
       let speedScore = (this.calculateAverageSpeed() / this.maxSpeed);
       speedScore = Math.max(0, Math.min(1, speedScore));
       const speedScoreAtFinishLine = (distanceProgressScore >= 1) ? speedScore : 0;
-      
-      // crash penalty
-      const crashPenalty = distanceProgressScore >= 1 ? 0 : -1
+
+      // speeding penalty
+      const speedingPenalty = (this.speedingCounter / this.liftimeFrames)
 
       // calculate total score
-      let totalScore = 0;
       return {
         trackDistance: (this.scoreWeights.trackDistance || 0) * distanceProgressScore,
         avgSpeedAtFinishLine: (this.scoreWeights.avgSpeedAtFinishLine || 0) * speedScoreAtFinishLine,
-        crashPenalty: (this.scoreWeights.crashPenalty || 0) * crashPenalty,
+        speedingPenalty: -(this.scoreWeights.speedingPenalty || 0) * speedingPenalty,
+        avgSpeed: (this.scoreWeights.avgSpeed || 0) * speedScore,
       }
     }
 

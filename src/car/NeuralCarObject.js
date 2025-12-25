@@ -37,7 +37,7 @@ class NeuralCarObject extends CarObject {
 
       const outputs = this.neuralNet.forward(this.genome, inputs);
 
-      this.debug = outputs[0].toFixed(3) + ", " + outputs[1].toFixed(3);
+      this.debug = inputs[9].toFixed(3)
       
       const throttleOutput = outputs[0];
       const turnOutput = outputs[1];

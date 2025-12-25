@@ -16,6 +16,7 @@ class Simulation extends SimulationObject {
         this.cars = [];
         this.track = null;
         this.generation = null;
+        this.activeLeaderFollowing = false;
         this.onComplete = () => {}
     }
 
@@ -129,10 +130,10 @@ class Simulation extends SimulationObject {
 
         // find leader and set it as focused car
         if (Math.random() < 0.3) { // 30% chance to find a new leader
-            const leader = this.generation.findLeader();
+            const leader = this.activeLeaderFollowing ? this.generation.findLeader() : this.generation.cars[0];
             if (leader) {
               if (this.leaderCar) {
-                this.leaderCar.view.active = false;
+                this.leaderCar.view.active = false
               }
               this.leaderCar = leader;
               this.view.carDetailsView.car = leader;

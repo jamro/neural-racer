@@ -21,11 +21,11 @@ document.getElementById('app').appendChild(app.canvas);
 const track = await loadTrackFromSvg('assets/track.svg');
 const evolution = new Evolution(app, track);
 
-
 const scoreWeights = {
-  avgSpeedAtFinishLine: 1,
-  trackDistance: 0.2,
-  crashPenalty: 1
+  avgSpeedAtFinishLine: 3,
+  trackDistance: 1,
+  speedingPenalty: 0,
+  avgSpeed: 1
 };
 
 const standardConfig = {
