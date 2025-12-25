@@ -7,7 +7,7 @@ class CarDetailsView extends PIXI.Container {
     super();
     this.car = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 198, 183);
+    this.bg.rect(2, 2, 198, 233);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -22,7 +22,7 @@ class CarDetailsView extends PIXI.Container {
       fill: 0xffffff 
     };
     this.statusTextField.x = 10;
-    this.statusTextField.y = 30;
+    this.statusTextField.y = 35;
     this.addChild(this.statusTextField);
 
     this.scoreProgressBar = new ProgressBar();
@@ -50,7 +50,8 @@ class CarDetailsView extends PIXI.Container {
         "Speed: " + (this.car.speed*3.6).toFixed(1) + " km/h\n\n" +
         "Throttle: " + (100*this.car.throttleValue).toFixed(1) + "%\n" +
         "Brake: " + (100*this.car.brakeValue).toFixed(1) + "%\n" +
-        "Turn: " + (100*this.car.turnValue).toFixed(1) + "%\n";
+        "Turn: " + (100*this.car.turnValue).toFixed(1) + "%\n\n" +
+        "DEBUG:\n" + (this.car.debug || '-none-') + "\n";
   }
 
 }

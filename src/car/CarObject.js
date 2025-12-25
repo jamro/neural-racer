@@ -33,6 +33,7 @@ class CarObject extends SimulationObject {
         this.liftimeFrames = 0;
         this.lifetimeSeconds = 0;
         this.minWallDistanceSum = 0;
+        this.debug = ""
 
         // create view
         this.view = new CarView(

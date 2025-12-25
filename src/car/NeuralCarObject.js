@@ -33,9 +33,11 @@ class NeuralCarObject extends CarObject {
         inputs[i] = d === null ? 0 : Math.exp(-k * d) // 0 means no obstacle, 1 means close to obstacle
       }
       // use speed as input
-      inputs[this.radarBeamCount + 1] = Math.min(this.speed / this.maxSpeed, 1);
+      inputs[this.radarBeamCount] = Math.min(this.speed / this.maxSpeed, 1);
 
       const outputs = this.neuralNet.forward(this.genome, inputs);
+
+      this.debug = outputs[0].toFixed(3) + ", " + outputs[1].toFixed(3);
       
       const throttleOutput = outputs[0];
       const turnOutput = outputs[1];
