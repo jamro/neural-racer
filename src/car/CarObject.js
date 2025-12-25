@@ -2,11 +2,15 @@ import CarView from './CarView';
 import SimulationObject from '../sim/SimulationObject';
 
 class CarObject extends SimulationObject {
-    constructor(track) {
+    constructor(track, scoreWeights) {
         super();
         if (!track) {
           throw new Error('Track is required');
         }
+        if (!scoreWeights) {
+          throw new Error('Score weights are required');
+        }
+        this.scoreWeights = scoreWeights;
         this.track = track;
         this.width = 4; // meters
         this.height = 2; // meters
@@ -26,6 +30,9 @@ class CarObject extends SimulationObject {
         this.turnValue = 0;
         this.staleCounter = 50
         this.maxSpeed = 40; // meters/second, 140 km/h
+        this.liftimeFrames = 0;
+        this.lifetimeSeconds = 0;
+        this.minWallDistanceSum = 0;
 
         // create view
         this.view = new CarView(
@@ -61,6 +68,9 @@ class CarObject extends SimulationObject {
     update(delta) { // delta is in seconds
       if (this.isCrashed) return;
 
+      this.liftimeFrames++;
+      this.lifetimeSeconds += delta;
+
       const dragCoefficient = Math.min(1, this.speed / 8); // avoid drag at low speed to not block the car
       const dragDeceleration = 1 * dragCoefficient; // meters/second^2
 
@@ -75,10 +85,13 @@ class CarObject extends SimulationObject {
 
       // update radar beams
       const angleStep = this.radarAngularRange / (this.radarBeams.length - 1);
+      let minDistance = Infinity;
       for (let index = 0; index < this.radarBeams.length; index++) {
         const angle = this.radarAngularRange / 2 - angleStep * index + this.direction
         this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.x, this.y, angle);
+        minDistance = Math.min(minDistance, this.radarBeams[index]);
       }
+      this.minWallDistanceSum += minDistance;
 
       // check for collisions
       if (this.track.isBoxCollidingWithWall(this.x, this.y, this.width, this.height, this.direction) !== false) {
@@ -110,8 +123,32 @@ class CarObject extends SimulationObject {
       return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.x, this.y)-1) / (this.track.checkpoints.checkpointCount-1)
     }
 
+    calculateMinWallDistanceAverage() {
+      return this.minWallDistanceSum / this.liftimeFrames;
+    }
+
+    calculateScoreComponents() {
+      // calculate wall distance score
+      const wallDistanceScoreThreshold = 20;
+      let wallDistanceScore = this.calculateMinWallDistanceAverage() / wallDistanceScoreThreshold;
+      wallDistanceScore = Math.max(0, Math.min(1, wallDistanceScore));
+      
+      // calculate distance progress score
+      const distanceProgressScore = this.calculateCheckpointProgress();
+
+      // calculate total score
+      let totalScore = 0;
+      return {
+        trackDistance: (this.scoreWeights.trackDistance || 0) * distanceProgressScore,
+        wallDistance: (this.scoreWeights.wallDistance || 0) * wallDistanceScore,
+      }
+    }
+
     calculateScore() {
-      return this.calculateCheckpointProgress()
+      const components = this.calculateScoreComponents();
+      const values = Object.values(components);
+      const total = values.reduce((a, b) => a + b, 0);
+      return total;
     }
 
     render(delta) { // delta is in seconds

@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import ProgressBar from '../ui/ProgressBar';
 
 class CarDetailsView extends PIXI.Container {
 
@@ -6,7 +7,7 @@ class CarDetailsView extends PIXI.Container {
     super();
     this.car = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 198, 113);
+    this.bg.rect(2, 2, 198, 183);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -21,13 +22,31 @@ class CarDetailsView extends PIXI.Container {
       fill: 0xffffff 
     };
     this.statusTextField.x = 10;
-    this.statusTextField.y = 10;
+    this.statusTextField.y = 30;
     this.addChild(this.statusTextField);
+
+    this.scoreProgressBar = new ProgressBar();
+    this.scoreProgressBar.x = 10;
+    this.scoreProgressBar.y = 5;
+    this.scoreProgressBar.controlWidth = 180;
+    this.scoreProgressBar.label = "Score Sources:";
+    this.scoreProgressBar.max = 100;
+    this.scoreProgressBar.values = [20, 10, 20, 100];
+    this.addChild(this.scoreProgressBar);
   }
 
   render() {
     if (!this.car) return;
-    this.statusTextField.text = "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +
+
+    const scoreComponents = this.car.calculateScoreComponents();
+    const scoreValues = Object.values(scoreComponents);
+    const scoreTotal = scoreValues.reduce((a, b) => a + b, 0);
+    this.scoreProgressBar.values = scoreValues;
+    this.scoreProgressBar.max = scoreTotal;
+
+    this.statusTextField.text = "SCORE: " + (this.car.calculateScore()).toFixed(2) + "\n\n" +
+        "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +
+        "Wall Distance: " + (this.car.calculateMinWallDistanceAverage()).toFixed(1) + "m\n" +
         "Speed: " + (this.car.speed*3.6).toFixed(1) + " km/h\n\n" +
         "Throttle: " + (100*this.car.throttleValue).toFixed(1) + "%\n" +
         "Brake: " + (100*this.car.brakeValue).toFixed(1) + "%\n" +

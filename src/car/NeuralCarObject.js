@@ -3,8 +3,8 @@ import NeuralNet from '../neural/NeuralNet';
 import Genome from '../neural/Genome';
 
 class NeuralCarObject extends CarObject {
-    constructor(track, genome=null) {
-        super(track);
+    constructor(track, scoreWeights, genome=null) {
+        super(track, scoreWeights);
 
         this.neuralNet = new NeuralNet(
           [10, 32, 32, 2],
@@ -27,7 +27,7 @@ class NeuralCarObject extends CarObject {
       }
 
       const inputs = []
-      const k = 0.3; // empirical value, recommended value between 0.2 and 0.4
+      const k = 0.2; // empirical value, recommended value between 0.2 and 0.4
       for (let i = 0; i < this.radarBeamCount; i++) {
         const d = this.radarBeams[i] // meters
         inputs[i] = d === null ? 0 : Math.exp(-k * d) // 0 means no obstacle, 1 means close to obstacle

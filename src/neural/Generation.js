@@ -2,10 +2,11 @@ import NeuralCarObject from '../car/NeuralCarObject';
 import Genome from './Genome';
 
 class Generation {
-    constructor(track, genomes=null, parent=null) {
+    constructor(track, scoreWeights, genomes=null, parent=null) {
       this.track = track;
+      this.scoreWeights = scoreWeights;
       if (genomes) {
-        this.cars = genomes.map(genome => new NeuralCarObject(track, genome));
+        this.cars = genomes.map(genome => new NeuralCarObject(track, this.scoreWeights, genome));
       } else {
         this.cars = [];
       }
@@ -55,7 +56,7 @@ class Generation {
         this.scores = data.scores;
         
         // Restore cars
-        this.cars = genomes.map(genome => new NeuralCarObject(this.track, genome));
+        this.cars = genomes.map(genome => new NeuralCarObject(this.track, this.scoreWeights, genome));
         this.genomes = this.cars.map(car => car.genome);
         
         return true;
@@ -76,7 +77,7 @@ class Generation {
     initialize(populationSize=100) {
       this.cars = [];
       for (let i = 0; i < populationSize; i++) {
-        this.cars.push(new NeuralCarObject(this.track));
+        this.cars.push(new NeuralCarObject(this.track, this.scoreWeights));
       }
       this.genomes = this.cars.map(car => car.genome);
     }
@@ -217,7 +218,7 @@ class Generation {
         newGenomes.push(...randomGenomes);        
       }
       
-      const newGeneration = new Generation(this.track, newGenomes, this);
+      const newGeneration = new Generation(this.track, this.scoreWeights, newGenomes, this);
       return newGeneration;
     }
 }

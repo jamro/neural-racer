@@ -20,8 +20,9 @@ class Evolution {
   initialize(config = {}) {
     this.config = config
     const { populationSize = 100 } = this.config;
+    const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.config.evolve = this.config.evolve || {};
-    this.generation = new Generation(this.track);
+    this.generation = new Generation(this.track, scoreWeights);
     this.generation.initialize(populationSize);
     this.generation.load(CURRENT_SNAPSHOT_FILENAME);
     this.simulation.setGeneration(this.generation);
