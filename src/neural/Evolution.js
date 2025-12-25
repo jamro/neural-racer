@@ -32,10 +32,10 @@ class Evolution {
 
   onEpochComplete() {
     // complete simulation and calculate scores
-    console.log('Epoch completed');
-    this.generation.calculateScores();
+    console.log('== Epoch completed =============');
 
     // evolve generation
+    this.generation.calculateScores();
     this.generation = this.generation.evolve();
 
     if(this.generation.epoch > this.epochLimit) return;

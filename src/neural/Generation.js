@@ -56,7 +56,7 @@ class Generation {
       this.scores = Array(this.cars.length).fill(null);
     }
 
-    tournamentSelection(k=3) {
+    tournamentSelection(k=2) {
       // Randomly select k individuals for the tournament
       const tournamentIndices = [];
       for (let i = 0; i < k; i++) {
@@ -79,34 +79,19 @@ class Generation {
       return this.genomes[winnerIndex];
     }
 
-    evolve(eliteCount=2, eliminationEpochs=7, eliminationRate=0.15) {
-      const populationSize = this.genomes.length;
-      
-      // Get elite genomes (top performers)
+    sortGenomes() {
       const indexedGenomes = this.genomes.map((genome, index) => ({
         genome,
         score: this.scores[index] ?? -Infinity,
         index
       }));
-      
-      // Sort by score (descending)
       indexedGenomes.sort((a, b) => b.score - a.score);
-      
-      // Keep elite genomes (clone them to avoid mutation)
-      const eliteGenomes = [];
-      for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
-        eliteGenomes.push(indexedGenomes[i].genome.clone());
-      }
-      
-      // Fill the rest of the population with crossover offspring
-      const newGenomes = [...eliteGenomes];
-      let remainingCount = populationSize - eliteGenomes.length;
+      return indexedGenomes;
+    }
 
-      if (this.epoch > 0 && this.epoch % eliminationEpochs === 0) {
-        remainingCount -= Math.floor(remainingCount * eliminationRate);
-      }
-      
-      for (let i = 0; i < remainingCount; i++) {
+    riseOffsprings(count) {
+      const offsprings = [];
+      for (let i = 0; i < count; i++) {
         // Select two different parents using tournament selection
         let parent1 = this.tournamentSelection();
         let parent2 = this.tournamentSelection();
@@ -124,15 +109,52 @@ class Generation {
         // Apply mutation
         child.mutate();
         
-        newGenomes.push(child);
+        offsprings.push(child);
       }
+      return offsprings;
+    }
 
-      while (newGenomes.length < populationSize) {
+    createRandomGenomes(count) {
+      const randomGenomes = [];
+      for (let i = 0; i < count; i++) {
         const randomGenome = new Genome(
           this.genomes[0].genes.length
         );
         randomGenome.randomize();
-        newGenomes.push(randomGenome);
+        randomGenomes.push(randomGenome);
+      }
+      return randomGenomes;
+    }
+
+    evolve(eliteRatio=0.02, eliminationEpochs=5, eliminationRate=0.10) {
+      const populationSize = this.genomes.length;
+      const eliteCount = Math.ceil(populationSize * eliteRatio);
+      
+      // Get elite genomes (top performers)
+      const indexedGenomes = this.sortGenomes();
+      
+      // Keep elite genomes (clone them to avoid mutation)
+      const eliteGenomes = [];
+      for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
+        eliteGenomes.push(indexedGenomes[i].genome.clone());
+      }
+      
+      // Fill the rest of the population with crossover offspring
+      const newGenomes = [...eliteGenomes];
+      let remainingCount = populationSize - eliteGenomes.length;
+
+      if (this.epoch > 0 && this.epoch % eliminationEpochs === 0) {
+        console.log(`Eliminating ${(100*eliminationRate).toFixed(2)}% of genomes`);
+        remainingCount -= Math.ceil(remainingCount * eliminationRate);
+      }
+      
+      const offsprings = this.riseOffsprings(remainingCount);
+      newGenomes.push(...offsprings);
+
+      // Fill the rest of the population with random genomes
+      if (newGenomes.length < populationSize) {
+        const randomGenomes = this.createRandomGenomes(populationSize - newGenomes.length);
+        newGenomes.push(...randomGenomes);        
       }
       
       const newGeneration = new Generation(this.track, newGenomes, this);

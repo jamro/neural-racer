@@ -23,9 +23,9 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     inkscape:zoom="1.3266459"
-     inkscape:cx="1678.2925"
-     inkscape:cy="-16.960064"
+     inkscape:zoom="0.69723365"
+     inkscape:cx="326.28947"
+     inkscape:cy="228.76119"
      inkscape:window-width="1512"
      inkscape:window-height="830"
      inkscape:window-x="0"
@@ -36,7 +36,7 @@
      id="defs1" />
   <path
      style="fill:#800000;stroke:#000000;stroke-width:1.3;stroke-opacity:1"
-     d="M -3.3644139,-9.272851 V 9.714413 L 77.592238,9.052068 128.92867,26.837347 243.09821,27.653813 290.87147,12.515265 340.37012,11.754248 389.11044,37.63416 497.50407,33.039017 504.33654,-1.4391902 405.03378,9.0365306 365.38432,-10.962805 295.81148,-17.244393 229.93563,7.1515424 147.49264,6.3192155 100.11202,-13.026147 Z"
+     d="M -3.3644139,-9.272851 V 9.714413 l 74.6828349,2.610951 98.991529,31.036963 63.86886,-6.279431 56.69266,-24.567631 49.49865,-0.761017 48.74032,25.879912 108.39363,-4.595143 6.83247,-34.4782072 -99.30276,10.4757208 -39.64946,-19.9993356 -69.57284,-6.281588 -60.52421,34.589539 -58.17562,5.901122 -76.99963,-36.272415 z"
      id="walls"
      inkscape:label="walls"
      sodipodi:nodetypes="ccccccccccccccccc" />
@@ -50,16 +50,19 @@
        id="path1" />
     <path
        style="fill:none;stroke:#ddeb00;stroke-width:1.3;stroke-opacity:1"
-       d="M 74.982887,-12.863742 75.631292,9.8304486"
-       id="path1-2" />
+       d="M 97.895958,-13.136517 72.085222,13.103744"
+       id="path1-2"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#ddeb00;stroke-width:1.3;stroke-opacity:1"
-       d="m 147.28041,5.2810952 0.6484,22.6941908"
-       id="path1-2-9" />
+       d="m 176.66251,23.263377 -6.46543,20.14579"
+       id="path1-2-9"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#ddeb00;stroke-width:1.3;stroke-opacity:1"
-       d="m 227.93831,6.0028244 0.6484,22.6941906"
-       id="path1-2-9-7" />
+       d="m 235.07383,17.470628 -0.6258,19.89095"
+       id="path1-2-9-7"
+       sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#ddeb00;stroke-width:1.3;stroke-opacity:1"
        d="m 295.53335,-16.900512 -2.94148,29.873951"
