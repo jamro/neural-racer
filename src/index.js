@@ -20,22 +20,45 @@ document.getElementById('app').appendChild(app.canvas);
 // Create a simple test graphic to verify everything works
 const track = await loadTrackFromSvg('assets/track.svg');
 const evolution = new Evolution(app, track);
-evolution.initialize({
+
+
+const standardConfig = {
   populationSize: 100,
   simulationStep: 0.1,
   evolve: {
-    eliteRatio: 0.02, 
-    eliminationEpochs: 5, 
-    eliminationRate: 0.10,
+    eliteRatio: 0.02,  // percentage of top performing genomes to carry over to next generation
+    eliminationEpochs: 10,  // how often eliminate the weakest genomes and replace with random ones
+    eliminationRate: 0.05, // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
     crossover: {
-      blendRatio: 0.7
+      selectionTournamentSize: 5, // size of tournament selection group of genomes to select the best one for crossover
+      blendRatio: 0.7 // percentage blend crossovers, the remaining percentage is uniform crossover
     },
     mutation: {
-      rate: 0.03,
-      sigma: 0.12
+      rate: 0.03, // probability of mutating a gene
+      sigma: 0.12 // standard deviation of the mutation
     }
   }
-});
+};
+
+const exploratoryConfig = {
+  populationSize: 100,
+  simulationStep: 0.1,
+  evolve: {
+    eliteRatio: 0.01,  // percentage of top performing genomes to carry over to next generation
+    eliminationEpochs: 3,  // how often eliminate the weakest genomes and replace with random ones
+    eliminationRate: 0.35, // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
+    crossover: {
+      selectionTournamentSize: 2, // size of tournament selection group of genomes to select the best one for crossover
+      blendRatio: 0.25 // percentage blend crossovers, the remaining percentage is uniform crossover
+    },
+    mutation: {
+      rate: 0.07, // probability of mutating a gene
+      sigma: 0.22 // standard deviation of the mutation
+    }
+  }
+};
+
+evolution.initialize(exploratoryConfig);
 
 // Initialize keyboard controller
 //const keyboardController = new KeyboardController(car);

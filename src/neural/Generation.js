@@ -140,18 +140,18 @@ class Generation {
     }
 
     riseOffsprings(count, crossoverConfig, mutationConfig) {
-      const { blendRatio = 0.7 } = crossoverConfig;
+      const { blendRatio = 0.7, selectionTournamentSize = 5 } = crossoverConfig;
       const { rate = 0.03, sigma = 0.12 } = mutationConfig;
       const offsprings = [];
       for (let i = 0; i < count; i++) {
         // Select two different parents using tournament selection
-        let parent1 = this.tournamentSelection();
-        let parent2 = this.tournamentSelection();
+        let parent1 = this.tournamentSelection(selectionTournamentSize);
+        let parent2 = this.tournamentSelection(selectionTournamentSize);
         
         // Ensure parents are different (avoid self-crossover)
         let attempts = 0;
         while (parent1 === parent2 && attempts < 10) {
-          parent2 = this.tournamentSelection();
+          parent2 = this.tournamentSelection(selectionTournamentSize);
           attempts++;
         }
         
