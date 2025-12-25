@@ -14,12 +14,13 @@ class Evolution {
     this.simulation.onComplete = () => this.onEpochComplete();
     this.epochLimit = epochLimit;
 
-    this.evolveConfig = {}
+    this.config = {}
   }
 
   initialize(config = {}) {
-    const { populationSize = 100 } = config;
-    this.evolveConfig = config.evolve || {};
+    this.config = config
+    const { populationSize = 100 } = this.config;
+    this.config.evolve = this.config.evolve || {};
     this.generation = new Generation(this.track);
     this.generation.initialize(populationSize);
     this.generation.load(CURRENT_SNAPSHOT_FILENAME);
@@ -27,7 +28,8 @@ class Evolution {
   }
 
   start() {
-    this.simulation.start(); // Start simulation loop
+    const { simulationStep = 0.05 } = this.config;
+    this.simulation.start(simulationStep); // Start simulation loop
     this.simulation.startRender(); // Start render loop
   }
 
@@ -43,7 +45,7 @@ class Evolution {
     // evolve generation
     this.generation.calculateScores();
     this.generation.store(CURRENT_SNAPSHOT_FILENAME);
-    this.generation = this.generation.evolve(this.evolveConfig);
+    this.generation = this.generation.evolve(this.config.evolve);
 
     if(this.generation.epoch > this.epochLimit) return;
 
@@ -59,7 +61,8 @@ class Evolution {
     this.generation.resetScores();
     this.simulation.setGeneration(this.generation);
 
-    this.simulation.start(); // Start simulation loop
+    const { simulationStep = 0.05 } = this.config;
+    this.simulation.start(simulationStep); // Start simulation loop
     this.simulation.startRender(); // Start render loop
   }
 }

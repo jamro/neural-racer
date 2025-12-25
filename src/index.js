@@ -22,6 +22,7 @@ const track = await loadTrackFromSvg('assets/track.svg');
 const evolution = new Evolution(app, track);
 evolution.initialize({
   populationSize: 100,
+  simulationStep: 0.1,
   evolve: {
     eliteRatio: 0.02, 
     eliminationEpochs: 5, 

@@ -2,10 +2,10 @@ import SimulationObject from './SimulationObject';
 import SimulationView from './SimulationView';
 
 class Simulation extends SimulationObject {
-    constructor(app = null, deltaSeconds = 0.05) {
+    constructor(app = null) {
         super();
 
-        this.deltaSeconds = deltaSeconds
+        this.simulationStep = 0.05;
         
         this.running = false;
         this.renderRunning = false;
@@ -84,8 +84,9 @@ class Simulation extends SimulationObject {
         }
     }
 
-    start() {
+    start(simulationStep = 0.05) {
         if (this.running) return;
+        this.simulationStep = simulationStep;
         this.running = true;
         requestAnimationFrame(this.simulationLoop);
     }
@@ -150,7 +151,7 @@ class Simulation extends SimulationObject {
         // Run simulation at fixed timestep
         // Update all objects (all objects are validated to have update method)
         for (const object of this.objects) {
-            object.update(this.deltaSeconds);
+            object.update(this.simulationStep);
         }
 
         // end condition
