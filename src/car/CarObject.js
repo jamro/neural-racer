@@ -1,6 +1,9 @@
 import CarView from './CarView';
 import SimulationObject from '../sim/SimulationObject';
 
+const WALL_DANGER_DISTANCE = 5; // meters
+
+
 class CarObject extends SimulationObject {
     constructor(track, scoreWeights) {
         super();
@@ -32,7 +35,7 @@ class CarObject extends SimulationObject {
         this.maxSpeed = 40; // meters/second, 140 km/h
         this.liftimeFrames = 0;
         this.lifetimeSeconds = 0;
-        this.minWallDistanceSum = 0;
+        this.speedSum = 0;
         this.debug = ""
 
         // create view
@@ -86,13 +89,10 @@ class CarObject extends SimulationObject {
 
       // update radar beams
       const angleStep = this.radarAngularRange / (this.radarBeams.length - 1);
-      let minDistance = Infinity;
       for (let index = 0; index < this.radarBeams.length; index++) {
         const angle = this.radarAngularRange / 2 - angleStep * index + this.direction
         this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.x, this.y, angle);
-        minDistance = Math.min(minDistance, this.radarBeams[index]);
       }
-      this.minWallDistanceSum += minDistance;
 
       // check for collisions
       if (this.track.isBoxCollidingWithWall(this.x, this.y, this.width, this.height, this.direction) !== false) {
@@ -118,30 +118,37 @@ class CarObject extends SimulationObject {
       if (this.staleCounter < 0) {
         this.isCrashed = true;
       }
+
+      // track average speed
+      this.speedSum += this.speed;
     }
 
     calculateCheckpointProgress() {
       return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.x, this.y)-1) / (this.track.checkpoints.checkpointCount-1)
     }
 
-    calculateMinWallDistanceAverage() {
-      return this.minWallDistanceSum / this.liftimeFrames;
+    calculateAverageSpeed() {
+      return this.speedSum / this.liftimeFrames;
     }
 
     calculateScoreComponents() {
-      // calculate wall distance score
-      const wallDistanceScoreThreshold = 20;
-      let wallDistanceScore = this.calculateMinWallDistanceAverage() / wallDistanceScoreThreshold;
-      wallDistanceScore = Math.max(0, Math.min(1, wallDistanceScore));
-      
       // calculate distance progress score
       const distanceProgressScore = this.calculateCheckpointProgress();
+
+      // speed score
+      let speedScore = (this.calculateAverageSpeed() / this.maxSpeed);
+      speedScore = Math.max(0, Math.min(1, speedScore));
+      const speedScoreAtFinishLine = (distanceProgressScore >= 1) ? speedScore : 0;
+      
+      // crash penalty
+      const crashPenalty = distanceProgressScore >= 1 ? 0 : -1
 
       // calculate total score
       let totalScore = 0;
       return {
         trackDistance: (this.scoreWeights.trackDistance || 0) * distanceProgressScore,
-        wallDistance: (this.scoreWeights.wallDistance || 0) * wallDistanceScore,
+        avgSpeedAtFinishLine: (this.scoreWeights.avgSpeedAtFinishLine || 0) * speedScoreAtFinishLine,
+        crashPenalty: (this.scoreWeights.crashPenalty || 0) * crashPenalty,
       }
     }
 

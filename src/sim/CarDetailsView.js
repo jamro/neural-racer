@@ -46,7 +46,6 @@ class CarDetailsView extends PIXI.Container {
 
     this.statusTextField.text = "SCORE: " + (this.car.calculateScore()).toFixed(2) + "\n\n" +
         "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +
-        "Wall Distance: " + (this.car.calculateMinWallDistanceAverage()).toFixed(1) + "m\n" +
         "Speed: " + (this.car.speed*3.6).toFixed(1) + " km/h\n\n" +
         "Throttle: " + (100*this.car.throttleValue).toFixed(1) + "%\n" +
         "Brake: " + (100*this.car.brakeValue).toFixed(1) + "%\n" +

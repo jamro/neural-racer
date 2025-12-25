@@ -15,6 +15,7 @@ class SimulationView extends PIXI.Container {
         this.track = null;
         this.cars = [];
         this.generation = null;
+        this.masterContainer.scale.set(0.5, 0.5);
     }
 
     setGeneration(generation) {
@@ -23,6 +24,8 @@ class SimulationView extends PIXI.Container {
     }
 
     setCameraPosition(x, y, immidiate = false) {
+        x *= this.masterContainer.scale.x;
+        y *= this.masterContainer.scale.y;
         if (immidiate) {
             this.masterContainer.x = x;
             this.masterContainer.y = y;

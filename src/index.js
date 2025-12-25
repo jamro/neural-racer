@@ -23,8 +23,9 @@ const evolution = new Evolution(app, track);
 
 
 const scoreWeights = {
-  wallDistance: 1,
-  trackDistance: 1
+  avgSpeedAtFinishLine: 1,
+  trackDistance: 0.2,
+  crashPenalty: 1
 };
 
 const standardConfig = {
@@ -48,7 +49,7 @@ const standardConfig = {
 
 const exploratoryConfig = {
   populationSize: 100,
-  simulationStep: 0.2,
+  simulationStep: 0.1,
   scoreWeights: scoreWeights,
   evolve: {
     eliteRatio: 0.01,  // percentage of top performing genomes to carry over to next generation

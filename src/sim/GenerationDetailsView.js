@@ -45,7 +45,7 @@ class GenerationDetailsView extends PIXI.Container {
 
     this.statusTextField.text = "Epoch: " + this.generation.epoch + "\n" +
         "Size: " + this.generation.activeCount + " / " + this.generation.totalCount + "\n\n" +
-        "History:\n" + (history.map(h => h.epoch + ": " + ((100*h.topScore).toFixed(2)) + "% (avg: " + ((100*h.averageScore).toFixed(2)) + "%)").join("\n") || "-")
+        "History:\n" + (history.map(h => h.epoch + ": " + ((100*h.topScore).toFixed(2)) + " (avg: " + ((100*h.averageScore).toFixed(2)) + ")").join("\n") || "-")
   }
   
 }
