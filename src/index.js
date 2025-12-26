@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js';
 import Evolution from './neural/Evolution';
 import loadTrackFromSvg from './sim/loadTrackFromSvg';
 import Config from './Config';
+import { loadCarTexture, loadGhostTexture, loadShadowTexture } from './assets/loadCarTexture';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -18,10 +19,13 @@ await app.init({
 // Add the canvas to the DOM
 document.getElementById('app').appendChild(app.canvas);
 
-// Create a simple test graphic to verify everything works
+// Load assets
 const track = await loadTrackFromSvg('assets/tracks/snake.svg');
-const evolution = new Evolution(app, track);
+const carTexture = await loadCarTexture();
+const ghostTexture = await loadGhostTexture();
+const shadowTexture = await loadShadowTexture();
 
+const evolution = new Evolution(app, track);
 
 const config = new Config();
 config.scoreWeights.avgSpeedAtFinishLine = 5;

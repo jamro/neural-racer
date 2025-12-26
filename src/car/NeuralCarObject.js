@@ -22,7 +22,7 @@ class NeuralCarObject extends CarObject {
     update(delta) {
       super.update(delta);
 
-      if (this.isCrashed) {
+      if (this.isCrashed || this.isFinished) {
         return;
       }
 

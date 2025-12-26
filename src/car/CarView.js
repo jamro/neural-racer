@@ -1,39 +1,44 @@
 import * as PIXI from 'pixi.js';
+import { getCarTexture, getGhostTexture, getShadowTexture } from '../assets/loadCarTexture';
+
+const DEBUG_RADAR_BEAMS = false;
 
 class CarView extends PIXI.Container {
     constructor(w, h, radarAngularRange) {
         super();
-        this.body = new PIXI.Graphics();
-
+        
         this.radarAngularRange = radarAngularRange;
 
-        // wheels
-        this.body.rect(5, -2, 10, 29);
-        this.body.rect(35, -2, 10, 29);
-        this.body.fill(0x000000);
+        // Get textures from module (should be preloaded)
+        const texture = getCarTexture() || PIXI.Texture.EMPTY;
+        const ghostTexture = getGhostTexture() || PIXI.Texture.EMPTY;
+        const shadowTexture = getShadowTexture() || PIXI.Texture.EMPTY;
+
+        // shadow - placed under the body, scaled proportionally to body
+        this.shadow = new PIXI.Sprite(shadowTexture);
+        this.shadow.anchor.set(0.5, 0.5);
+        if (shadowTexture && shadowTexture !== PIXI.Texture.EMPTY && texture && texture !== PIXI.Texture.EMPTY) {
+            // Scale shadow proportionally to body dimensions
+            this.shadow.scale.set(w / shadowTexture.width, h / shadowTexture.height);
+        }
+        this.addChild(this.shadow);
 
         // body
-        this.body.rect(0, 0, 50, 25);
-        this.body.fill(0xaa0000);
-
-        // headlights
-        this.body.circle(47, 21, 2);
-        this.body.circle(47, 4, 2);
-        this.body.fill(0xffff00);
-
-        // windshield
-        this.body.rect(22, 2, 10, 21);
-        this.body.rect(7, 4, 5, 17);
-        this.body.fill(0xddddff);
-
-        this.body.x = -25;
-        this.body.y = -12.5;
-
-        this.body.scale.set(w / 50, h / 25);
-        this.body.x = -25 * (w / 50);
-        this.body.y = -12.5 * (h / 25);
-
+        this.body = new PIXI.Sprite(texture);
+        this.body.anchor.set(0.5, 0.5);
+        if (texture && texture !== PIXI.Texture.EMPTY) {
+            this.body.scale.set(w / texture.width, h / texture.height);
+        }
         this.addChild(this.body);
+
+        // ghost - get texture from module (should be preloaded)
+        this.ghost = new PIXI.Sprite(ghostTexture);
+        this.ghost.alpha = 0.2;
+        this.ghost.anchor.set(0.5, 0.5);
+        if (ghostTexture && ghostTexture !== PIXI.Texture.EMPTY) {
+            this.ghost.scale.set(w / ghostTexture.width, h / ghostTexture.height);
+        }
+        this.addChild(this.ghost);
 
         this.radar = new PIXI.Graphics();
         this.radar.scale.set(w / 50, h / 25);
@@ -48,34 +53,71 @@ class CarView extends PIXI.Container {
         this.crash.lineTo(15, -15);
         this.crash.stroke({ color: 0xff0000, width: 5 });
         this.addChild(this.crash);
+
+        this.ghostCrash = new PIXI.Graphics();
+        this.ghostCrash.moveTo(-15, -15);
+        this.ghostCrash.lineTo(15, 15);
+        this.ghostCrash.stroke({ color: 0xffffff, width: 5, alpha: 0.2 });
+        this.ghostCrash.moveTo(-15, 15);
+        this.ghostCrash.lineTo(15, -15);
+        this.ghostCrash.stroke({ color: 0xffffff, width: 5, alpha: 0.2 });
+        this.addChild(this.ghostCrash);
+
         this.crash.visible = false;
+        this.ghostCrash.visible = false;
 
         this._isActive = false;
         this.active = false;
+
+        this._isCrashed = false;
+        this.crashed = false;
     }
 
-    setCrashed(isCrashed) {
-        if (isCrashed) {
-            this.crash.visible = true;
-            this.radar.visible = false;
-            this.body.visible = false;
-        } else {
-            this.crash.visible = false;
-            this.body.visible = true;
-        }
+    set crashed(isCrashed) {
+        this._isCrashed = isCrashed;
+        this.redrawBody();
+    }
+
+    get crashed() {
+        return this._isCrashed;
     }
 
     set active(isActive) {
-        this.radar.visible = isActive && !this.crash.visible;
         this._isActive = isActive;
+        this.redrawBody();
+        if (this.parent) {
+            this.parent.setChildIndex(this, this.parent.children.length - 1);
+        }
     }
 
     get active() {
       return this._isActive;
     }
 
+    redrawBody() {
+      if(this.active) {
+        this.crash.visible = this.crashed;
+        this.ghostCrash.visible = false
+        this.radar.visible = true;
+        this.body.visible = true;
+        this.ghost.visible = false;
+        this.shadow.visible = true;
+      } else {
+        this.crash.visible = false;
+        this.ghostCrash.visible = this.crashed;
+        this.crash.color = 0xffffff;
+        this.radar.visible = false;
+        this.body.visible = false;
+        this.ghost.visible = true;
+        this.shadow.visible = false;
+      }
+      this.crash.rotation = -this.rotation;
+      this.ghostCrash.rotation = -this.rotation;
+
+    }
+
     renderRadar(beamsLengths) {
-        if (!this.radar.visible) return;
+        if (!this.radar.visible || !DEBUG_RADAR_BEAMS) return;
         this.radar.clear();
         const angleStep = this.radarAngularRange / (beamsLengths.length - 1);
         for (let index = 0; index < beamsLengths.length; index++) {

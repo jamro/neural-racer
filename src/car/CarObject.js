@@ -68,6 +68,14 @@ class CarObject extends SimulationObject {
       this.turnRate = v * maxTurnRate;
     }
 
+    set active(isActive) {
+      this.view.active = isActive;
+    }
+
+    get active() {
+      return this._isActive;
+    }
+
     update(delta) { // delta is in seconds
       if (this.isCrashed || this.isFinished) return;
 
@@ -171,9 +179,9 @@ class CarObject extends SimulationObject {
       this.view.x = this.metersToPixels(this.x);
       this.view.y = this.metersToPixels(this.y);
       this.view.rotation = this.direction;
-      this.view.setCrashed(this.isCrashed);
+      this.view.crashed = this.isCrashed;
 
-      if (!this.isCrashed) {  // only render radar if the car is not crashed
+      if (!this.isCrashed && !this.isFinished) {  // only render radar if the car is not crashed or finished
         const beamMaxLength = 40
         this.view.renderRadar(
           this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength))

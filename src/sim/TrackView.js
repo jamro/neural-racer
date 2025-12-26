@@ -15,7 +15,7 @@ class TrackView extends PIXI.Graphics {
     addCheckpoint(ax, ay, bx, by) {
       this.moveTo(ax, ay);
       this.lineTo(bx, by);
-      this.stroke({ color: 0xffff00, alpha: 0.3, width: this.wallWidth });
+      this.stroke({ color: 0xffffff, alpha: 0.5, width: 1 });
     }
 }
 

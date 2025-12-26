@@ -133,11 +133,11 @@ class Simulation extends SimulationObject {
             const leader = this.activeLeaderFollowing ? this.generation.findLeader() : this.generation.cars[0];
             if (leader) {
               if (this.leaderCar) {
-                this.leaderCar.view.active = false
+                this.leaderCar.active = false
               }
               this.leaderCar = leader;
               this.view.carDetailsView.car = leader;
-              this.leaderCar.view.active = true;
+              this.leaderCar.active = true;
             }
           }
 

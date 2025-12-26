@@ -15,7 +15,6 @@ class SimulationView extends PIXI.Container {
         this.track = null;
         this.cars = [];
         this.generation = null;
-        this.masterContainer.scale.set(0.5, 0.5);
     }
 
     setGeneration(generation) {
