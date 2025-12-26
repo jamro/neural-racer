@@ -1,7 +1,7 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
 import Evolution from './neuralEvolution/Evolution';
-import loadTrackFromSvg from './loaders/loadTrackFromSvg';
+import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
 import { loadCarTexture, loadGhostTexture, loadShadowTexture } from './loaders/loadCarTexture';
 
@@ -20,7 +20,7 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Load assets
-const track = await loadTrackFromSvg('assets/tracks/snake.svg');
+const track = await SvgTrackLoader.load('assets/tracks/snake.svg');
 const carTexture = await loadCarTexture();
 const ghostTexture = await loadGhostTexture();
 const shadowTexture = await loadShadowTexture();
