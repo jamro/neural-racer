@@ -20,7 +20,7 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Load assets
-const track = await SvgTrackLoader.load('assets/tracks/snake.svg');
+const track = await SvgTrackLoader.load('assets/tracks/lesson_001.svg');
 const carTexture = await loadCarTexture();
 const ghostTexture = await loadGhostTexture();
 const shadowTexture = await loadShadowTexture();

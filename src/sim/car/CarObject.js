@@ -23,8 +23,8 @@ class CarObject extends AbstractSimulationObject {
         this.radarBeamCount = 9;
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
         this.radarAngularRange = Math.PI;
-        this.isCrashed = false;
-        this.isFinished = false;
+        this._isCrashed = false;
+        this._isFinished = false;
         this.checkpointsPassed = 0;
         this.throttleValue = 0;
         this.brakeValue = 0;
@@ -76,8 +76,30 @@ class CarObject extends AbstractSimulationObject {
       return this._isActive;
     }
 
+    get isCrashed() {
+      if (this._isFinished) return false;
+      return this._isCrashed;
+    }
+
+    get isFinished() {
+      return this._isFinished;
+    }
+
+    set isCrashed(isCrashed) {
+      this._isCrashed = isCrashed;
+    }
+
+    set isFinished(isFinished) {
+      this._isFinished = isFinished;
+    }
+
     update(delta) { // delta is in seconds
-      if (this.isCrashed || this.isFinished) return;
+      if (this._isCrashed) return;
+
+      if(this._isFinished) {
+        this.breakCar(1);
+        this.turn(0);
+      }
 
       this.liftimeFrames++;
       this.lifetimeSeconds += delta;
@@ -101,16 +123,6 @@ class CarObject extends AbstractSimulationObject {
         this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.x, this.y, angle);
       }
 
-      // check for collisions
-      if (this.track.isBoxCollidingWithWall(this.x, this.y, this.width, this.height, this.direction) !== false) {
-        if (this.speed > 0) {
-          console.log('Collision detected, stopping car');
-          this.isCrashed = true;
-        }
-        this.speed = 0;
-        this.turnRate = 0;
-      }
-
       // check for checkpoints
       const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.x, this.y, this.width, this.height, this.direction);
       if (checkpointIndex !== false) {
@@ -119,7 +131,17 @@ class CarObject extends AbstractSimulationObject {
 
       // check for finish line
       if (this.checkpointsPassed >= this.track.checkpoints.checkpointCount) {
-        this.isFinished = true;
+        this._isFinished = true;
+      }
+
+      // check for collisions
+      if (!this._isFinished && this.track.isBoxCollidingWithWall(this.x, this.y, this.width, this.height, this.direction) !== false) {
+        if (this.speed > 0) {
+          console.log('Collision detected, stopping car');
+          this._isCrashed = true;
+        }
+        this.speed = 0;
+        this.turnRate = 0;
       }
 
       // check for staleness
@@ -127,8 +149,8 @@ class CarObject extends AbstractSimulationObject {
       if (this.speed < staleThreshold) {
         this.staleCounter--;
       }
-      if (this.staleCounter < 0) {
-        this.isCrashed = true;
+      if (this.staleCounter < 0 && !this._isFinished) {
+        this._isCrashed = true;
       }
 
       // track average speed
@@ -179,9 +201,9 @@ class CarObject extends AbstractSimulationObject {
       this.view.x = this.metersToPixels(this.x);
       this.view.y = this.metersToPixels(this.y);
       this.view.rotation = this.direction;
-      this.view.crashed = this.isCrashed;
+      this.view.crashed = this._isCrashed;
 
-      if (!this.isCrashed && !this.isFinished) {  // only render radar if the car is not crashed or finished
+      if (!this._isCrashed && !this._isFinished) {  // only render radar if the car is not crashed or finished
         const beamMaxLength = 40
         this.view.renderRadar(
           this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength))

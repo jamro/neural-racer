@@ -1,6 +1,9 @@
 import AbstractSimulationObject from './AbstractSimulationObject';
 import SimulationView from './SimulationView';
 
+
+const COMPLETE_DELAY = 20;
+
 class Simulation extends AbstractSimulationObject {
     constructor(app = null) {
         super();
@@ -18,6 +21,7 @@ class Simulation extends AbstractSimulationObject {
         this.generation = null;
         this.activeLeaderFollowing = false;
         this.onComplete = () => {}
+        this.completeDelay = COMPLETE_DELAY;
     }
 
     setTrack(track) {
@@ -30,6 +34,13 @@ class Simulation extends AbstractSimulationObject {
     }
 
     addCar(car) {
+        if(!this.track) {
+            throw new Error('Track not set');
+        }
+        const startSegment = this.track.getStartPosition();
+        car.x = startSegment.x;
+        car.y = startSegment.y;
+        car.direction = startSegment.angle + Math.PI / 2;
         this.cars.push(car);
         this.addObject(car);
         this.view.addCar(car);
@@ -89,6 +100,7 @@ class Simulation extends AbstractSimulationObject {
         if (this.running) return;
         this.simulationStep = simulationStep;
         this.running = true;
+        this.completeCounter = 100;
         requestAnimationFrame(this.simulationLoop);
     }
 
@@ -156,11 +168,14 @@ class Simulation extends AbstractSimulationObject {
 
         // end condition
         if (this.generation.activeCount === 0) {
-            console.log('Generation completed');
-            this.onComplete();
-            return
+            this.completeCounter--;
         }
-        
+        if(this.completeCounter <= 0) {
+          console.log('Generation completed');
+          this.onComplete();
+          return
+        }
+
         // Continue simulation loop
         requestAnimationFrame(this.simulationLoop);
     }

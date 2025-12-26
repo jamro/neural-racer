@@ -20,9 +20,8 @@ class NeuralCarObject extends CarObject {
 
 
     update(delta) {
-      super.update(delta);
-
       if (this.isCrashed || this.isFinished) {
+        super.update(delta);
         return;
       }
 
@@ -48,6 +47,10 @@ class NeuralCarObject extends CarObject {
         this.breakCar(-throttleOutput);
       }
       this.turn(turnOutput);
+
+
+
+      super.update(delta);
 
     }
 }

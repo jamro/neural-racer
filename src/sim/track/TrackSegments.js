@@ -162,6 +162,15 @@ class TrackSegments {
         }
         return false;
     }
+
+    getSegment(index) {
+        return {
+            ax: this.ax[index],
+            ay: this.ay[index],
+            bx: this.bx[index],
+            by: this.by[index]
+        }
+    }
 }
 
 export default TrackSegments;

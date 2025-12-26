@@ -119,6 +119,10 @@ class TrackObject extends AbstractSimulationObject {
     isBoxCollidingWithCheckpoint(ox, oy, width, height, angle) {
         return this.checkpoints.isBoxColliding(ox, oy, width, height, angle);
     }
+
+    getStartPosition() {
+        return this.checkpoints.getStartPosition();
+    }
 }
 
 export default TrackObject;

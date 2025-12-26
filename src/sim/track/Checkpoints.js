@@ -12,6 +12,15 @@ class Checkpoints extends TrackSegments {
       return this.ax.length;
     }
 
+    getStartPosition() {
+      const segment = this.getSegment(0);
+      return {
+        x: (segment.ax + segment.bx) / 2,
+        y: (segment.ay + segment.by) / 2,
+        angle: Math.atan2(segment.by - segment.ay, segment.bx - segment.ax)
+      }
+    }
+
 
     projectionBetweenGates(gateIndex, x, y) {
       if (gateIndex < 0 || gateIndex >= this.checkpointCount - 1) {
