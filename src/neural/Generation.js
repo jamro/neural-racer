@@ -67,7 +67,15 @@ class Generation {
     }
 
     get activeCount() {
-      return this.cars.filter(car => !car.isCrashed).length;
+      return this.cars.filter(car => !car.isCrashed && !car.isFinished).length;
+    }
+
+    get finishedCount() {
+      return this.cars.filter(car => car.isFinished).length;
+    }
+
+    get crashedCount() {
+      return this.cars.filter(car => car.isCrashed).length;
     }
 
     get totalCount() {

@@ -24,6 +24,7 @@ class CarObject extends SimulationObject {
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
         this.radarAngularRange = Math.PI;
         this.isCrashed = false;
+        this.isFinished = false;
         this.checkpointsPassed = 0;
         this.throttleValue = 0;
         this.brakeValue = 0;
@@ -68,7 +69,7 @@ class CarObject extends SimulationObject {
     }
 
     update(delta) { // delta is in seconds
-      if (this.isCrashed) return;
+      if (this.isCrashed || this.isFinished) return;
 
       this.liftimeFrames++;
       this.lifetimeSeconds += delta;
@@ -106,6 +107,11 @@ class CarObject extends SimulationObject {
       const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.x, this.y, this.width, this.height, this.direction);
       if (checkpointIndex !== false) {
         this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
+      }
+
+      // check for finish line
+      if (this.checkpointsPassed >= this.track.checkpoints.checkpointCount) {
+        this.isFinished = true;
       }
 
       // check for staleness

@@ -7,7 +7,7 @@ class CarDetailsView extends PIXI.Container {
     super();
     this.car = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 198, 233);
+    this.bg.rect(2, 2, 248, 233);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -28,7 +28,7 @@ class CarDetailsView extends PIXI.Container {
     this.scoreProgressBar = new ProgressBar();
     this.scoreProgressBar.x = 10;
     this.scoreProgressBar.y = 5;
-    this.scoreProgressBar.controlWidth = 180;
+    this.scoreProgressBar.controlWidth = 230;
     this.scoreProgressBar.label = "Score Sources:";
     this.scoreProgressBar.max = 100;
     this.scoreProgressBar.values = [20, 10, 20, 100];
