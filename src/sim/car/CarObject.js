@@ -101,8 +101,10 @@ class CarObject extends AbstractSimulationObject {
         this.turn(0);
       }
 
-      this.liftimeFrames++;
-      this.lifetimeSeconds += delta;
+      if(!this._isFinished) {
+        this.liftimeFrames++;
+        this.lifetimeSeconds += delta;
+      }
 
       const dragCoefficient = Math.min(1, this.speed / 8); // avoid drag at low speed to not block the car
       const dragDeceleration = 1 * dragCoefficient; // meters/second^2
@@ -154,10 +156,12 @@ class CarObject extends AbstractSimulationObject {
       }
 
       // track average speed
-      const speedingLimitValue = this.scoreWeights.speedingLimitValue || 60/3.6; // meters/second, 60 km/h
-      this.speedSum += this.speed;
-      if (this.speed > speedingLimitValue) {
-        this.speedingCounter++;
+      if(!this._isFinished) {
+        const speedingLimitValue = this.scoreWeights.speedingLimitValue || 60/3.6; // meters/second, 60 km/h
+        this.speedSum += this.speed;
+        if (this.speed > speedingLimitValue) {
+          this.speedingCounter++;
+        }
       }
     }
 
