@@ -1,5 +1,6 @@
 import NeuralCarObject from '../sim/car/NeuralCarObject';
 import Genome from './Genome';
+import NeuralNet from './NeuralNet';
 
 class Generation {
     constructor(track, scoreWeights, genomes=null, parent=null) {
@@ -149,7 +150,12 @@ class Generation {
 
     riseOffsprings(count, crossoverConfig, mutationConfig) {
       const { blendRatio = 0.7, selectionTournamentSize = 5 } = crossoverConfig;
-      const { rate = 0.03, sigma = 0.12 } = mutationConfig;
+      const { 
+        hiddenRate = 0.03, 
+        hiddenSigma = 0.12,
+        outputRate = 0.08,
+        outputSigma = 0.20
+      } = mutationConfig;
       const offsprings = [];
       for (let i = 0; i < count; i++) {
         // Select two different parents using tournament selection
@@ -166,9 +172,31 @@ class Generation {
         // Create child through crossover
         const child = Genome.crossoverHybrid(parent1.genome, parent2.genome, blendRatio);
         
-        // Apply mutation
-        child.mutate(rate, sigma);
+        // Apply mutation with different rates for hidden vs output layers
+        // Output layer gets higher mutation rate and strength to encourage exploration
+        const layerLengths = NeuralNet.layerGenomeLength(parent1.neuralNet.sizes);
+        const outputGenes = layerLengths[layerLengths.length - 1]; // Last layer is output
+        const allGenes = child.genes.length;
         
+        // Mutate hidden layer genes (all layers except output)
+        // Lower mutation rate/strength to preserve learned features
+        const hiddenEnd = allGenes - outputGenes - 1;
+        child.mutate({
+          rate: hiddenRate,
+          sigma: hiddenSigma,
+          start: 0,
+          end: hiddenEnd
+        });
+
+        // Mutate output layer genes (last layer)
+        // Higher mutation rate/strength to explore different action strategies
+        child.mutate({
+          rate: outputRate,
+          sigma: outputSigma,
+          start: allGenes - outputGenes,
+          end: allGenes - 1
+        });
+      
         offsprings.push(child);
       }
       return offsprings;

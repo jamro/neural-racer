@@ -16,10 +16,15 @@ class Genome {
   mutate({
     rate = 0.03,       // percentage of genes to mutate
     sigma = 0.12,       // strength of noise
-    rng = Math.random
+    start = null,      // start index of range to mutate (inclusive)
+    end = null,         // end index of range to mutate (inclusive)
+    rng = Math.random,
   } = {}) {
     const g = this.genes;
-    for (let i = 0; i < g.length; i++) {
+    const startIdx = start !== null ? start : 0;
+    const endIdx = end !== null ? end : g.length - 1;
+    
+    for (let i = startIdx; i <= endIdx; i++) {
       if (rng() < rate) g[i] += gaussian(rng) * sigma;
     }
     return this;

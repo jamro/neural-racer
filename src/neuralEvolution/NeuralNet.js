@@ -19,6 +19,14 @@ class NeuralNet {
     return n;
   }
 
+  static layerGenomeLength(sizes) {
+    const lengths = [];
+    for (let l = 0; l < sizes.length - 1; l++) {
+      lengths.push(sizes[l] * sizes[l + 1] + sizes[l + 1]); // weights + biases
+    }
+    return lengths;
+  }
+
   static _relu(x) { return x > 0 ? x : 0; }
 
   forward(genome, inputs, out = this._out) {
