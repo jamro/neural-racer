@@ -28,7 +28,6 @@ const shadowTexture = await loadShadowTexture();
 const evolution = new Evolution(app, track);
 
 const config = new Config();
-config.scoreWeights.avgSpeedAtFinishLine = 5;
 config.setStandardMode();
 
 evolution.initialize(config);
