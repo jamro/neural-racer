@@ -1,7 +1,7 @@
-import SimulationObject from './SimulationObject';
+import AbstractSimulationObject from './AbstractSimulationObject';
 import SimulationView from './SimulationView';
 
-class Simulation extends SimulationObject {
+class Simulation extends AbstractSimulationObject {
     constructor(app = null) {
         super();
 
@@ -57,7 +57,7 @@ class Simulation extends SimulationObject {
     }
 
     /**
-     * Validates that an object implements the SimulationObject interface
+     * Validates that an object implements the AbstractSimulationObject interface
      * @param {Object} object - Object to validate
      * @throws {Error} If object doesn't implement required methods
      */

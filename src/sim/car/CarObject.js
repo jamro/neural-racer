@@ -1,7 +1,7 @@
 import CarView from './CarView';
-import SimulationObject from '../sim/SimulationObject';
+import AbstractSimulationObject from '../AbstractSimulationObject';
 
-class CarObject extends SimulationObject {
+class CarObject extends AbstractSimulationObject {
     constructor(track, scoreWeights) {
         super();
         if (!track) {

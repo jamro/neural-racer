@@ -1,4 +1,4 @@
-import NeuralCarObject from '../car/NeuralCarObject';
+import NeuralCarObject from '../sim/car/NeuralCarObject';
 import Genome from './Genome';
 
 class Generation {

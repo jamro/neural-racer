@@ -6,11 +6,11 @@ const PIXELS_PER_METER_SCALE = 50 / 4;  // 50 pixels is 4 meters5
  * Base class for all simulation objects.
  * All objects added to the simulation must implement update() and render() methods.
  */
-class SimulationObject {
+class AbstractSimulationObject {
     constructor() {
         // Validate that required methods are implemented
-        if (this.constructor === SimulationObject) {
-            throw new Error('SimulationObject is an abstract class and cannot be instantiated directly');
+        if (this.constructor === AbstractSimulationObject) {
+            throw new Error('AbstractSimulationObject is an abstract class and cannot be instantiated directly');
         }
     }
 
@@ -48,5 +48,6 @@ class SimulationObject {
     }
 }
 
-export default SimulationObject;
+export default AbstractSimulationObject;
+
 

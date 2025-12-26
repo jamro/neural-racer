@@ -1,6 +1,6 @@
 import CarObject from './CarObject';
-import NeuralNet from '../neural/NeuralNet';
-import Genome from '../neural/Genome';
+import NeuralNet from '../../neuralEvolution/NeuralNet';
+import Genome from '../../neuralEvolution/Genome';
 
 class NeuralCarObject extends CarObject {
     constructor(track, scoreWeights, genome=null) {

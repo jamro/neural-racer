@@ -1,9 +1,9 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
-import Evolution from './neural/Evolution';
-import loadTrackFromSvg from './sim/loadTrackFromSvg';
+import Evolution from './neuralEvolution/Evolution';
+import loadTrackFromSvg from './loaders/loadTrackFromSvg';
 import Config from './Config';
-import { loadCarTexture, loadGhostTexture, loadShadowTexture } from './assets/loadCarTexture';
+import { loadCarTexture, loadGhostTexture, loadShadowTexture } from './loaders/loadCarTexture';
 
 // Create and initialize the application
 const app = new PIXI.Application();

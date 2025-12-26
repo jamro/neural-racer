@@ -1,9 +1,9 @@
-import SimulationObject from './SimulationObject';
+import AbstractSimulationObject from '../AbstractSimulationObject';
 import TrackView from './TrackView';
 import TrackSegments from './TrackSegments';
 import Checkpoints from './Checkpoints';
 
-class TrackObject extends SimulationObject {
+class TrackObject extends AbstractSimulationObject {
     constructor(cellSize = 4) {
         super();
         this.view = new TrackView(this.metersToPixels(0.5));

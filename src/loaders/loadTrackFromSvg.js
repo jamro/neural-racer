@@ -1,4 +1,4 @@
-import TrackObject from './TrackObject';
+import TrackObject from '../sim/track/TrackObject';
 import * as svgPathParser from 'svg-path-parser';
 
 async function loadSvg(url) {
@@ -289,3 +289,4 @@ export default async function loadTrackFromSvg(url) {
   }
   return track;
 }
+
