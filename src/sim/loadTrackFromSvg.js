@@ -18,18 +18,24 @@ function parsePathData(text) {
   return parseFn(text);
 }
 
-function getWallPath(svg) {
-  const walls = svg.querySelector('path#walls');
-  if (!walls) {
-    throw new Error('Walls not found in SVG. Please make sure the document has a path with ID "walls"');
-  }
-  const wallData = walls.getAttribute('d');
-  if (!wallData) {
-    throw new Error('Wall data not found in SVG. Please make sure element with ID "walls" has a "d" attribute');
+function getSegmentsFromPathGroup(svg, groupId) {
+  const container = svg.querySelector(`g#${groupId}`);
+  if (!container) {
+    throw new Error(`Path group '${groupId}' not found in SVG. Please make sure the document has a group with ID "${groupId}"`);
   }
 
-  const path = parsePathData(wallData);
-  return path;
+  const wallPaths = [];
+  
+  // iterate over all children of the container
+  for (const child of container.children) {
+    if (child.tagName === 'path') {
+      const pathData = child.getAttribute('d');
+      const path = parsePathData(pathData);
+      const segments = parsePathToSegments(path);
+      wallPaths.push(...segments);
+    }
+  }
+  return wallPaths;
 }
 
 function parsePathToSegments(cmds) {
@@ -46,6 +52,9 @@ function parsePathToSegments(cmds) {
 
   for (const c of cmds) {
     const code = c.code;
+    if (!code) {
+      throw new Error('Invalid path command: ' + JSON.stringify(c));
+    }
 
     if (code === "M") {
       cx = c.x; cy = c.y;
@@ -79,33 +88,10 @@ function parsePathToSegments(cmds) {
   return segments;
 }
 
-
-function getCheckpoints(svg) {
-  const container = svg.querySelector('g#checkpoints');
-  if (!container) {
-    throw new Error('Checkpoints container not found in SVG. Please make sure the document has a group with ID "checkpoints"');
-  }
-
-  const checkpoints = [];
-  
-  // iterate over all children of the container
-  for (const child of container.children) {
-    if (child.tagName === 'path') {
-      const pathData = child.getAttribute('d');
-      const path = parsePathData(pathData);
-      const segments = parsePathToSegments(path);
-      checkpoints.push(segments[0]);
-    }
-  }
-  return checkpoints;
-}
-
 export default async function loadTrackFromSvg(url) {
   const svg = await loadSvg(url);
-  const wallPath = getWallPath(svg)
-  const wallSegments = parsePathToSegments(wallPath);
-
-  const checkpoints = getCheckpoints(svg);
+  const wallSegments = getSegmentsFromPathGroup(svg, 'walls');
+  const checkpoints = getSegmentsFromPathGroup(svg, 'checkpoints');
 
   const track = new TrackObject();
   for (const segment of wallSegments) {

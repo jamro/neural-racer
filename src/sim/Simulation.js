@@ -141,9 +141,8 @@ class Simulation extends SimulationObject {
             }
           }
 
-        this.updateCamera();
         this.view.render();
-        
+        this.updateCamera();
     }
 
     simulationLoop = (currentTime) => {

@@ -22,16 +22,11 @@ class SimulationView extends PIXI.Container {
         this.generationDetailsView.generation = generation;
     }
 
-    setCameraPosition(x, y, immidiate = false) {
+    setCameraPosition(x, y, snapFactor = 0.5) {
         x *= this.masterContainer.scale.x;
         y *= this.masterContainer.scale.y;
-        if (immidiate) {
-            this.masterContainer.x = x;
-            this.masterContainer.y = y;
-        } else {
-            this.masterContainer.x += (x - this.masterContainer.x) * 0.1;
-            this.masterContainer.y += (y - this.masterContainer.y) * 0.1;
-        }
+        this.masterContainer.x += (x - this.masterContainer.x) * snapFactor;
+        this.masterContainer.y += (y - this.masterContainer.y) * snapFactor;
     }
 
     setTrack(track) {
