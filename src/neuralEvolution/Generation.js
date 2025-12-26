@@ -10,7 +10,6 @@ class Generation {
       } else {
         this.cars = [];
       }
-      this.genomes = this.cars.map(car => car.genome);
       this.epoch = parent ? parent.epoch + 1 : 0;
       this.parent = parent;
       this.scores = Array(this.cars.length).fill(null);
@@ -19,8 +18,8 @@ class Generation {
     store(filename) {
       try {
         // Serialize genomes (convert Float32Array to regular array)
-        const serializedGenomes = this.genomes.map(genome => 
-          Array.from(genome.genes)
+        const serializedGenomes = this.cars.map(car => 
+          Array.from(car.genome.genes)
         );
         
         const data = {
@@ -57,7 +56,6 @@ class Generation {
         
         // Restore cars
         this.cars = genomes.map(genome => new NeuralCarObject(this.track, this.scoreWeights, genome));
-        this.genomes = this.cars.map(car => car.genome);
         
         return true;
       } catch (error) {
@@ -87,7 +85,6 @@ class Generation {
       for (let i = 0; i < populationSize; i++) {
         this.cars.push(new NeuralCarObject(this.track, this.scoreWeights));
       }
-      this.genomes = this.cars.map(car => car.genome);
     }
 
     findLeader() {
@@ -116,10 +113,11 @@ class Generation {
     }
 
     tournamentSelection(k=2) {
+      if(this.cars.length === 0) throw new Error('No cars in generation to select from');
       // Randomly select k individuals for the tournament
       const tournamentIndices = [];
       for (let i = 0; i < k; i++) {
-        tournamentIndices.push(Math.floor(Math.random() * this.genomes.length));
+        tournamentIndices.push(Math.floor(Math.random() * this.cars.length));
       }
       
       // Find the individual with the highest score in the tournament
@@ -135,17 +133,18 @@ class Generation {
         }
       }
       
-      return this.genomes[winnerIndex];
+      return this.cars[winnerIndex];
     }
 
-    sortGenomes() {
-      const indexedGenomes = this.genomes.map((genome, index) => ({
-        genome,
+    sortRankCars() {
+      const indexedCars = this.cars.map((car, index) => ({
+        car: car,
+        genome: car.genome,
         score: this.scores[index] ?? -Infinity,
         index
       }));
-      indexedGenomes.sort((a, b) => b.score - a.score);
-      return indexedGenomes;
+      indexedCars.sort((a, b) => b.score - a.score);
+      return indexedCars;
     }
 
     riseOffsprings(count, crossoverConfig, mutationConfig) {
@@ -165,7 +164,7 @@ class Generation {
         }
         
         // Create child through crossover
-        const child = Genome.crossoverHybrid(parent1, parent2, blendRatio);
+        const child = Genome.crossoverHybrid(parent1.genome, parent2.genome, blendRatio);
         
         // Apply mutation
         child.mutate(rate, sigma);
@@ -176,10 +175,11 @@ class Generation {
     }
 
     createRandomGenomes(count) {
+      if(this.cars.length === 0) throw new Error('No cars in generation to create random genomes from. Unknown genome length.');
       const randomGenomes = [];
       for (let i = 0; i < count; i++) {
         const randomGenome = new Genome(
-          this.genomes[0].genes.length
+          this.cars[0].genome.genes.length
         );
         randomGenome.randomize();
         randomGenomes.push(randomGenome);
@@ -196,16 +196,16 @@ class Generation {
       const crossoverConfig = config.crossover || {};
       const mutationConfig = config.mutation || {};
       
-      const populationSize = this.genomes.length;
+      const populationSize = this.cars.length;
       const eliteCount = Math.ceil(populationSize * eliteRatio);
       
       // Get elite genomes (top performers)
-      const indexedGenomes = this.sortGenomes();
+      const indexedCars = this.sortRankCars();
       
       // Keep elite genomes (clone them to avoid mutation)
       const eliteGenomes = [];
       for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
-        eliteGenomes.push(indexedGenomes[i].genome.clone());
+        eliteGenomes.push(indexedCars[i].genome.clone());
       }
       
       // Fill the rest of the population with crossover offspring
