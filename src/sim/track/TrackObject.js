@@ -6,6 +6,7 @@ import Checkpoints from './Checkpoints';
 class TrackObject extends AbstractSimulationObject {
     constructor(cellSize = 4) {
         super();
+        this.name = 'Unknown Track';
         this.view = new TrackView(this.metersToPixels(0.5));
         this.wallSegments = new TrackSegments(cellSize);
         this.checkpoints = new Checkpoints(cellSize);

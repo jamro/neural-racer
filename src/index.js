@@ -20,12 +20,20 @@ await app.init({
 document.getElementById('app').appendChild(app.canvas);
 
 // Load assets
-const track = await SvgTrackLoader.load('assets/tracks/lesson_001.svg');
+const tracksUrls = [
+    'assets/tracks/lesson_000.svg',
+    'assets/tracks/lesson_001.svg',
+    'assets/tracks/lesson_002.svg',
+    'assets/tracks/lesson_003.svg',
+    'assets/tracks/lesson_004.svg',
+    'assets/tracks/lesson_005.svg',
+];
+const tracks = await Promise.all(tracksUrls.map(url => SvgTrackLoader.load(url)));
 const carTexture = await loadCarTexture();
 const ghostTexture = await loadGhostTexture();
 const shadowTexture = await loadShadowTexture();
 
-const evolution = new Evolution(app, track);
+const evolution = new Evolution(app, tracks);
 
 const config = new Config();
 config.setStandardMode();

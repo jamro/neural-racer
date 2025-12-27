@@ -22,7 +22,7 @@ class Config {
     this.evolve.eliteRatio = 0.05; // percentage of top performing genomes to carry over to next generation
     this.evolve.eliminationEpochs = 10; // how often eliminate the weakest genomes and replace with random ones
     this.evolve.eliminationRate = 0.05; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
-    this.evolve.crossover.selectionTournamentSize = 5; // size of tournament selection group of genomes to select the best one for crossover
+    this.evolve.crossover.selectionTournamentSize = 6; // size of tournament selection group of genomes to select the best one for crossover
     this.evolve.crossover.blendRatio = 0.7; // percentage blend crossovers, the remaining percentage is uniform crossover
     this.evolve.mutation.hiddenRate = 0.02; // probability of mutating a gene (applied to hidden layers of NN)
     this.evolve.mutation.hiddenSigma = 0.05; // standard deviation of the mutation (applied to hidden layers of NN)
@@ -31,7 +31,7 @@ class Config {
   }
 
   setExploratoryMode() {
-    this.evolve.eliteRatio = 0.01; // percentage of top performing genomes to carry over to next generation
+    this.evolve.eliteRatio = 0.03; // percentage of top performing genomes to carry over to next generation
     this.evolve.eliminationEpochs = 5; // how often eliminate the weakest genomes and replace with random ones
     this.evolve.eliminationRate = 0.20; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
     this.evolve.crossover.selectionTournamentSize = 2; // size of tournament selection group of genomes to select the best one for crossover

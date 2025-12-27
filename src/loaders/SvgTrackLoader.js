@@ -64,6 +64,8 @@ class SvgTrackLoader {
     for (const checkpoint of checkpoints) {
       track.addCheckpoint(checkpoint.ax, checkpoint.ay, checkpoint.bx, checkpoint.by);
     }
+    const trackName = url.split('/').pop().split('.').shift();
+    track.name = trackName;
     return track;
   }
 }

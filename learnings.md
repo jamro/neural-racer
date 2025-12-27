@@ -1,0 +1,6 @@
+- **random jitter**: adding a random jitter to the start direction and position of the car help to make sure that the leader is stable
+- **layered mutation**: mutating the hidden and output layers of the neural network separately helps to explore different action strategies. Applying more mutation to the output layer helps to explore different action strategies without losing the learned features from the hidden layer.
+- **nine radar beams**: nine beams in the radar seams to be a good balance between providing enough information to the car and keeping the complexity low.
+- **stading out leader**: when leader stands out from the other cars, focus on the rest of population to catch up. That should give you a new, improved leader.
+- **svg track editro**: SVG is a convenient way to create and edit tracks. It is a XML that can be easily parsed and used in the code. Visual editors such as Inkscape are a good way quickly design tracks geometries.
+- **crossover types**: blended crossover work better to preserve the learned features from the parent genomes while unifrom crossover work better to explore new action strategies. Hybrid approach allows to mix both approaches with different ratios.

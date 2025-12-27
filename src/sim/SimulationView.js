@@ -49,7 +49,7 @@ class SimulationView extends PIXI.Container {
 
     scaleView(width, height) {
       this.carDetailsView.x = - width / 2;
-      this.carDetailsView.y = - height / 2 + 200;
+      this.carDetailsView.y = - height / 2 + 220;
       this.generationDetailsView.x = - width / 2;
       this.generationDetailsView.y = -height / 2;
     }

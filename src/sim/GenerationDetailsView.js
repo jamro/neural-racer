@@ -6,7 +6,7 @@ class GenerationDetailsView extends PIXI.Container {
     super();
     this.generation = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 248, 198);
+    this.bg.rect(2, 2, 248, 218);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -27,7 +27,7 @@ class GenerationDetailsView extends PIXI.Container {
     this.statusProgressBar = new ProgressBar();
     this.addChild(this.statusProgressBar);
     this.statusProgressBar.x = 10;
-    this.statusProgressBar.y = 45;
+    this.statusProgressBar.y = 65;
     this.statusProgressBar.controlWidth = 230;
     this.statusProgressBar.colors = [0xff0000, 0xffffff, 0x8888ff];
   }
@@ -59,6 +59,7 @@ class GenerationDetailsView extends PIXI.Container {
     ]
 
     this.statusTextField.text = "Epoch: " + this.generation.epoch + "\n" +
+        "Track: " + this.generation.track.name + "\n" +
         "Size: ✕ " + this.generation.crashedCount + ", ▶ " + this.generation.activeCount + ", ✓ " + this.generation.finishedCount + " (" + this.generation.totalCount + ")\n\n" +
         "History:\n" + (history.map(h => h.epoch + ": ★ " + ((100*h.topScore).toFixed(2)) + ", ≈ " + ((100*h.averageScore).toFixed(2)) + ", ✓ " + h.finishCount ).join("\n") || "-")
   }

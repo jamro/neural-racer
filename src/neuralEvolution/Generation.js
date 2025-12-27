@@ -81,6 +81,10 @@ class Generation {
       return this.cars.length;
     }
 
+    setTrack(track) {
+      this.track = track;
+    }
+
     initialize(populationSize=100) {
       this.cars = [];
       for (let i = 0; i < populationSize; i++) {
