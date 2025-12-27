@@ -8,3 +8,4 @@
 - **catastrophic forgetting**: during the evolution process on a specific track, inject randomly one of past completed tracks and run a single epoch on it to prevent the catastrophic forgetting of the learned features.
 - **Leaky ReLU > ReLU**: Leaky ReLU is better than ReLU in this setup because it prevents neurons from becoming permanently inactive, allowing all weights to keep influencing behavior and remain evolvable by the genetic algorithm
 - **radar beam layout**: putting more beams in the center of the car and less beams on sides gives better results (higher resolution data). Longer beams in the front also help (achieved by by adjusting the decay rate of the radar beams in the neural network inputs).
+- **extra input**: adding extra inputs calculated from the car's state helps to improve the performance of the neural network (e.g. time to collision, left right balance, etc.).
