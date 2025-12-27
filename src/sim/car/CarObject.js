@@ -22,7 +22,7 @@ class CarObject extends AbstractSimulationObject {
         this.direction = 0 // radians
         this.radarBeamCount = 9;
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
-        this.radarAngularRange = Math.PI;
+        this.radarAngularRange = Math.PI * 0.7;
         this._isCrashed = false;
         this._isFinished = false;
         this.checkpointsPassed = 0;

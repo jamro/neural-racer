@@ -14,7 +14,9 @@ class Config {
 
     this.evolve = {
       crossover: {},
-      mutation: {},
+      mutation: {
+        clamp: 5.0, // clamp values to a range
+      },
     }
 
     this.setStandardMode();

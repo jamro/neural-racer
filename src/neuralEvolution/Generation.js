@@ -158,7 +158,8 @@ class Generation {
         hiddenRate = 0.03, 
         hiddenSigma = 0.12,
         outputRate = 0.08,
-        outputSigma = 0.20
+        outputSigma = 0.20,
+        clamp = null
       } = mutationConfig;
       const offsprings = [];
       for (let i = 0; i < count; i++) {
@@ -188,6 +189,7 @@ class Generation {
         child.mutate({
           rate: hiddenRate,
           sigma: hiddenSigma,
+          clamp: clamp,
           start: 0,
           end: hiddenEnd
         });
@@ -197,6 +199,7 @@ class Generation {
         child.mutate({
           rate: outputRate,
           sigma: outputSigma,
+          clamp: clamp,
           start: allGenes - outputGenes,
           end: allGenes - 1
         });

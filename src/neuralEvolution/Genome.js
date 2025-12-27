@@ -14,6 +14,7 @@ class Genome {
   }
 
   mutate({
+    clamp = null,       // clamp values to a range
     rate = 0.03,       // percentage of genes to mutate
     sigma = 0.12,       // strength of noise
     start = null,      // start index of range to mutate (inclusive)
@@ -25,7 +26,13 @@ class Genome {
     const endIdx = end !== null ? end : g.length - 1;
     
     for (let i = startIdx; i <= endIdx; i++) {
-      if (rng() < rate) g[i] += gaussian(rng) * sigma;
+      if (rng() < rate) {
+        g[i] += gaussian(rng) * sigma;
+        // Clamp the value to [-clamp, +clamp] if clamp is specified
+        if (clamp !== null) {
+          g[i] = Math.max(-clamp, Math.min(clamp, g[i]));
+        }
+      }
     }
     return this;
   }
