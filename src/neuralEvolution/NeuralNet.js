@@ -1,8 +1,30 @@
+import Genome from './Genome';
+
 class NeuralNet {
-  constructor(sizes, activations) {
+  constructor(sizes, activations, genome = null) {
     this.sizes = sizes;               // eg. [inputDim, 64, 64, 2]
     this.activations = activations;   // eg. ["relu","relu","tanh"]
-    this.genomeLength = NeuralNet.genomeLength(sizes);
+    
+    // Calculate genome length
+    let n = 0;
+    for (let l = 0; l < sizes.length - 1; l++) {
+      n += sizes[l] * sizes[l + 1]; // weights
+      n += sizes[l + 1];            // biases
+    }
+    this.genomeLength = n;
+
+    // check if genome length is correct
+    if (genome && genome.genes.length !== this.genomeLength) {
+      throw new Error(`Genome length mismatch: ${genome.genes.length} !== ${this.genomeLength}`);
+    }
+
+    // Create random genome if not provided
+    if (genome) {
+      this.genome = genome;
+    } else {
+      this.genome = new Genome(this.genomeLength);
+      this.genome.randomize();
+    }
 
     const maxN = Math.max(...sizes);
     this._a = new Float32Array(maxN);
@@ -10,7 +32,8 @@ class NeuralNet {
     this._out = new Float32Array(sizes[sizes.length - 1]);
   }
 
-  static genomeLength(sizes) {
+  genomeLength() {
+    const { sizes } = this;
     let n = 0;
     for (let l = 0; l < sizes.length - 1; l++) {
       n += sizes[l] * sizes[l + 1]; // weights
@@ -19,7 +42,8 @@ class NeuralNet {
     return n;
   }
 
-  static layerGenomeLength(sizes) {
+  layerGenomeLength() {
+    const { sizes } = this;
     const lengths = [];
     for (let l = 0; l < sizes.length - 1; l++) {
       lengths.push(sizes[l] * sizes[l + 1] + sizes[l + 1]); // weights + biases
@@ -29,8 +53,8 @@ class NeuralNet {
 
   static _relu(x) { return x > 0 ? x : 0; }
 
-  forward(genome, inputs, out = this._out) {
-    const { sizes, activations } = this;
+  forward(inputs, out = this._out) {
+    const { sizes, activations, genome } = this;
     const genes = genome.genes || genome; // support both Genome object and array
 
     // input -> a

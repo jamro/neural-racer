@@ -1,6 +1,5 @@
 import CarObject from './CarObject';
 import NeuralNet from '../../neuralEvolution/NeuralNet';
-import Genome from '../../neuralEvolution/Genome';
 
 class NeuralCarObject extends CarObject {
     constructor(track, scoreWeights, genome=null) {
@@ -8,14 +7,10 @@ class NeuralCarObject extends CarObject {
 
         this.neuralNet = new NeuralNet(
           [10, 32, 32, 2],
-          ["relu", "relu", "tanh"]
+          ["relu", "relu", "tanh"],
+          genome
         );
-        if (genome) {
-          this.genome = genome;
-        } else {
-          this.genome = new Genome(this.neuralNet.genomeLength);
-          this.genome.randomize();
-        }
+        this.genome = this.neuralNet.genome;
     }
 
 
@@ -34,7 +29,7 @@ class NeuralCarObject extends CarObject {
       // use speed as input
       inputs[this.radarBeamCount] = Math.min(this.speed / this.maxSpeed, 1);
 
-      const outputs = this.neuralNet.forward(this.genome, inputs);
+      const outputs = this.neuralNet.forward(inputs);
 
       this.debug = inputs[9].toFixed(3)
       

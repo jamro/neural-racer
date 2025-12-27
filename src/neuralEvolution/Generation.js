@@ -178,7 +178,7 @@ class Generation {
         
         // Apply mutation with different rates for hidden vs output layers
         // Output layer gets higher mutation rate and strength to encourage exploration
-        const layerLengths = NeuralNet.layerGenomeLength(parent1.neuralNet.sizes);
+        const layerLengths = parent1.neuralNet.layerGenomeLength();
         const outputGenes = layerLengths[layerLengths.length - 1]; // Last layer is output
         const allGenes = child.genes.length;
         
