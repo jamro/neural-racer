@@ -7,6 +7,7 @@ class TrackObject extends AbstractSimulationObject {
     constructor(cellSize = 4) {
         super();
         this.name = 'Unknown Track';
+        this.showCheckpoints = false;
         this.view = new TrackView(this.metersToPixels(0.5));
         this.wallSegments = new TrackSegments(cellSize);
         this.checkpoints = new Checkpoints(cellSize);
@@ -82,12 +83,14 @@ class TrackObject extends AbstractSimulationObject {
 
     addCheckpoint(ax, ay, bx, by) {
       this.checkpoints.addSegment(ax, ay, bx, by);
-      this.view.addCheckpoint(
-        this.metersToPixels(ax),
-        this.metersToPixels(ay),
-        this.metersToPixels(bx),
-        this.metersToPixels(by)
-      );
+      if(this.showCheckpoints) {
+        this.view.addCheckpoint(
+          this.metersToPixels(ax),
+          this.metersToPixels(ay),
+          this.metersToPixels(bx),
+          this.metersToPixels(by)
+        );
+      }
     }
 
 

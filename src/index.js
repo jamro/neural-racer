@@ -10,7 +10,7 @@ const app = new PIXI.Application();
 
 await app.init({
     resizeTo: window,
-    backgroundColor: 0x1099bb,
+    backgroundColor: 0xa19a41,
     antialias: true,
     resolution: window.devicePixelRatio || 1,
     autoDensity: true,

@@ -4,3 +4,5 @@
 - **stading out leader**: when leader stands out from the other cars, focus on the rest of population to catch up. That should give you a new, improved leader.
 - **svg track editro**: SVG is a convenient way to create and edit tracks. It is a XML that can be easily parsed and used in the code. Visual editors such as Inkscape are a good way quickly design tracks geometries.
 - **crossover types**: blended crossover work better to preserve the learned features from the parent genomes while unifrom crossover work better to explore new action strategies. Hybrid approach allows to mix both approaches with different ratios.
+- **curriculum learning**: starting with easy tracks and gradually increasing the difficulty helps to learn the basic driving skills and then apply them to more complex tracks.
+- **catastrophic forgetting**: during the evolution process on a specific track, inject randomly one of past completed tracks and run a single epoch on it to prevent the catastrophic forgetting of the learned features.

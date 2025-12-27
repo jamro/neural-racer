@@ -63,20 +63,24 @@ class Evolution {
   }
 
   onEpochComplete() {
+    const { replayInterval = 5, trackPassThreshold = 0.25 } = this.config;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = this.generation.finishedCount / this.generation.totalCount;
-    const oldTrack = this.tracks[this.currentTrackIndex];
     // promote to next track if pass rate is high enough
-    if(passRate > 0.25) {
+    if(passRate >= trackPassThreshold && this.simulation.track === this.tracks[this.currentTrackIndex]) { // make sure the promotion does not happen afte replaying on a completed track
       if (!this.completedTracks.includes(this.currentTrackIndex)) {
         this.completedTracks.push(this.currentTrackIndex);
-        this.currentTrackIndex = 0
-      } else {
-        this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
       }
+      this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
     }
-    const newTrack = this.tracks[this.currentTrackIndex];
+    let newTrack = this.tracks[this.currentTrackIndex];
+    // replay on random, completed track
+    if(this.generation.epoch % replayInterval === 0 && this.completedTracks.length >= 2) {
+      const randomCompletedTrackIndex = this.completedTracks[Math.floor(Math.random() * this.completedTracks.length)];
+      newTrack = this.tracks[randomCompletedTrackIndex];
+      console.log(`Replaying on completed track ${newTrack.name}`);
+    }
     
     // evolve generation
     this.generation.calculateScores();
@@ -88,9 +92,8 @@ class Evolution {
     if(this.generation.epoch > this.epochLimit) return;
 
     // remove current track from simulation
-    this.simulation.removeObject(oldTrack);
+    this.simulation.removeObject(this.simulation.track);
     this.simulation.removeAndDispose();
-
 
     // run new simulation 
     this.simulation = new Simulation(this.pixiApp);
