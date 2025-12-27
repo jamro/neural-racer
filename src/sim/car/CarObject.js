@@ -20,9 +20,18 @@ class CarObject extends AbstractSimulationObject {
         this.acceleration = 0; // meters/second^2
         this.turnRate = 0; // radians/second 
         this.direction = 0 // radians
-        this.radarBeamCount = 9;
+        this.radarBeamAngles = [
+          -75 * Math.PI / 180,
+          -45 * Math.PI / 180,
+          -25 * Math.PI / 180,
+          -10 * Math.PI / 180,
+          0 * Math.PI / 180,
+          +10 * Math.PI / 180,
+          +25 * Math.PI / 180,
+          +45 * Math.PI / 180,
+          +75 * Math.PI / 180,
+        ]
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
-        this.radarAngularRange = Math.PI * 0.7;
         this._isCrashed = false;
         this._isFinished = false;
         this.checkpointsPassed = 0;
@@ -41,8 +50,12 @@ class CarObject extends AbstractSimulationObject {
         this.view = new CarView(
           this.metersToPixels(this.width),
           this.metersToPixels(this.height),
-          this.radarAngularRange
+          this.radarBeamAngles
         );
+    }
+
+    get radarBeamCount() {
+      return this.radarBeamAngles.length;
     }
 
     throttle(v) {
@@ -119,9 +132,8 @@ class CarObject extends AbstractSimulationObject {
       this.y += this.speed * Math.sin(this.direction) * delta;
 
       // update radar beams
-      const angleStep = this.radarAngularRange / (this.radarBeams.length - 1);
       for (let index = 0; index < this.radarBeams.length; index++) {
-        const angle = this.radarAngularRange / 2 - angleStep * index + this.direction
+        const angle = this.radarBeamAngles[index] + this.direction
         this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.x, this.y, angle);
       }
 
@@ -208,7 +220,7 @@ class CarObject extends AbstractSimulationObject {
       this.view.crashed = this._isCrashed;
 
       if (!this._isCrashed && !this._isFinished) {  // only render radar if the car is not crashed or finished
-        const beamMaxLength = 40
+        const beamMaxLength = 100 // for rendering only
         this.view.renderRadar(
           this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength))
         );

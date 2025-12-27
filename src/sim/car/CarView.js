@@ -4,10 +4,10 @@ import { getCarTexture, getGhostTexture, getShadowTexture } from '../../loaders/
 const DEBUG_RADAR_BEAMS = false;
 
 class CarView extends PIXI.Container {
-    constructor(w, h, radarAngularRange) {
+    constructor(w, h, radarBeamAngles) {
         super();
         
-        this.radarAngularRange = radarAngularRange;
+        this.radarBeamAngles = radarBeamAngles;
 
         // Get textures from module (should be preloaded)
         const texture = getCarTexture() || PIXI.Texture.EMPTY;
@@ -119,13 +119,13 @@ class CarView extends PIXI.Container {
     renderRadar(beamsLengths) {
         if (!this.radar.visible || !DEBUG_RADAR_BEAMS) return;
         this.radar.clear();
-        const angleStep = this.radarAngularRange / (beamsLengths.length - 1);
-        for (let index = 0; index < beamsLengths.length; index++) {
-          const length = beamsLengths[index];
-          const angle = this.radarAngularRange / 2 - angleStep * index;
+
+        for (let i = 0; i < this.radarBeamAngles.length; i++) {
+          const angle = this.radarBeamAngles[i];
+          const length = beamsLengths[i];
           this.radar.moveTo(0, 0);
           this.radar.lineTo(
-            length * Math.cos(angle), 
+            length * Math.cos(angle),
             length * Math.sin(angle)
           );
           this.radar.stroke({ color: 0xffffff, width: 3, alpha: 0.3 });
