@@ -30,6 +30,25 @@ class NeuralNet {
     this._a = new Float32Array(maxN);
     this._b = new Float32Array(maxN);
     this._out = new Float32Array(sizes[sizes.length - 1]);
+    
+    // Track historical outputs for tanh layers (indexed by layer, then neuron)
+    this._historicalTanhOutputs = [];
+    // Track historical outputs for relu layers (indexed by layer, then neuron)
+    this._historicalReluOutputs = [];
+    for (let l = 0; l < sizes.length - 1; l++) {
+      if (activations[l] === "tanh") {
+        this._historicalTanhOutputs[l] = [];
+        for (let n = 0; n < sizes[l + 1]; n++) {
+          this._historicalTanhOutputs[l][n] = [];
+        }
+      }
+      if (activations[l] === "relu") {
+        this._historicalReluOutputs[l] = [];
+        for (let n = 0; n < sizes[l + 1]; n++) {
+          this._historicalReluOutputs[l][n] = [];
+        }
+      }
+    }
   }
 
   genomeLength() {
@@ -52,6 +71,120 @@ class NeuralNet {
   }
 
   static _relu(x) { return x > 0 ? x : 0; }
+
+  static _calculateParamStats(values) {
+    if (values.length === 0) {
+      return { mean: 0, std: 0, min: 0, max: 0 };
+    }
+    
+    const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+    const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+    const std = Math.sqrt(variance);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    return { mean, std, min, max };
+  }
+
+  getStats() {
+    const { sizes, genome, activations } = this;
+    const genes = genome.genes || genome;
+    const stats = [];
+    let off = 0;
+
+    for (let l = 0; l < sizes.length - 1; l++) {
+      const inD = sizes[l];
+      const outD = sizes[l + 1];
+      const wBase = off;
+      const bBase = off + outD * inD;
+      
+      // Extract weights
+      const weights = [];
+      for (let o = 0; o < outD; o++) {
+        const row = wBase + o * inD;
+        for (let i = 0; i < inD; i++) {
+          weights.push(genes[row + i]);
+        }
+      }
+      
+      // Extract biases
+      const biases = [];
+      for (let o = 0; o < outD; o++) {
+        biases.push(genes[bBase + o]);
+      }
+      
+      // Calculate stats
+      const weightStats = NeuralNet._calculateParamStats(weights);
+      const biasStats = NeuralNet._calculateParamStats(biases);
+      
+      const layerStats = {
+        layer: l,
+        activation: activations[l],
+        weights: weightStats,
+        biases: biasStats
+      };
+      
+      // Calculate saturation for tanh layers (per neuron)
+      if (activations[l] === "tanh" && this._historicalTanhOutputs[l]) {
+        const neuronSaturations = [];
+        for (let n = 0; n < outD; n++) {
+          const outputs = this._historicalTanhOutputs[l][n];
+          if (outputs && outputs.length > 0) {
+            let saturatedCount = 0;
+            for (const value of outputs) {
+              // Saturation: |output| > 0.95
+              if (Math.abs(value) > 0.95) {
+                saturatedCount++;
+              }
+            }
+            neuronSaturations.push(saturatedCount / outputs.length);
+          } else {
+            neuronSaturations.push(0);
+          }
+        }
+        
+        // Calculate aggregate stats for saturation
+        const saturationStats = NeuralNet._calculateParamStats(neuronSaturations);
+        layerStats.saturation = {
+          perNeuron: neuronSaturations,
+          ...saturationStats
+        };
+      }
+      
+      // Calculate dead neurons for relu layers (per neuron)
+      if (activations[l] === "relu" && this._historicalReluOutputs[l]) {
+        const neuronDeadRates = [];
+        for (let n = 0; n < outD; n++) {
+          const outputs = this._historicalReluOutputs[l][n];
+          if (outputs && outputs.length > 0) {
+            let deadCount = 0;
+            for (const value of outputs) {
+              // Dead neuron: activation is 0
+              if (value === 0) {
+                deadCount++;
+              }
+            }
+            neuronDeadRates.push(deadCount / outputs.length);
+          } else {
+            neuronDeadRates.push(0);
+          }
+        }
+        
+        // Calculate aggregate stats for dead neurons
+        const deadStats = NeuralNet._calculateParamStats(neuronDeadRates);
+        layerStats.deadNeurons = {
+          perNeuron: neuronDeadRates,
+          ...deadStats
+        };
+      }
+      
+      stats.push(layerStats);
+      
+      off += outD * inD + outD;
+    }
+    
+    return { params: stats };
+  }
 
   forward(inputs, out = this._out) {
     const { sizes, activations, genome } = this;
@@ -76,9 +209,19 @@ class NeuralNet {
         const row = wBase + o * inD;
         for (let i = 0; i < inD; i++) sum += genes[row + i] * a[i];
 
-        if (act === "relu") b[o] = NeuralNet._relu(sum);
-        else if (act === "tanh") b[o] = Math.tanh(sum);
-        else b[o] = sum;
+        if (act === "relu") {
+          b[o] = NeuralNet._relu(sum);
+          // Track relu outputs for dead neuron calculation (per neuron)
+          if (this._historicalReluOutputs[l] && this._historicalReluOutputs[l][o]) {
+            this._historicalReluOutputs[l][o].push(b[o]);
+          }
+        } else if (act === "tanh") {
+          b[o] = Math.tanh(sum);
+          // Track tanh outputs for saturation calculation (per neuron)
+          if (this._historicalTanhOutputs[l] && this._historicalTanhOutputs[l][o]) {
+            this._historicalTanhOutputs[l][o].push(b[o]);
+          }
+        } else b[o] = sum;
       }
 
       off += outD * inD + outD;

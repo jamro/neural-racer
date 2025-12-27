@@ -7,7 +7,7 @@ class CarDetailsView extends PIXI.Container {
     super();
     this.car = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 248, 233);
+    this.bg.rect(2, 2, 248, 333);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -44,12 +44,36 @@ class CarDetailsView extends PIXI.Container {
     this.scoreProgressBar.values = scoreValues;
     this.scoreProgressBar.max = scoreTotal;
 
+    let neuralNetStatsText = ""
+    const neuralNetStats = this.car.neuralNet.getStats();
+    const neuralNetOutputStats = neuralNetStats.params[neuralNetStats.params.length - 1];
+
+    let deadNeuronSum = 0;
+    let reluLayerCount = 0;
+
+    for (const layerParamStats of neuralNetStats.params) {
+      neuralNetStatsText += "#" + layerParamStats.layer + ": " +
+        "𝑾 " + layerParamStats.weights.mean.toFixed(1).padStart(4) + " ±" + layerParamStats.weights.std.toFixed(1).padStart(4) + "  " +
+        "𝑩 " + layerParamStats.biases.mean.toFixed(1).padStart(4) + " ±" + layerParamStats.biases.std.toFixed(1).padStart(4) + "\n";
+
+      if (layerParamStats.activation === "relu") {
+        reluLayerCount++;
+        deadNeuronSum += layerParamStats.deadNeurons.mean;
+      }
+    }
+
+    const deadNeuronRatio = deadNeuronSum / reluLayerCount
+
+    neuralNetStatsText += "Output Sat: " + (100*neuralNetOutputStats.saturation.mean).toFixed(4) + " ±" + (100*neuralNetOutputStats.saturation.std).toFixed(4) + "%\n";
+    neuralNetStatsText += "Dead Neurons: " + (100*deadNeuronRatio).toFixed(2) + "%\n";
+
     this.statusTextField.text = "SCORE: " + (this.car.calculateScore()).toFixed(2) + "\n\n" +
         "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +
         "Speed: " + (this.car.speed*3.6).toFixed(1) + " km/h\n\n" +
         "Throttle: " + (100*this.car.throttleValue).toFixed(1) + "%\n" +
         "Brake: " + (100*this.car.brakeValue).toFixed(1) + "%\n" +
         "Turn: " + (100*this.car.turnValue).toFixed(1) + "%\n\n" +
+        "Neural Net:\n" + neuralNetStatsText + "\n" +
         "DEBUG:\n" + (this.car.debug || '-none-') + "\n";
   }
 
