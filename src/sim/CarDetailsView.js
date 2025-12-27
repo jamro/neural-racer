@@ -48,7 +48,7 @@ class CarDetailsView extends PIXI.Container {
     const neuralNetStats = this.car.neuralNet.getStats();
     const neuralNetOutputStats = neuralNetStats.params[neuralNetStats.params.length - 1];
 
-    let deadNeuronSum = 0;
+    let negativeDominanceSum = 0;
     let reluLayerCount = 0;
 
     for (const layerParamStats of neuralNetStats.params) {
@@ -56,16 +56,16 @@ class CarDetailsView extends PIXI.Container {
         "𝑾 " + layerParamStats.weights.mean.toFixed(1).padStart(4) + " ±" + layerParamStats.weights.std.toFixed(1).padStart(4) + "  " +
         "𝑩 " + layerParamStats.biases.mean.toFixed(1).padStart(4) + " ±" + layerParamStats.biases.std.toFixed(1).padStart(4) + "\n";
 
-      if (layerParamStats.activation === "relu") {
+      if (layerParamStats.activation === "leaky_relu") {
         reluLayerCount++;
-        deadNeuronSum += layerParamStats.deadNeurons.mean;
+        negativeDominanceSum += layerParamStats.negativeDominanceRate.mean;
       }
     }
 
-    const deadNeuronRatio = deadNeuronSum / reluLayerCount
+    const negativeDominance = negativeDominanceSum / reluLayerCount
 
     neuralNetStatsText += "Output Sat: " + (100*neuralNetOutputStats.saturation.mean).toFixed(4) + " ±" + (100*neuralNetOutputStats.saturation.std).toFixed(4) + "%\n";
-    neuralNetStatsText += "Dead Neurons: " + (100*deadNeuronRatio).toFixed(2) + "%\n";
+    neuralNetStatsText += "Neg. Domin.: " + (100*negativeDominance).toFixed(2) + "%\n";
 
     this.statusTextField.text = "SCORE: " + (this.car.calculateScore()).toFixed(2) + "\n\n" +
         "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +

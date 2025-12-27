@@ -7,7 +7,7 @@ class NeuralCarObject extends CarObject {
 
         this.neuralNet = new NeuralNet(
           [10, 32, 32, 2],
-          ["relu", "relu", "tanh"],
+          ["leaky_relu", "leaky_relu", "tanh"],
           genome
         );
         this.genome = this.neuralNet.genome;

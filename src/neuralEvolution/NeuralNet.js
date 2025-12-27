@@ -35,6 +35,8 @@ class NeuralNet {
     this._historicalTanhOutputs = [];
     // Track historical outputs for relu layers (indexed by layer, then neuron)
     this._historicalReluOutputs = [];
+    // Track historical outputs for leaky_relu layers (indexed by layer, then neuron)
+    this._historicalLeakyReluOutputs = [];
     for (let l = 0; l < sizes.length - 1; l++) {
       if (activations[l] === "tanh") {
         this._historicalTanhOutputs[l] = [];
@@ -46,6 +48,12 @@ class NeuralNet {
         this._historicalReluOutputs[l] = [];
         for (let n = 0; n < sizes[l + 1]; n++) {
           this._historicalReluOutputs[l][n] = [];
+        }
+      }
+      if (activations[l] === "leaky_relu") {
+        this._historicalLeakyReluOutputs[l] = [];
+        for (let n = 0; n < sizes[l + 1]; n++) {
+          this._historicalLeakyReluOutputs[l][n] = [];
         }
       }
     }
@@ -71,6 +79,8 @@ class NeuralNet {
   }
 
   static _relu(x) { return x > 0 ? x : 0; }
+
+  static _leaky_relu(x, alpha = 0.01) { return x > 0 ? x : alpha * x; }
 
   static _calculateParamStats(values) {
     if (values.length === 0) {
@@ -178,6 +188,33 @@ class NeuralNet {
         };
       }
       
+      // Calculate negative-dominance rate for leaky_relu layers (per neuron)
+      if (activations[l] === "leaky_relu" && this._historicalLeakyReluOutputs[l]) {
+        const neuronNegativeDominanceRates = [];
+        for (let n = 0; n < outD; n++) {
+          const outputs = this._historicalLeakyReluOutputs[l][n];
+          if (outputs && outputs.length > 0) {
+            let negativeCount = 0;
+            for (const value of outputs) {
+              // Negative-dominance: activation is below zero
+              if (value < 0) {
+                negativeCount++;
+              }
+            }
+            neuronNegativeDominanceRates.push(negativeCount / outputs.length);
+          } else {
+            neuronNegativeDominanceRates.push(0);
+          }
+        }
+        
+        // Calculate aggregate stats for negative-dominance rate
+        const negativeDominanceStats = NeuralNet._calculateParamStats(neuronNegativeDominanceRates);
+        layerStats.negativeDominanceRate = {
+          perNeuron: neuronNegativeDominanceRates,
+          ...negativeDominanceStats
+        };
+      }
+      
       stats.push(layerStats);
       
       off += outD * inD + outD;
@@ -214,6 +251,12 @@ class NeuralNet {
           // Track relu outputs for dead neuron calculation (per neuron)
           if (this._historicalReluOutputs[l] && this._historicalReluOutputs[l][o]) {
             this._historicalReluOutputs[l][o].push(b[o]);
+          }
+        } else if (act === "leaky_relu") {
+          b[o] = NeuralNet._leaky_relu(sum, 0.01);
+          // Track leaky_relu outputs for negative-dominance rate calculation (per neuron)
+          if (this._historicalLeakyReluOutputs[l] && this._historicalLeakyReluOutputs[l][o]) {
+            this._historicalLeakyReluOutputs[l][o].push(b[o]);
           }
         } else if (act === "tanh") {
           b[o] = Math.tanh(sum);

@@ -6,3 +6,4 @@
 - **crossover types**: blended crossover work better to preserve the learned features from the parent genomes while unifrom crossover work better to explore new action strategies. Hybrid approach allows to mix both approaches with different ratios.
 - **curriculum learning**: starting with easy tracks and gradually increasing the difficulty helps to learn the basic driving skills and then apply them to more complex tracks.
 - **catastrophic forgetting**: during the evolution process on a specific track, inject randomly one of past completed tracks and run a single epoch on it to prevent the catastrophic forgetting of the learned features.
+- **Leaky ReLU > ReLU**: Leaky ReLU is better than ReLU in this setup because it prevents neurons from becoming permanently inactive, allowing all weights to keep influencing behavior and remain evolvable by the genetic algorithm
