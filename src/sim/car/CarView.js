@@ -116,7 +116,7 @@ class CarView extends PIXI.Container {
 
     }
 
-    renderRadar(beamsLengths) {
+    renderRadar(beamsLengths, safeDirection) {
         if (!this.radar.visible || !DEBUG_RADAR_BEAMS) return;
         this.radar.clear();
 
@@ -130,6 +130,25 @@ class CarView extends PIXI.Container {
           );
           this.radar.stroke({ color: 0xffffff, width: 3, alpha: 0.3 });
         }
+
+        this.radar.moveTo(0, 0);
+        this.radar.lineTo(
+          100 * Math.cos(safeDirection),
+          100 * Math.sin(safeDirection)
+        );
+        this.radar.moveTo(
+          90 * Math.cos(safeDirection-0.1),
+          90 * Math.sin(safeDirection-0.1)
+        );
+        this.radar.lineTo(
+          100 * Math.cos(safeDirection),
+          100 * Math.sin(safeDirection)
+        );
+        this.radar.lineTo(
+          90 * Math.cos(safeDirection+0.1),
+          90 * Math.sin(safeDirection+0.1)
+        );
+        this.radar.stroke({ color: 0xffffff, width: 5, alpha: 0.7 });
     }
 }
 

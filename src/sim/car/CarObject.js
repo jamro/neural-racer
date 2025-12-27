@@ -21,7 +21,7 @@ class CarObject extends AbstractSimulationObject {
         this.turnRate = 0; // radians/second 
         this.direction = 0 // radians
         this.radarBeamAngles = [
-          -75 * Math.PI / 180,
+          -85 * Math.PI / 180,
           -45 * Math.PI / 180,
           -25 * Math.PI / 180,
           -10 * Math.PI / 180,
@@ -29,7 +29,7 @@ class CarObject extends AbstractSimulationObject {
           +10 * Math.PI / 180,
           +25 * Math.PI / 180,
           +45 * Math.PI / 180,
-          +75 * Math.PI / 180,
+          +85 * Math.PI / 180,
         ]
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
         this._isCrashed = false;
@@ -45,6 +45,7 @@ class CarObject extends AbstractSimulationObject {
         this.speedSum = 0;
         this.debug = ""
         this.speedingCounter = 0;
+        this.safeDirection = 0;
 
         // create view
         this.view = new CarView(
@@ -159,7 +160,7 @@ class CarObject extends AbstractSimulationObject {
       }
 
       // check for staleness
-      const staleThreshold = 1; //  meters/second
+      const staleThreshold = 3; //  meters/second
       if (this.speed < staleThreshold) {
         this.staleCounter--;
       }
@@ -175,6 +176,23 @@ class CarObject extends AbstractSimulationObject {
           this.speedingCounter++;
         }
       }
+
+      // find safe direction
+      let safeAngle = 0;
+      let safeDistance = 0;
+      for (let index = 0; index < this.radarBeams.length; index++) {
+        const angle = this.radarBeamAngles[index]
+        const distance = this.radarBeams[index]
+        if (distance === null || distance > safeDistance) {
+          safeAngle = angle;
+          safeDistance = distance;
+        }
+      }
+      const centralBeamIndex = Math.floor(this.radarBeamCount / 2);
+      if(this.radarBeams[centralBeamIndex] === null) {
+        safeAngle = 0;
+      }
+      this.safeDirection += (safeAngle - this.safeDirection) * 0.15;
     }
 
     calculateCheckpointProgress() {
@@ -222,7 +240,8 @@ class CarObject extends AbstractSimulationObject {
       if (!this._isCrashed && !this._isFinished) {  // only render radar if the car is not crashed or finished
         const beamMaxLength = 100 // for rendering only
         this.view.renderRadar(
-          this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength))
+          this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength)),
+          this.safeDirection
         );
       }
     }

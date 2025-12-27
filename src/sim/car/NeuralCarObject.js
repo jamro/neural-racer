@@ -6,7 +6,7 @@ class NeuralCarObject extends CarObject {
         super(track, scoreWeights);
 
         this.neuralNet = new NeuralNet(
-          [13, 32, 24, 2],
+          [14, 32, 24, 2],
           ["leaky_relu", "leaky_relu", "tanh"],
           genome
         );
@@ -16,28 +16,37 @@ class NeuralCarObject extends CarObject {
     }
 
     calculateLeftRightBalance() {
-      if (this.radarBeams.length < 7) {
-        throw new Error('radarBeams length must be at least 7. Otherside you must adjust indexes in calculateLeftRightBalance()');
+      const n = this.radarBeamCount;
+      if (n < 7) throw new Error("radarBeams length must be at least 7");
+    
+      const Rmax = 100; // maximum radar range in meters
+      const eps = 1e-6;
+    
+      // 3 extreme left and 3 extreme right beams
+      const leftIdx  = [0, 1, 2];
+      const rightIdx = [n - 1, n - 2, n - 3];
+    
+      let L = 0, R = 0;
+    
+      for (const i of leftIdx)  {
+        L += this.radarBeams[i] === null ? Rmax : this.radarBeams[i];
       }
-      const leftBeamsIndexes = [0, 1, 2]
-      const rightBeamsIndexes = [this.radarBeamCount - 1, this.radarBeamCount - 2, this.radarBeamCount - 3]
+      for (const i of rightIdx) {
+        R += this.radarBeams[i] === null ? Rmax : this.radarBeams[i];
+      }
+    
+      L /= leftIdx.length;
+      R /= rightIdx.length;
+    
+      // stable normalization to [-1, 1]
+      const balanceRaw = (L - R) / (L + R + eps);
       
-      let leftBeamsDistance = 0
-      let rightBeamsDistance = 0
-      for (let i = 0; i < this.radarBeamCount; i++) {
-        if (leftBeamsIndexes.includes(i)) {
-          leftBeamsDistance += this.radarBeams[i] !== null ? this.radarBeams[i] : 100
-        }
-        if (rightBeamsIndexes.includes(i)) {
-          rightBeamsDistance += this.radarBeams[i] !== null ? this.radarBeams[i] : 100
-        }
-      }
-      leftBeamsDistance /= leftBeamsIndexes.length
-      rightBeamsDistance /= rightBeamsIndexes.length
-      let diff = leftBeamsDistance - rightBeamsDistance
+      // smoothing the balance value to reduce noise
+      const alpha = 0.2;
+      this.balanceEMA = this.balanceEMA ?? balanceRaw;
+      this.balanceEMA = this.balanceEMA + alpha * (balanceRaw - this.balanceEMA);
 
-      const scaleMeters = 10;
-      return Math.tanh(diff / scaleMeters);
+      return this.balanceEMA;
     }
 
     calculateTimeToCollision() {
@@ -53,7 +62,7 @@ class NeuralCarObject extends CarObject {
       )
       minFront = Math.max(0, minFront - this.width/2)
       
-      const timeToCollision = minFront / this.speed
+      const timeToCollision = Math.abs(this.speed) > 0.1 ? minFront / this.speed : 1000;
       return timeToCollision
     }
 
@@ -94,11 +103,17 @@ class NeuralCarObject extends CarObject {
       inputs.push(this.calculateLeftRightBalance());
 
       // use time to collision as input (index 12)
-      inputs.push(Math.exp(-this.calculateTimeToCollision()/0.8));
+      inputs.push(Math.exp(-this.calculateTimeToCollision()/0.5));
+
+      // use safe direction as input (index 13)
+      const radarAngleMin = this.radarBeamAngles[0]
+      const radarAngleMax = this.radarBeamAngles[this.radarBeamCount - 1]
+      const normalizedSafeDirection = 2*(this.safeDirection - radarAngleMin) / (radarAngleMax - radarAngleMin) - 1
+      inputs.push(normalizedSafeDirection);
 
       const outputs = this.neuralNet.forward(inputs);
 
-      this.debug = inputs[12].toFixed(3)
+      this.debug = inputs[13].toFixed(3)
       
       const throttleOutput = outputs[0];
       const turnOutput = outputs[1];

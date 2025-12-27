@@ -27,6 +27,7 @@ const tracksUrls = [
     'assets/tracks/lesson_003.svg',
     'assets/tracks/lesson_004.svg',
     'assets/tracks/lesson_005.svg',
+    'assets/tracks/lesson_006.svg',
 ];
 const tracks = await Promise.all(tracksUrls.map(url => SvgTrackLoader.load(url)));
 const carTexture = await loadCarTexture();
