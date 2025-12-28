@@ -17,6 +17,7 @@ const TEXTURE_REGISTRY = {
     trackBg002: 'assets/img/track_bg_002.png',
     trackBg003: 'assets/img/track_bg_003.png',
     trackBg004: 'assets/img/track_bg_004.png',
+    trackBg005: 'assets/img/track_bg_005.png',
     
     // Tires textures
     tires001: 'assets/img/tires001.png',
@@ -156,6 +157,8 @@ export async function loadTrackBg003Texture() { return await loadTexture('trackB
 export function getTrackBg003Texture() { return getTexture('trackBg003'); }
 export async function loadTrackBg004Texture() { return await loadTexture('trackBg004'); }
 export function getTrackBg004Texture() { return getTexture('trackBg004'); }
+export async function loadTrackBg005Texture() { return await loadTexture('trackBg005'); }
+export function getTrackBg005Texture() { return getTexture('trackBg005'); }
 
 // Tires texture exports
 export async function loadTires001Texture() { return await loadTexture('tires001'); }

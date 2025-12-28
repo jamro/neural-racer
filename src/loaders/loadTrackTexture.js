@@ -15,6 +15,8 @@ export {
     getTrackBg003Texture,
     loadTrackBg004Texture,
     getTrackBg004Texture,
+    loadTrackBg005Texture,
+    getTrackBg005Texture,
     loadTires001Texture,
     getTires001Texture,
     loadTires002Texture,

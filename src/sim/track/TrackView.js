@@ -20,7 +20,7 @@ class TrackView extends PIXI.Container {
         
         // List of all texture filenames used by tracks
         const textureFilenames = [
-            'track_bg_001', 'track_bg_002', 'track_bg_003', 'track_bg_004',
+            'track_bg_001', 'track_bg_002', 'track_bg_003', 'track_bg_004', 'track_bg_005',
             'tires001', 'tires002', 'tires003', 'tires004', 'tires005', 'tires006',
             'tires007', 'tires008', 'tires009', 'tires010', 'tires011', 'tires012',
             'tires013', 'tires014', 'tires015', 'tires016',
