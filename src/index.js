@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import Evolution from './neuralEvolution/Evolution';
 import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
-import { loadCarTexture, loadGhostTexture, loadShadowTexture } from './loaders/loadCarTexture';
+import { loadTextures, getTextureKeys } from './loaders/AssetLoader';
 
 // Create and initialize the application
 const app = new PIXI.Application();
@@ -19,20 +19,21 @@ await app.init({
 // Add the canvas to the DOM
 document.getElementById('app').appendChild(app.canvas);
 
+// Load all textures in bulk
+await loadTextures(getTextureKeys());
+
 // Load assets
 const tracksUrls = [
     'assets/tracks/lesson_000.svg',
-    'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_002.svg',
-    'assets/tracks/lesson_003.svg',
-    'assets/tracks/lesson_004.svg',
-    'assets/tracks/lesson_005.svg',
-    'assets/tracks/lesson_006.svg',
+    'assets/tracks/lesson_000.svg',
+    'assets/tracks/lesson_000.svg',
+    'assets/tracks/lesson_000.svg',
+    'assets/tracks/lesson_000.svg',
+    'assets/tracks/lesson_000.svg',
+    'assets/tracks/lesson_000.svg',
 ];
 const tracks = await Promise.all(tracksUrls.map(url => SvgTrackLoader.load(url)));
-const carTexture = await loadCarTexture();
-const ghostTexture = await loadGhostTexture();
-const shadowTexture = await loadShadowTexture();
+
 
 const evolution = new Evolution(app, tracks);
 

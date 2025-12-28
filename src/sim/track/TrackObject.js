@@ -7,7 +7,6 @@ class TrackObject extends AbstractSimulationObject {
     constructor(cellSize = 4) {
         super();
         this.name = 'Unknown Track';
-        this.showCheckpoints = false;
         this.view = new TrackView(this.metersToPixels(0.5));
         this.wallSegments = new TrackSegments(cellSize);
         this.checkpoints = new Checkpoints(cellSize);
@@ -83,14 +82,12 @@ class TrackObject extends AbstractSimulationObject {
 
     addCheckpoint(ax, ay, bx, by) {
       this.checkpoints.addSegment(ax, ay, bx, by);
-      if(this.showCheckpoints) {
-        this.view.addCheckpoint(
-          this.metersToPixels(ax),
-          this.metersToPixels(ay),
-          this.metersToPixels(bx),
-          this.metersToPixels(by)
-        );
-      }
+      this.view.addCheckpoint(
+        this.metersToPixels(ax),
+        this.metersToPixels(ay),
+        this.metersToPixels(bx),
+        this.metersToPixels(by)
+      );
     }
 
 
@@ -104,8 +101,34 @@ class TrackObject extends AbstractSimulationObject {
       );
     }
 
-    render(delta) {
-        // nothing to render, tracks are static
+    addTrackShape(shape) {
+      const scaledShape = shape.map(segment => {
+        return {
+          ax: this.metersToPixels(segment.ax),
+          ay: this.metersToPixels(segment.ay),
+          bx: this.metersToPixels(segment.bx),
+          by: this.metersToPixels(segment.by),
+        };
+      });
+      this.view.addTrackShape(scaledShape);
+    }
+
+    addTrackGraphic(filename, x, y, width, height, rotation = 0, scaleX = 1, scaleY = 1) {
+
+      this.view.addTrackGraphic(
+        filename, 
+        this.metersToPixels(x),
+        this.metersToPixels(y),
+        this.metersToPixels(width),
+        this.metersToPixels(height),
+        rotation,
+        scaleX,
+        scaleY
+      );
+    }
+
+    render(delta, viewWidth, viewHeight, xOffset, yOffset) {
+        this.view.render(viewWidth, viewHeight, xOffset, yOffset);
     }
 
     update(delta) {
