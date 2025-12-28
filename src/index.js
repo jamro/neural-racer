@@ -26,11 +26,11 @@ await loadTextures(getTextureKeys());
 const tracksUrls = [
     'assets/tracks/lesson_000.svg',
     'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_001.svg',
+    'assets/tracks/lesson_003.svg',
+    //'assets/tracks/lesson_003.svg',
+    //'assets/tracks/lesson_003.svg',
+    //'assets/tracks/lesson_003.svg',
+    //'assets/tracks/lesson_003.svg',
 ];
 const tracks = await Promise.all(tracksUrls.map(url => SvgTrackLoader.load(url)));
 

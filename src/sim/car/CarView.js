@@ -33,7 +33,7 @@ class CarView extends PIXI.Container {
 
         // ghost - get texture from module (should be preloaded)
         this.ghost = new PIXI.Sprite(ghostTexture);
-        this.ghost.alpha = 0.2;
+        this.ghost.alpha = 0.6;
         this.ghost.anchor.set(0.5, 0.5);
         if (ghostTexture && ghostTexture !== PIXI.Texture.EMPTY) {
             this.ghost.scale.set(w / ghostTexture.width, h / ghostTexture.height);
