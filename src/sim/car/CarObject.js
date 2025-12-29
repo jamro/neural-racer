@@ -16,7 +16,7 @@ class CarObject extends AbstractSimulationObject {
         this.track = track;
 
         this.radarBeamAngles = [
-          -85 * Math.PI / 180,
+          -90 * Math.PI / 180,
           -45 * Math.PI / 180,
           -25 * Math.PI / 180,
           -10 * Math.PI / 180,
@@ -24,7 +24,7 @@ class CarObject extends AbstractSimulationObject {
           +10 * Math.PI / 180,
           +25 * Math.PI / 180,
           +45 * Math.PI / 180,
-          +85 * Math.PI / 180,
+          +90 * Math.PI / 180,
         ]
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
         this._isCrashed = false;
@@ -122,7 +122,7 @@ class CarObject extends AbstractSimulationObject {
 
       if(this._isFinished) {
         this.breakCar(1);
-        this.turn(0);
+        this.turn(1);
       }
 
       if(!this._isFinished) {

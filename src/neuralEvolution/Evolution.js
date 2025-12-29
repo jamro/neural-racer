@@ -63,7 +63,7 @@ class Evolution {
   }
 
   onEpochComplete() {
-    const { replayInterval = 5, trackPassThreshold = 0.25 } = this.config;
+    const { replayInterval = 6, trackPassThreshold = 0.25 } = this.config;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = this.generation.finishedCount / this.generation.totalCount;

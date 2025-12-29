@@ -6,7 +6,7 @@ class NeuralCarObject extends CarObject {
         super(track, scoreWeights);
 
         this.neuralNet = new NeuralNet(
-          [15, 32, 24, 2],
+          [17, 32, 24, 2],
           ["leaky_relu", "leaky_relu", "tanh"],
           genome
         );
@@ -117,9 +117,16 @@ class NeuralCarObject extends CarObject {
       const ttcLinear = 1 - Math.min(timeToCollision, ttcMax) / ttcMax;
       inputs.push(Math.max(0, ttcLinear));
 
+      // use yaw rate as input (index 15)
+      inputs.push(Math.max(-1, Math.min(1, this.model.yawRate / this.model.yawRateMax)));
+
+      // use slip ratio as input (index 16)
+      const slipScale = 0.5
+      inputs.push(Math.max(-1, Math.min(1, this.model.slipRatio / slipScale)));
+
       const outputs = this.neuralNet.forward(inputs);
 
-      this.debug = inputs[13].toFixed(3)
+      this.debug = inputs[16].toFixed(2)
       
       const throttleOutput = outputs[0];
       const turnOutput = outputs[1];
