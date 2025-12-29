@@ -113,4 +113,12 @@ export {
     getEdge022Texture,
     loadFinishline001Texture,
     getFinishline001Texture,
+    loadCrate001Texture,
+    getCrate001Texture,
+    loadCrate002Texture,
+    getCrate002Texture,
+    loadCrate003Texture,
+    getCrate003Texture,
+    loadCrate004Texture,
+    getCrate004Texture,
 } from './AssetLoader';

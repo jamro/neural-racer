@@ -72,6 +72,15 @@ const TEXTURE_REGISTRY = {
     edge021: 'assets/img/edge021.png',
     edge022: 'assets/img/edge022.png',
 
+    crates_001: 'assets/img/crates_001.png',
+    crates_002: 'assets/img/crates_002.png',
+    crates_003: 'assets/img/crates_003.png',
+    crates_004: 'assets/img/crates_004.png',
+    crates_005: 'assets/img/crates_005.png',
+    crates_006: 'assets/img/crates_006.png',
+    crates_007: 'assets/img/crates_007.png',
+    crates_008: 'assets/img/crates_008.png',
+
     // Finishline textures
     finishline001: 'assets/img/finishline001.png',
 };
@@ -263,3 +272,13 @@ export function getEdge022Texture() { return getTexture('edge022'); }
 // Finishline texture exports
 export async function loadFinishline001Texture() { return await loadTexture('finishline001'); }
 export function getFinishline001Texture() { return getTexture('finishline001'); }
+
+// Crates texture exports
+export async function loadCrate001Texture() { return await loadTexture('crates001'); }
+export function getCrate001Texture() { return getTexture('crates001'); }
+export async function loadCrate002Texture() { return await loadTexture('crates002'); }
+export function getCrate002Texture() { return getTexture('crates002'); }
+export async function loadCrate003Texture() { return await loadTexture('crates003'); }
+export function getCrate003Texture() { return getTexture('crates003'); }
+export async function loadCrate004Texture() { return await loadTexture('crates004'); }
+export function getCrate004Texture() { return getTexture('crates004'); }

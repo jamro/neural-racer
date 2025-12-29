@@ -9,3 +9,6 @@
 - **Leaky ReLU > ReLU**: Leaky ReLU is better than ReLU in this setup because it prevents neurons from becoming permanently inactive, allowing all weights to keep influencing behavior and remain evolvable by the genetic algorithm
 - **radar beam layout**: putting more beams in the center of the car and less beams on sides gives better results (higher resolution data). Longer beams in the front also help (achieved by by adjusting the decay rate of the radar beams in the neural network inputs).
 - **extra input**: adding extra inputs calculated from the car's state helps to improve the performance of the neural network (e.g. time to collision, left right balance, etc.).
+- **meaningful inputs**: to check if the inputs are meaningful, run tests race disabling selected inputs (e.g. by setting them to 0) and compare the results with the original race. Score difference will show if the inputs are helpful.
+- **AI-generated graphics**: AI can be used to generate spritesheets with track tetrues and elements.
+- **Less neurons is more**: GA does not handle well large NNs with many unused neurons. It leads to mutation of non significant parameters and slower evolution.

@@ -27,7 +27,7 @@ const tracksUrls = [
     'assets/tracks/lesson_000.svg',
     'assets/tracks/lesson_001.svg',
     'assets/tracks/lesson_003.svg',
-    //'assets/tracks/lesson_003.svg',
+    'assets/tracks/lesson_005.svg',
     //'assets/tracks/lesson_003.svg',
     //'assets/tracks/lesson_003.svg',
     //'assets/tracks/lesson_003.svg',
