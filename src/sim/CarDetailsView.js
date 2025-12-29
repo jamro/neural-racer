@@ -35,7 +35,7 @@ class CarDetailsView extends PIXI.Container {
     this.addChild(this.scoreProgressBar);
   }
 
-  render() {
+  renderView(delta) {
     if (!this.car) return;
 
     const scoreComponents = this.car.calculateScoreComponents();

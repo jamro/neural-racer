@@ -45,13 +45,13 @@ class SimulationView extends PIXI.Container {
         this.masterContainer.addChild(car.view);
     }
 
-    render(delta) {
-        this.carDetailsView.render();
-        this.generationDetailsView.render();
+    renderView(delta) {
+        this.carDetailsView.renderView(delta);
+        this.generationDetailsView.renderView(delta);
         this.masterContainer.x = this.targetCameraPosition.x;
         this.masterContainer.y = this.targetCameraPosition.y;
         if(this.track) {
-          this.track.render(
+          this.track.renderView(
             delta, 
             this.viewWidth, 
             this.viewHeight,

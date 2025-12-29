@@ -127,8 +127,8 @@ class TrackObject extends AbstractSimulationObject {
       );
     }
 
-    render(delta, viewWidth, viewHeight, xOffset, yOffset) {
-        this.view.render(viewWidth, viewHeight, xOffset, yOffset);
+    renderView(delta, viewWidth, viewHeight, xOffset, yOffset) {
+        this.view.renderView(viewWidth, viewHeight, xOffset, yOffset);
     }
 
     update(delta) {

@@ -86,7 +86,7 @@ class TrackView extends PIXI.Container {
       return sprite;
     }
 
-    render(width, height, xOffset = 0, yOffset = 0) {
+    renderView(width, height, xOffset = 0, yOffset = 0) {
       const renderRectX = -xOffset - width/2;
       const renderRectY = -yOffset - height/2;
       const renderRectWidth = width;

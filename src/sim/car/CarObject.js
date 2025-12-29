@@ -231,7 +231,7 @@ class CarObject extends AbstractSimulationObject {
       return total;
     }
 
-    render(delta) { // delta is in seconds
+    renderView(delta) { // delta is in seconds
       this.view.x = this.metersToPixels(this.x);
       this.view.y = this.metersToPixels(this.y);
       this.view.rotation = this.direction;

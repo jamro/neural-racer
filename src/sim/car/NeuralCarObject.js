@@ -6,7 +6,7 @@ class NeuralCarObject extends CarObject {
         super(track, scoreWeights);
 
         this.neuralNet = new NeuralNet(
-          [14, 24, 16, 2],
+          [14, 32, 24, 2],
           ["leaky_relu", "leaky_relu", "tanh"],
           genome
         );

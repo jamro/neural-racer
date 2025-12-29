@@ -4,7 +4,7 @@ const PIXELS_PER_METER_SCALE = 50 / 4;  // 50 pixels is 4 meters5
 
 /**
  * Base class for all simulation objects.
- * All objects added to the simulation must implement update() and render() methods.
+ * All objects added to the simulation must implement update() and renderView() methods.
  */
 class AbstractSimulationObject {
     constructor() {
@@ -28,8 +28,8 @@ class AbstractSimulationObject {
      * Called at the render rate (typically display refresh rate).
      * @param {number} delta - Time elapsed since last render in seconds
      */
-    render(delta) {
-        throw new Error('render() method must be implemented by subclass');
+    renderView(delta) {
+        throw new Error('renderView() method must be implemented by subclass');
     }
 
     destroy() {

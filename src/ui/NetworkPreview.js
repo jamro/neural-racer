@@ -11,7 +11,7 @@ class NetworkPreview extends PIXI.Container {
         this.addChild(this.canvas);
     }
 
-    render(network, genome = null) {
+    renderView(network, genome = null) {
         this.canvas.clear();
         if (!network) return;
 

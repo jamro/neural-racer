@@ -14,7 +14,7 @@ class TiledBackground extends PIXI.Container {
         this._lastYOffset = null;
     }
 
-    async render(width, height, scale = 0, xOffset = 0, yOffset = 0) {
+    async renderView(width, height, scale = 0, xOffset = 0, yOffset = 0) {
         // Cache texture after first load to avoid async operations every frame
         if (!this._cachedTexture) {
             if (this.texture) {

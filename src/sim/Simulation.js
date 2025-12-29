@@ -9,6 +9,7 @@ class Simulation extends AbstractSimulationObject {
         super();
 
         this.simulationStep = 0.05;
+        this.simulationSpeed = 1;
         
         this.running = false;
         this.renderRunning = false;
@@ -22,6 +23,7 @@ class Simulation extends AbstractSimulationObject {
         this.activeLeaderFollowing = false;
         this.onComplete = () => {}
         this.completeDelay = COMPLETE_DELAY;
+        this.frameCount = 0;
     }
 
     setTrack(track) {
@@ -31,6 +33,10 @@ class Simulation extends AbstractSimulationObject {
         this.track = track;
         this.addObject(track);
         this.view.setTrack(track);
+    }
+
+    renderView(delta) {
+      this.view.renderView(delta);
     }
 
     addCar(car) {
@@ -80,8 +86,8 @@ class Simulation extends AbstractSimulationObject {
         if (typeof object.update !== 'function') {
             throw new Error('Simulation object must implement update(delta) method');
         }
-        if (typeof object.render !== 'function') {
-            throw new Error('Simulation object must implement render(delta) method');
+        if (typeof object.renderView !== 'function') {
+            throw new Error('Simulation object must implement renderView(delta) method');
         }
     }
 
@@ -97,9 +103,10 @@ class Simulation extends AbstractSimulationObject {
         }
     }
 
-    start(simulationStep = 0.05) {
+    start(simulationStep = 0.05, simulationSpeed = 1) {
         if (this.running) return;
         this.simulationStep = simulationStep;
+        this.simulationSpeed = simulationSpeed;
         this.running = true;
         this.completeCounter = 100;
         requestAnimationFrame(this.simulationLoop);
@@ -137,9 +144,9 @@ class Simulation extends AbstractSimulationObject {
         
         for (const object of this.objects) {
             // All objects are validated to have render method
-            object.render(deltaSeconds);
+            object.renderView(deltaSeconds);
         }
-
+        this.renderView(deltaSeconds);
 
         // find leader and set it as focused car
         if (Math.random() < 0.3) { // 30% chance to find a new leader
@@ -153,32 +160,51 @@ class Simulation extends AbstractSimulationObject {
               this.leaderCar.active = true;
             }
           }
-
-        this.view.render();
-        this.updateCamera();
     }
 
     simulationLoop = (currentTime) => {
+        this.frameCount++;
         if (!this.running) return;
-        
-        // Run simulation at fixed timestep
-        // Update all objects (all objects are validated to have update method)
-        for (const object of this.objects) {
-            object.update(this.simulationStep);
-        }
 
-        // end condition
-        if (this.generation.activeCount === 0) {
-            this.completeCounter--;
-        }
-        if(this.completeCounter <= 0) {
-          console.log('Generation completed');
-          this.onComplete();
-          return
+        if(this.simulationSpeed > 1) {
+          const stepGroup = Math.round(this.simulationSpeed);
+          for(let i = 0; i < stepGroup; i++) {
+            if(!this.singleSimulationStep()) {
+              return
+            }
+          }
+          this.updateCamera();
+        } else {
+          const skipFrames = Math.round(1 / this.simulationSpeed);
+          if(this.frameCount % skipFrames === 0) {
+            if(!this.singleSimulationStep()) {
+              return
+            }
+            this.updateCamera();
+          }
         }
 
         // Continue simulation loop
         requestAnimationFrame(this.simulationLoop);
+    }
+
+    singleSimulationStep() {
+        // Run simulation at fixed timestep
+        // Update all objects (all objects are validated to have update method)
+        for (const object of this.objects) {
+          object.update(this.simulationStep);
+        }
+
+        // end condition
+        if (this.generation.activeCount === 0) {
+          this.completeCounter--;
+        }
+        if(this.completeCounter <= 0) {
+          console.log('Generation completed');
+          this.onComplete();
+          return false
+        }
+        return true
     }
 
     scaleView(width, height) {
@@ -199,6 +225,7 @@ class Simulation extends AbstractSimulationObject {
         this.cars = [];
         this.track = null;
         this.generation = null;
+        this.frameCount = 0;
     }
 }
 

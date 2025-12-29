@@ -32,7 +32,7 @@ class GenerationDetailsView extends PIXI.Container {
     this.statusProgressBar.colors = [0xff0000, 0xffffff, 0x8888ff];
   }
 
-  render() {
+  renderView(delta) {
     if (!this.generation) return;
 
     const history = []
