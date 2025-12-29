@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import TiledBackground from './view/TiledBackground';
 import { getTexture } from '../../loaders/AssetLoader';
+import CullingContainer from '../CullingContainer';
 
 const SHOW_TRACK_GEOMETRY = false;
 
@@ -47,7 +48,7 @@ class TrackView extends PIXI.Container {
         this.background = new TiledBackground();
         this.addChild(this.background);
 
-        this.graphicsContainer = new PIXI.Container();
+        this.graphicsContainer = new CullingContainer();
         this.addChild(this.graphicsContainer);
         
         this.canvas = new PIXI.Graphics();
@@ -86,9 +87,21 @@ class TrackView extends PIXI.Container {
     }
 
     render(width, height, xOffset = 0, yOffset = 0) {
+      const renderRectX = -xOffset - width/2;
+      const renderRectY = -yOffset - height/2;
+      const renderRectWidth = width;
+      const renderRectHeight = height;
+      
       this.background.renderSync(width, height, 1, xOffset, yOffset);
       this.background.x = -xOffset - width/2;
       this.background.y = -yOffset - height/2;
+
+      this.graphicsContainer.renderArea(
+        renderRectX, 
+        renderRectY, 
+        renderRectWidth, 
+        renderRectHeight
+      );
     }
 
     addSegment(ax, ay, bx, by) {
