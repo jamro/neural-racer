@@ -30,6 +30,7 @@ class TrackView extends PIXI.Container {
             'edge007', 'edge008', 'edge009', 'edge010', 'edge011', 'edge012',
             'edge013', 'edge014', 'edge015', 'edge016', 'edge017', 'edge018', 
             'edge019', 'edge020', 'edge021', 'edge022',
+            'ruin001', 'ruin002', 'ruin003', 'ruin004', 'ruin005',
             'crates_001', 'crates_002', 'crates_003', 'crates_004',
             'crates_005', 'crates_006', 'crates_007', 'crates_008',
             'finishline001'

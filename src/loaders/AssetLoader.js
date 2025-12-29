@@ -47,6 +47,13 @@ const TEXTURE_REGISTRY = {
     bush007: 'assets/img/bush007.png',
     bush008: 'assets/img/bush008.png',
     bush009: 'assets/img/bush009.png',
+
+    // ruin
+    ruin001: 'assets/img/ruin001.png',
+    ruin002: 'assets/img/ruin002.png',
+    ruin003: 'assets/img/ruin003.png',
+    ruin004: 'assets/img/ruin004.png',
+    ruin005: 'assets/img/ruin005.png',
     
     // Edge textures
     edge001: 'assets/img/edge001.png',
@@ -268,6 +275,18 @@ export async function loadEdge021Texture() { return await loadTexture('edge021')
 export function getEdge021Texture() { return getTexture('edge021'); }
 export async function loadEdge022Texture() { return await loadTexture('edge022'); }
 export function getEdge022Texture() { return getTexture('edge022'); }
+
+// Ruin texture exports
+export async function loadRuin001Texture() { return await loadTexture('ruin001'); }
+export function getRuin001Texture() { return getTexture('ruin001'); }
+export async function loadRuin002Texture() { return await loadTexture('ruin002'); }
+export function getRuin002Texture() { return getTexture('ruin002'); }
+export async function loadRuin003Texture() { return await loadTexture('ruin003'); }
+export function getRuin003Texture() { return getTexture('ruin003'); }
+export async function loadRuin004Texture() { return await loadTexture('ruin004'); }
+export function getRuin004Texture() { return getTexture('ruin004'); }
+export async function loadRuin005Texture() { return await loadTexture('ruin005'); }
+export function getRuin005Texture() { return getTexture('ruin005'); }
 
 // Finishline texture exports
 export async function loadFinishline001Texture() { return await loadTexture('finishline001'); }
