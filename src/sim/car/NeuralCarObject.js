@@ -6,7 +6,7 @@ class NeuralCarObject extends CarObject {
         super(track, scoreWeights);
 
         this.neuralNet = new NeuralNet(
-          [14, 32, 24, 2],
+          [15, 32, 24, 2],
           ["leaky_relu", "leaky_relu", "tanh"],
           genome
         );
@@ -103,13 +103,19 @@ class NeuralCarObject extends CarObject {
       inputs.push(this.calculateLeftRightBalance());
 
       // use time to collision as input (index 12)
-      inputs.push(Math.exp(-Math.min(this.calculateTimeToCollision(), 10.0)/2.5));
+      const timeToCollision = this.calculateTimeToCollision();
+      inputs.push(Math.exp(-Math.min(timeToCollision, 10.0)/1.5));
 
       // use safe direction as input (index 13)
       const radarAngleMin = this.radarBeamAngles[0]
       const radarAngleMax = this.radarBeamAngles[this.radarBeamCount - 1]
       const normalizedSafeDirection = 2*(this.safeDirection - radarAngleMin) / (radarAngleMax - radarAngleMin) - 1
       inputs.push(normalizedSafeDirection);
+      
+      // use long range TTC as input (index 14)
+      const ttcMax = 8.0;
+      const ttcLinear = 1 - Math.min(timeToCollision, ttcMax) / ttcMax;
+      inputs.push(Math.max(0, ttcLinear));
 
       const outputs = this.neuralNet.forward(inputs);
 
