@@ -69,10 +69,10 @@ class CarDetailsView extends PIXI.Container {
 
     this.statusTextField.text = "SCORE: " + (this.car.calculateScore()).toFixed(2) + "\n\n" +
         "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +
-        "Speed: " + (this.car.speed*3.6).toFixed(1) + " km/h\n\n" +
-        "Throttle: " + (100*this.car.throttleValue).toFixed(1) + "%\n" +
-        "Brake: " + (100*this.car.brakeValue).toFixed(1) + "%\n" +
-        "Turn: " + (100*this.car.turnValue).toFixed(1) + "%\n\n" +
+        "Speed: " + (this.car.model.speed*3.6).toFixed(1) + " km/h\n\n" +
+        "Throttle: " + (100*this.car.model.throttleValue).toFixed(1) + "%\n" +
+        "Brake: " + (100*this.car.model.brakeValue).toFixed(1) + "%\n" +
+        "Turn: " + (100*this.car.model.turnValue).toFixed(1) + "%\n\n" +
         "Neural Net:\n" + neuralNetStatsText + "\n" +
         "DEBUG:\n" + (this.car.debug || '-none-') + "\n";
   }

@@ -60,7 +60,7 @@ class NeuralCarObject extends CarObject {
         minFront, 
         this.radarBeams[centerBeamIndex + 1] !== null ? this.radarBeams[centerBeamIndex + 1] : Infinity
       )
-      minFront = Math.max(0, minFront - this.width/2)
+      minFront = Math.max(0, minFront - this.length/2)
       
       const timeToCollision = Math.abs(this.speed) > 0.1 ? minFront / this.speed : 1000;
       return timeToCollision

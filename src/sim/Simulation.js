@@ -44,10 +44,12 @@ class Simulation extends AbstractSimulationObject {
             throw new Error('Track not set');
         }
         const startSegment = this.track.getStartPosition();
-        car.x = startSegment.x + Math.random() * 0.1 - 0.05;
-        car.y = startSegment.y + Math.random() * 0.1 - 0.05;
         const angleJitter = Math.random() * (Math.PI / 180) * 2 - (Math.PI / 180);
-        car.direction = startSegment.angle + Math.PI / 2 + angleJitter;
+        car.setPosition(
+          startSegment.x + Math.random() * 0.1 - 0.05,
+          startSegment.y + Math.random() * 0.1 - 0.05,
+          startSegment.angle + Math.PI / 2 + angleJitter
+        );
         this.cars.push(car);
         this.addObject(car);
         this.view.addCar(car);

@@ -1,5 +1,6 @@
 import CarView from './CarView';
 import AbstractSimulationObject from '../AbstractSimulationObject';
+import CarPhysicModel from './CarPhysicModel';
 
 class CarObject extends AbstractSimulationObject {
     constructor(track, scoreWeights) {
@@ -10,16 +11,10 @@ class CarObject extends AbstractSimulationObject {
         if (!scoreWeights) {
           throw new Error('Score weights are required');
         }
+        this.model = new CarPhysicModel();
         this.scoreWeights = scoreWeights;
         this.track = track;
-        this.width = 4; // meters
-        this.height = 2; // meters
-        this.x = 0; // meters
-        this.y = 0; // meters
-        this.speed = 0; // meters/second
-        this.acceleration = 0; // meters/second^2
-        this.turnRate = 0; // radians/second 
-        this.direction = 0 // radians
+
         this.radarBeamAngles = [
           -85 * Math.PI / 180,
           -45 * Math.PI / 180,
@@ -35,11 +30,7 @@ class CarObject extends AbstractSimulationObject {
         this._isCrashed = false;
         this._isFinished = false;
         this.checkpointsPassed = 0;
-        this.throttleValue = 0;
-        this.brakeValue = 0;
-        this.turnValue = 0;
         this.staleCounter = 50
-        this.maxSpeed = 40; // meters/second, 140 km/h
         this.liftimeFrames = 0;
         this.lifetimeSeconds = 0;
         this.speedSum = 0;
@@ -49,10 +40,24 @@ class CarObject extends AbstractSimulationObject {
 
         // create view
         this.view = new CarView(
-          this.metersToPixels(this.width),
-          this.metersToPixels(this.height),
+          this.metersToPixels(this.model.length),
+          this.metersToPixels(this.model.width),
           this.radarBeamAngles
         );
+    }
+
+    get x() {
+      return this.model.x;
+    }
+    get y() {
+      return this.model.y;
+    }
+    get direction() {
+      return this.model.direction;
+    }
+
+    setPosition(x, y, direction) {
+      this.model.setPosition(x, y, direction);
     }
 
     get radarBeamCount() {
@@ -60,26 +65,15 @@ class CarObject extends AbstractSimulationObject {
     }
 
     throttle(v) {
-      const maxAcceleration = 4.5; // meters/second^2 6sec 0-100km/h
-      v = Math.max(Math.min(v, 1), 0);
-      this.throttleValue = v;
-      this.brakeValue = 0;
-      this.acceleration = v * maxAcceleration
+      this.model.throttle(v);
     }
 
     breakCar(v) {
-      const maxDeceleration = 8; // meters/second^2 6sec 0-100km/h
-      v = Math.max(Math.min(v, 1), 0);
-      this.brakeValue = v;
-      this.throttleValue = 0;
-      this.acceleration = -v * maxDeceleration
+      this.model.breakCar(v);
     }
 
     turn(v) {
-      const maxTurnRate = Math.PI*0.5; // radians/second
-      v = Math.max(Math.min(v, 1), -1);
-      this.turnValue = v;
-      this.turnRate = v * maxTurnRate;
+      this.model.turn(v);
     }
 
     set active(isActive) {
@@ -107,6 +101,22 @@ class CarObject extends AbstractSimulationObject {
       this._isFinished = isFinished;
     }
 
+    get maxSpeed() {
+      return this.model.maxSpeed;
+    }
+
+    get speed() {
+      return this.model.speed;
+    }
+
+    get length() {
+      return this.model.length;
+    }
+
+    get width() {
+      return this.model.width;
+    }
+
     update(delta) { // delta is in seconds
       if (this._isCrashed) return;
 
@@ -120,26 +130,16 @@ class CarObject extends AbstractSimulationObject {
         this.lifetimeSeconds += delta;
       }
 
-      const dragCoefficient = Math.min(1, this.speed / 8); // avoid drag at low speed to not block the car
-      const dragDeceleration = 1 * dragCoefficient; // meters/second^2
-
-      this.speed += (this.acceleration - dragDeceleration) * delta;
-      this.speed = Math.max(Math.min(this.speed, this.maxSpeed), 0);
-
-      const turnCoefficient = Math.min(1, this.speed / 8); // avoid turning in place at low speed
-      this.direction += this.turnRate * delta * turnCoefficient;
-
-      this.x += this.speed * Math.cos(this.direction) * delta;
-      this.y += this.speed * Math.sin(this.direction) * delta;
+      this.model.updateStep(delta);
 
       // update radar beams
       for (let index = 0; index < this.radarBeams.length; index++) {
-        const angle = this.radarBeamAngles[index] + this.direction
-        this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.x, this.y, angle);
+        const angle = this.radarBeamAngles[index] + this.model.direction
+        this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.model.x, this.model.y, angle);
       }
 
       // check for checkpoints
-      const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.x, this.y, this.width, this.height, this.direction);
+      const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
       if (checkpointIndex !== false) {
         this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
       }
@@ -150,18 +150,18 @@ class CarObject extends AbstractSimulationObject {
       }
 
       // check for collisions
-      if (!this._isFinished && this.track.isBoxCollidingWithWall(this.x, this.y, this.width, this.height, this.direction) !== false) {
-        if (this.speed > 0) {
+      if (!this._isFinished && this.track.isBoxCollidingWithWall(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction) !== false) {
+        if (this.model.speed > 0) {
           console.log('Collision detected, stopping car');
           this._isCrashed = true;
         }
-        this.speed = 0;
-        this.turnRate = 0;
+        this.model.speed = 0;
+        this.model.turnRate = 0;
       }
 
       // check for staleness
       const staleThreshold = 3; //  meters/second
-      if (this.speed < staleThreshold) {
+      if (this.model.speed < staleThreshold) {
         this.staleCounter--;
       }
       if (this.staleCounter < 0 && !this._isFinished) {
@@ -171,8 +171,8 @@ class CarObject extends AbstractSimulationObject {
       // track average speed
       if(!this._isFinished) {
         const speedingLimitValue = this.scoreWeights.speedingLimitValue || 60/3.6; // meters/second, 60 km/h
-        this.speedSum += this.speed;
-        if (this.speed > speedingLimitValue) {
+        this.speedSum += this.model.speed;
+        if (this.model.speed > speedingLimitValue) {
           this.speedingCounter++;
         }
       }
@@ -196,7 +196,7 @@ class CarObject extends AbstractSimulationObject {
     }
 
     calculateCheckpointProgress() {
-      return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.x, this.y)-1) / (this.track.checkpoints.checkpointCount-1)
+      return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.model.x, this.model.y)-1) / (this.track.checkpoints.checkpointCount-1)
     }
 
     calculateAverageSpeed() {
@@ -208,7 +208,7 @@ class CarObject extends AbstractSimulationObject {
       const distanceProgressScore = this.calculateCheckpointProgress();
 
       // speed score
-      let speedScore = (this.calculateAverageSpeed() / this.maxSpeed);
+      let speedScore = (this.calculateAverageSpeed() / this.model.maxSpeed);
       speedScore = Math.max(0, Math.min(1, speedScore));
       const speedScoreAtFinishLine = (distanceProgressScore >= 1) ? speedScore : 0;
 
@@ -232,9 +232,9 @@ class CarObject extends AbstractSimulationObject {
     }
 
     renderView(delta) { // delta is in seconds
-      this.view.x = this.metersToPixels(this.x);
-      this.view.y = this.metersToPixels(this.y);
-      this.view.rotation = this.direction;
+      this.view.x = this.metersToPixels(this.model.x);
+      this.view.y = this.metersToPixels(this.model.y);
+      this.view.rotation = this.model.direction;
       this.view.crashed = this._isCrashed;
 
       if (!this._isCrashed && !this._isFinished) {  // only render radar if the car is not crashed or finished
