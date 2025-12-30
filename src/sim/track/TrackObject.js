@@ -150,6 +150,10 @@ class TrackObject extends AbstractSimulationObject {
     getStartPosition() {
         return this.checkpoints.getStartPosition();
     }
+
+    reset() {
+      this.view.driftMarks.clear();
+    }
 }
 
 export default TrackObject;

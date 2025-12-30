@@ -10,6 +10,7 @@ const TEXTURE_REGISTRY = {
     car: 'assets/img/car_small.png',
     ghost: 'assets/img/ghost_small.png',
     shadow: 'assets/img/shadow_small.png',
+    tire_mark: 'assets/img/tire_mark.png',
     
     // Track textures
     grass: 'assets/img/grass.png',
@@ -159,6 +160,8 @@ export async function loadGhostTexture() { return await loadTexture('ghost'); }
 export function getGhostTexture() { return getTexture('ghost'); }
 export async function loadShadowTexture() { return await loadTexture('shadow'); }
 export function getShadowTexture() { return getTexture('shadow'); }
+export async function loadTireMarkTexture() { return await loadTexture('tire_mark'); }
+export function getTireMarkTexture() { return getTexture('tire_mark'); }
 
 // Grass texture exports
 export async function loadGrassTexture() { return await loadTexture('grass'); }

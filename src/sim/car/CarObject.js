@@ -5,6 +5,7 @@ import CarPhysicModel from './CarPhysicModel';
 class CarObject extends AbstractSimulationObject {
     constructor(track, scoreWeights) {
         super();
+        this.carId = Math.random().toString(36).substring(2, 15);
         if (!track) {
           throw new Error('Track is required');
         }

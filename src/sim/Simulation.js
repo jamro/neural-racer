@@ -31,12 +31,24 @@ class Simulation extends AbstractSimulationObject {
             throw new Error('Track already set');
         }
         this.track = track;
+        this.track.view.pixiApp = this.app;
         this.addObject(track);
         this.view.setTrack(track);
     }
 
     renderView(delta) {
       this.view.renderView(delta);
+      if(this.track && this.leaderCar) {
+        this.track.view.drawDriftMark(
+          this.leaderCar.carId,
+          this.metersToPixels(this.leaderCar.x),
+          this.metersToPixels(this.leaderCar.y),
+          this.leaderCar.direction,
+          this.metersToPixels(this.leaderCar.length),
+          this.metersToPixels(this.leaderCar.width),
+          this.leaderCar.model.tiresTraction
+        );
+      }
     }
 
     addCar(car) {
@@ -225,6 +237,7 @@ class Simulation extends AbstractSimulationObject {
         this.objects.forEach(object => object.destroy());
         this.objects = [];
         this.cars = [];
+        this.track.reset();
         this.track = null;
         this.generation = null;
         this.frameCount = 0;

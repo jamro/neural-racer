@@ -45,6 +45,7 @@ class CarPhysicModel {
     this.mu = 1.05;
     this.Cf = 90000;
     this.Cr = 100000;
+    this.tiresTraction = 1.0; // current tires traction from 0 to 1
 
     // AWD split (front ratio)
     this.awdFrontRatio = 0.5;
@@ -160,6 +161,11 @@ class CarPhysicModel {
     const eps = 1e-6;
     this.slipRatio = this.vy / (Math.abs(this.vx) + eps);
     if (this.vx < 0.3) this.slipRatio = 0;
+    const slipScale = 1.0;
+    const slipDueToTurnForce = Math.max(0, Math.min(this.slipRatio / slipScale, 1));
+    const slipDueToLateralForce = Math.max(0, Math.min(FyF / FyFmax, 1));
+    const slipDueToBrakeForce = Math.max(0, Math.min(FxBrakeWanted / this.brakeForceMax, 1));
+    this.tiresTraction += (Math.max(slipDueToTurnForce, slipDueToLateralForce, slipDueToBrakeForce) - this.tiresTraction) * 0.3;
 
     // prevent turning in place at low/zero speed
     let t = (this.vx - this.turn_v0) / (this.turn_v1 - this.turn_v0);

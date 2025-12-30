@@ -2,12 +2,14 @@ import * as PIXI from 'pixi.js';
 import TiledBackground from './view/TiledBackground';
 import { getTexture } from '../../loaders/AssetLoader';
 import CullingContainer from '../CullingContainer';
+import DriftMarks from './view/DriftMarks';
 
 const SHOW_TRACK_GEOMETRY = false;
 
 class TrackView extends PIXI.Container {
     constructor(wallWidth) {
         super();
+        this._pixiApp = null;
         // Helper function to convert filename to registry key
         // track_bg_001 -> trackBg001, tires001 -> tires001, etc.
         const filenameToKey = (filename) => {
@@ -55,6 +57,18 @@ class TrackView extends PIXI.Container {
         if(SHOW_TRACK_GEOMETRY) {
           this.addChild(this.canvas);
         }
+
+        this.driftMarks = new DriftMarks(this.pixiApp);
+        this.addChild(this.driftMarks);
+    }
+
+    set pixiApp(app) {
+      this._pixiApp = app;
+      this.driftMarks.pixiApp = app;
+    }
+
+    get pixiApp() {
+      return this._pixiApp;
     }
 
     addTrackShape(shape, color = 0xc39d75) {
@@ -114,6 +128,10 @@ class TrackView extends PIXI.Container {
       this.canvas.moveTo(ax, ay);
       this.canvas.lineTo(bx, by);
       this.canvas.stroke({ color: 0xffffff, alpha: 0.5, width: 1 });
+    }
+
+    drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha) {
+      this.driftMarks.drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha);
     }
 }
 
