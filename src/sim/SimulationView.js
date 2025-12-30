@@ -73,6 +73,30 @@ class SimulationView extends PIXI.Container {
             this.masterContainer.y
           );
         }
+        if(this.graphicsQuality === "high") {
+          let leaderCar = null;
+          for (const car of this.cars) {
+            this.track.view.drawDriftMark(
+              car.carId,
+              car.metersToPixels(car.x),
+              car.metersToPixels(car.y),
+              car.direction,
+              car.metersToPixels(car.length),
+              car.metersToPixels(car.width),
+              car.model.tiresTraction * (car.active ? 1 : 0.8)
+            );
+            if(car.active) {
+              leaderCar = car;
+            }
+          }
+          if(leaderCar) {
+            for (const car of this.cars) {
+              if(car.active) continue;
+              const distanceFromLeader = Math.sqrt(Math.pow(car.x - leaderCar.x, 2) + Math.pow(car.y - leaderCar.y, 2));
+              car.view.alpha = Math.min(1, Math.max(0, (distanceFromLeader-5)/25));
+            }
+          }
+        }
     }
 
     scaleView(width, height) {

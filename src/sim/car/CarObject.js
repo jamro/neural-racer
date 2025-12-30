@@ -82,7 +82,7 @@ class CarObject extends AbstractSimulationObject {
     }
 
     get active() {
-      return this._isActive;
+      return this.view.active
     }
 
     get isCrashed() {

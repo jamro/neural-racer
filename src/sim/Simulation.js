@@ -39,20 +39,6 @@ class Simulation extends AbstractSimulationObject {
 
     renderView(delta) {
       this.view.renderView(delta);
-
-      if(this.graphicsQuality === "high") {
-        for (const car of this.cars) {
-          this.track.view.drawDriftMark(
-            car.carId,
-            this.metersToPixels(car.x),
-            this.metersToPixels(car.y),
-            car.direction,
-            this.metersToPixels(car.length),
-            this.metersToPixels(car.width),
-            car.model.tiresTraction * (car === this.leaderCar ? 1 : 0.8)
-          );
-        }
-      }
     }
 
     addCar(car) {
