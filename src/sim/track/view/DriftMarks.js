@@ -1,28 +1,74 @@
 import * as PIXI from 'pixi.js';
 import { getTireMarkTexture } from '../../../loaders/AssetLoader';
 
+const TEXTURE_MARGIN = 32;
+const TEXTURE_SIZE = 2048
+const CELL_SIZE = TEXTURE_SIZE - TEXTURE_MARGIN * 2;
+
 class DriftMarks extends PIXI.Container {
     constructor(pixiApp) {
         super();
 
         this.pixiApp = pixiApp;
-
-
-        this.sprite = new PIXI.Sprite();
-        this.addChild(this.sprite);
-
-        this.clear();
-
         const brushTexture = getTireMarkTexture() || PIXI.Texture.EMPTY;
 
         this.brushLength = brushTexture.width * 0.75; // allow overlap of the brush
 
+        this.renderCanvas = []
         this.brush = new PIXI.Sprite(brushTexture);
         this.brush.anchor.set(0.5);
         this.brushAlphaMin = 0.05;
         this.brushAlphaMax = 0.5;
         this.brushWidthScale = 0.8
         this.lastCarState = {}
+        this.clear();
+    }
+
+    getTexture(x, y) {
+      const indexX = Math.floor(x / CELL_SIZE);
+      const indexY = Math.floor(y / CELL_SIZE);
+      if(!this.renderCanvas[indexX]) {
+        this.renderCanvas[indexX] = [];
+      }
+      if(!this.renderCanvas[indexX][indexY]) {
+        const texture = PIXI.RenderTexture.create({
+          width: TEXTURE_SIZE,
+          height: TEXTURE_SIZE,
+          resolution: 1,
+        });
+        const sprite = new PIXI.Sprite(texture);
+        this.addChild(sprite);
+        sprite.position.set(
+          indexX * CELL_SIZE - TEXTURE_MARGIN, 
+          indexY * CELL_SIZE - TEXTURE_MARGIN
+        );
+        
+        this.renderCanvas[indexX][indexY] = {
+          texture: texture,
+          sprite: sprite,
+          x: indexX * CELL_SIZE,
+          y: indexY * CELL_SIZE,
+          indexX: indexX,
+          indexY: indexY,
+        }
+      }
+      return this.renderCanvas[indexX][indexY];
+    }
+
+    getRenderTextures(x, y) {
+      const result = [this.getTexture(x, y)];
+      const margin = TEXTURE_MARGIN;
+      
+      for(let i = -1; i <= 1; i++) {
+        for(let j = -1; j <= 1; j++) {
+          const texture = this.getTexture(x + i * margin, y + j * margin);
+          //if(result.indexOf(texture) === -1) {
+            result.push(texture);
+          //}
+        }
+      }
+
+      return result;
     }
 
     getTiresPosition(x, y, carLength, carWidth, direction) {
@@ -47,9 +93,28 @@ class DriftMarks extends PIXI.Container {
     }
 
     drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha) {
-      if (!this.pixiApp) throw new Error('pixiApp not set');
-      if (!this.brush) throw new Error('brush not set');
-      if (!this.renderTexture) throw new Error('renderTexture not set');
+      const canvas = this.getRenderTextures(x, y);
+      for (const c of canvas) {
+        this.drawDriftMarkOnTexture(
+          c.texture, 
+          -c.x + TEXTURE_MARGIN, 
+          -c.y + TEXTURE_MARGIN, 
+          carId, 
+          x, 
+          y, 
+          direction, 
+          carLength, 
+          carWidth, 
+          alpha
+        );
+      }
+
+    }
+
+    drawDriftMarkOnTexture(renderTexture, xOffset, yOffset, carId, x, y, direction, carLength, carWidth, alpha) {
+      if (!this.pixiApp) throw new Error('pixiApp not set!!');
+      if (!this.brush) throw new Error('brush not set!!');
+      if (!renderTexture) throw new Error('renderTexture not set!!');
 
       if(!this.lastCarState[carId]) {
         this.lastCarState[carId] = {
@@ -81,11 +146,11 @@ class DriftMarks extends PIXI.Container {
       )
     
       const stamp = (x, y) => {
-        b.position.set(x, y);
+        b.position.set(x + xOffset, y + yOffset);
         this.pixiApp.renderer.render({
           container: b,
-          target: this.renderTexture,
-          clear: false,
+          target: renderTexture,
+          clear: false
         });
       };
     
@@ -107,16 +172,6 @@ class DriftMarks extends PIXI.Container {
     }
 
     clear() {
-      if(this.renderTexture) {
-        return
-        this.renderTexture.destroy();
-      }
-      this.renderTexture = PIXI.RenderTexture.create({
-        width: 4000,
-        height: 4000,
-        resolution: 1,
-      });
-      this.sprite.texture = this.renderTexture;
       this.lastCarState = {};
     }
     
