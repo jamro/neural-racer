@@ -131,4 +131,6 @@ export {
     getRuin004Texture,
     loadRuin005Texture,
     getRuin005Texture,
+    loadDustTexture,
+    getDustTexture,
 } from './AssetLoader';

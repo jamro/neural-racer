@@ -14,6 +14,7 @@ const TEXTURE_REGISTRY = {
     
     // Track textures
     grass: 'assets/img/grass.png',
+    dust: 'assets/img/dust.png',
     trackBg001: 'assets/img/track_bg_001.png',
     trackBg002: 'assets/img/track_bg_002.png',
     trackBg003: 'assets/img/track_bg_003.png',
@@ -166,6 +167,10 @@ export function getTireMarkTexture() { return getTexture('tire_mark'); }
 // Grass texture exports
 export async function loadGrassTexture() { return await loadTexture('grass'); }
 export function getGrassTexture() { return getTexture('grass'); }
+
+// Dust texture exports
+export async function loadDustTexture() { return await loadTexture('dust'); }
+export function getDustTexture() { return getTexture('dust'); }
 
 // Track background texture exports
 export async function loadTrackBg001Texture() { return await loadTexture('trackBg001'); }

@@ -46,21 +46,21 @@ class CarView extends PIXI.Container {
         this.addChild(this.radar);
 
         this.crash = new PIXI.Graphics();
-        this.crash.moveTo(-15, -15);
-        this.crash.lineTo(15, 15);
-        this.crash.stroke({ color: 0xff0000, width: 5 });
-        this.crash.moveTo(-15, 15);
-        this.crash.lineTo(15, -15);
-        this.crash.stroke({ color: 0xff0000, width: 5 });
+        //this.crash.moveTo(-15, -15);
+        //this.crash.lineTo(15, 15);
+        //this.crash.stroke({ color: 0xff0000, width: 5 });
+        //this.crash.moveTo(-15, 15);
+        //this.crash.lineTo(15, -15);
+        //this.crash.stroke({ color: 0xff0000, width: 5 });
         this.addChild(this.crash);
 
         this.ghostCrash = new PIXI.Graphics();
-        this.ghostCrash.moveTo(-15, -15);
-        this.ghostCrash.lineTo(15, 15);
-        this.ghostCrash.stroke({ color: 0xffffff, width: 5, alpha: 0.2 });
-        this.ghostCrash.moveTo(-15, 15);
-        this.ghostCrash.lineTo(15, -15);
-        this.ghostCrash.stroke({ color: 0xffffff, width: 5, alpha: 0.2 });
+        //this.ghostCrash.moveTo(-15, -15);
+        //this.ghostCrash.lineTo(15, 15);
+        //this.ghostCrash.stroke({ color: 0xffffff, width: 5, alpha: 0.2 });
+        //this.ghostCrash.moveTo(-15, 15);
+        //this.ghostCrash.lineTo(15, -15);
+        //this.ghostCrash.stroke({ color: 0xffffff, width: 5, alpha: 0.2 });
         this.addChild(this.ghostCrash);
 
         this.crash.visible = false;

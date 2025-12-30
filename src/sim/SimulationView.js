@@ -56,7 +56,7 @@ class SimulationView extends PIXI.Container {
 
     addCar(car) {
         this.cars.push(car);
-        this.masterContainer.addChild(car.view);
+        this.track.view.carsContainer.addChild(car.view);
     }
 
     renderView(delta) {
@@ -83,7 +83,8 @@ class SimulationView extends PIXI.Container {
               car.direction,
               car.metersToPixels(car.length),
               car.metersToPixels(car.width),
-              car.model.tiresTraction * (car.active ? 1 : 0.8)
+              car.isCrashed ? 0 : (car.model.tiresTraction * (car.active ? 1 : 0.8)),
+              (car.active && !car.isCrashed) ? car.model.tiresTraction : 0
             );
             if(car.active) {
               leaderCar = car;
@@ -93,7 +94,7 @@ class SimulationView extends PIXI.Container {
             for (const car of this.cars) {
               if(car.active) continue;
               const distanceFromLeader = Math.sqrt(Math.pow(car.x - leaderCar.x, 2) + Math.pow(car.y - leaderCar.y, 2));
-              car.view.alpha = Math.min(1, Math.max(0, (distanceFromLeader-5)/25));
+              car.view.alpha = 0.15 + 0.85*Math.min(1, Math.max(0, (distanceFromLeader-5)/15));
             }
           }
         }

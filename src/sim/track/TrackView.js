@@ -3,6 +3,7 @@ import TiledBackground from './view/TiledBackground';
 import { getTexture } from '../../loaders/AssetLoader';
 import CullingContainer from '../CullingContainer';
 import DriftMarks from './view/DriftMarks';
+import DustContainer from './view/DustContainer';
 
 const SHOW_TRACK_GEOMETRY = false;
 
@@ -48,37 +49,44 @@ class TrackView extends PIXI.Container {
         
         this.wallWidth = wallWidth;
         this.background = new TiledBackground();
-        this.addChild(this.background);
 
         this.graphicsContainer = new CullingContainer();
-        this.addChild(this.graphicsContainer);
         
         this.canvas = new PIXI.Graphics();
-
         this.driftMarks = new DriftMarks(this.pixiApp);
-        this.addChild(this.driftMarks);
+        this.dustContainer = new DustContainer();
+
+        this.carsContainer = new PIXI.Container();
+        this.addChild(this.carsContainer);
+        
         this._graphicsQuality = "low";
     }
 
     set graphicsQuality(quality) {
       this._graphicsQuality = quality;
-      if(quality === "low" && !this.canvas.parent) {
-        this.addChild(this.canvas);
-      } else if(quality === "high" && this.canvas.parent) {
-        this.removeChild(this.canvas);
+      
+      const includeInLowQuality = (obj) => {
+        if(quality === "low" && !obj.parent) {
+          this.addChild(obj);
+        } else if(quality === "high" && obj.parent) {
+          this.removeChild(obj);
+        }
       }
 
-      if(quality === "low" && this.graphicsContainer.parent) {
-        this.removeChild(this.graphicsContainer);
-      } else if(quality === "high" && !this.graphicsContainer.parent) {
-        this.addChild(this.graphicsContainer);
+      const includeInHighQuality = (obj) => {
+        if(quality === "low" && obj.parent) {
+          this.removeChild(obj);
+        } else if(quality === "high" && !obj.parent) {
+          this.addChild(obj);
+        }
       }
 
-      if(quality === "low" && this.background.parent) {
-        this.removeChild(this.background);
-      } else if(quality === "high" && !this.background.parent) {
-        this.addChild(this.background);
-      }
+      includeInLowQuality(this.canvas);
+      includeInHighQuality(this.background);
+      includeInHighQuality(this.graphicsContainer);
+      includeInHighQuality(this.driftMarks);
+      this.carsContainer.parent.setChildIndex(this.carsContainer, this.carsContainer.parent.children.length - 1);
+      includeInHighQuality(this.dustContainer);
     }
 
     get graphicsQuality() {
@@ -143,6 +151,9 @@ class TrackView extends PIXI.Container {
           renderRectHeight
         );
       }
+      if(this.dustContainer.parent) {
+        this.dustContainer.update();
+      }
     }
 
     addSegment(ax, ay, bx, by) {
@@ -157,9 +168,19 @@ class TrackView extends PIXI.Container {
       this.canvas.stroke({ color: 0xffffff, alpha: 0.5, width: 1 });
     }
 
-    drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha) {
+    drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha, dustAmount) {
       if(this.graphicsQuality === "high") {
         this.driftMarks.drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha);
+        if(dustAmount > 0) {
+          this.dustContainer.addDust(
+            x, 
+            y, 
+            direction,
+            carLength,
+            carWidth,
+            dustAmount
+          );
+        }
       }
     }
 }

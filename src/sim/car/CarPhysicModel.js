@@ -166,6 +166,9 @@ class CarPhysicModel {
     const slipDueToLateralForce = Math.max(0, Math.min(FyF / FyFmax, 1));
     const slipDueToBrakeForce = Math.max(0, Math.min(FxBrakeWanted / this.brakeForceMax, 1));
     this.tiresTraction += (Math.max(slipDueToTurnForce, slipDueToLateralForce, slipDueToBrakeForce) - this.tiresTraction) * 0.3;
+    if(this.vx < 10) {
+      this.tiresTraction *= this.vx / 10;
+    }
 
     // prevent turning in place at low/zero speed
     let t = (this.vx - this.turn_v0) / (this.turn_v1 - this.turn_v0);
