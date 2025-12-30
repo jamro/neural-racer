@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import CarDetailsView from './CarDetailsView';
 import GenerationDetailsView from './GenerationDetailsView';
+import FpsCounter from '../ui/FpsCounter';
 
 class SimulationView extends PIXI.Container {
     constructor() {
@@ -18,6 +19,9 @@ class SimulationView extends PIXI.Container {
         this.viewWidth = 100;
         this.viewHeight = 100;
         this.targetCameraPosition = { x: 0, y: 0, scale: 1 };
+
+        this.fpsCounter = new FpsCounter();
+        this.addChild(this.fpsCounter);
     }
 
     setGeneration(generation) {
@@ -68,6 +72,8 @@ class SimulationView extends PIXI.Container {
       this.carDetailsView.y = - height / 2 + 220;
       this.generationDetailsView.x = - width / 2;
       this.generationDetailsView.y = -height / 2;
+      this.fpsCounter.x = width / 2 - this.fpsCounter.width / 2;
+      this.fpsCounter.y = -height / 2;
     }
 }
 

@@ -2,7 +2,7 @@ class Config {
   constructor() {
     this.populationSize = 100; // number of cars in the population
     this.simulationStep = 0.060; // time step in seconds
-    this.simulationSpeed = 0.5; // number of sim steps per frame
+    this.simulationSpeed = 1; // number of sim steps per frame
     this.replayInterval = 6; // every how many epochs to run evolution on random, completed track
     this.trackPassThreshold = 0.25; // threshold for the pass rate to promote to the next track
     this.scoreWeights = {

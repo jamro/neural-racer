@@ -16,6 +16,8 @@ await app.init({
     autoDensity: true,
 });
 
+PIXI.Ticker.shared.maxFPS = 30;
+
 // Add the canvas to the DOM
 document.getElementById('app').appendChild(app.canvas);
 
