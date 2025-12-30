@@ -22,6 +22,16 @@ class SimulationView extends PIXI.Container {
 
         this.fpsCounter = new FpsCounter();
         this.addChild(this.fpsCounter);
+        this._graphicsQuality = "low";
+    }
+
+    set graphicsQuality(quality) {
+        this.track.view.graphicsQuality = quality;
+        this._graphicsQuality = quality;
+    }
+
+    get graphicsQuality() {
+        return this._graphicsQuality;
     }
 
     setGeneration(generation) {

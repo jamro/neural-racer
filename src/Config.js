@@ -1,5 +1,7 @@
 class Config {
   constructor() {
+    this.graphicsQuality = "high"; // "high" or "low"
+    this.frameRate = 30; // frame rate in frames per second
     this.populationSize = 100; // number of cars in the population
     this.simulationStep = 0.060; // time step in seconds
     this.simulationSpeed = 1; // number of sim steps per frame

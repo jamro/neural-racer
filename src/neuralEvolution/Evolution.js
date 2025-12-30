@@ -52,8 +52,8 @@ class Evolution {
   }
 
   start() {
-    const { simulationStep = 0.05, simulationSpeed = 1 } = this.config;
-    this.simulation.start(simulationStep, simulationSpeed); // Start simulation loop
+    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
+    this.simulation.start(simulationStep, simulationSpeed, graphicsQuality); // Start simulation loop
     this.simulation.startRender(); // Start render loop
   }
 
@@ -104,8 +104,8 @@ class Evolution {
     this.generation.resetScores();
     this.simulation.setGeneration(this.generation);
 
-    const { simulationStep = 0.05, simulationSpeed = 1 } = this.config;
-    this.simulation.start(simulationStep, simulationSpeed); // Start simulation loop
+    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
+    this.simulation.start(simulationStep, simulationSpeed, graphicsQuality); // Start simulation loop
     this.simulation.startRender(); // Start render loop
   }
 }

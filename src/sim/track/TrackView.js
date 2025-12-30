@@ -54,12 +54,35 @@ class TrackView extends PIXI.Container {
         this.addChild(this.graphicsContainer);
         
         this.canvas = new PIXI.Graphics();
-        if(SHOW_TRACK_GEOMETRY) {
-          this.addChild(this.canvas);
-        }
 
         this.driftMarks = new DriftMarks(this.pixiApp);
         this.addChild(this.driftMarks);
+        this._graphicsQuality = "low";
+    }
+
+    set graphicsQuality(quality) {
+      this._graphicsQuality = quality;
+      if(quality === "low" && !this.canvas.parent) {
+        this.addChild(this.canvas);
+      } else if(quality === "high" && this.canvas.parent) {
+        this.removeChild(this.canvas);
+      }
+
+      if(quality === "low" && this.graphicsContainer.parent) {
+        this.removeChild(this.graphicsContainer);
+      } else if(quality === "high" && !this.graphicsContainer.parent) {
+        this.addChild(this.graphicsContainer);
+      }
+
+      if(quality === "low" && this.background.parent) {
+        this.removeChild(this.background);
+      } else if(quality === "high" && !this.background.parent) {
+        this.addChild(this.background);
+      }
+    }
+
+    get graphicsQuality() {
+      return this._graphicsQuality;
     }
 
     set pixiApp(app) {
@@ -106,16 +129,20 @@ class TrackView extends PIXI.Container {
       const renderRectWidth = width;
       const renderRectHeight = height;
       
-      this.background.renderSync(width, height, 1, xOffset, yOffset);
-      this.background.x = -xOffset - width/2;
-      this.background.y = -yOffset - height/2;
+      if(this.background.parent) {
+        this.background.renderSync(width, height, 1, xOffset, yOffset);
+        this.background.x = -xOffset - width/2;
+        this.background.y = -yOffset - height/2;
+      }
 
-      this.graphicsContainer.renderArea(
-        renderRectX, 
-        renderRectY, 
-        renderRectWidth, 
-        renderRectHeight
-      );
+      if(this.graphicsContainer.parent) {
+        this.graphicsContainer.renderArea(
+          renderRectX, 
+          renderRectY, 
+          renderRectWidth, 
+          renderRectHeight
+        );
+      }
     }
 
     addSegment(ax, ay, bx, by) {
@@ -131,7 +158,9 @@ class TrackView extends PIXI.Container {
     }
 
     drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha) {
-      this.driftMarks.drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha);
+      if(this.graphicsQuality === "high") {
+        this.driftMarks.drawDriftMark(carId, x, y, direction, carLength, carWidth, alpha);
+      }
     }
 }
 

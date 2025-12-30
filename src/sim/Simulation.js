@@ -24,6 +24,7 @@ class Simulation extends AbstractSimulationObject {
         this.onComplete = () => {}
         this.completeDelay = COMPLETE_DELAY;
         this.frameCount = 0;
+        this.graphicsQuality = "low";
     }
 
     setTrack(track) {
@@ -39,16 +40,18 @@ class Simulation extends AbstractSimulationObject {
     renderView(delta) {
       this.view.renderView(delta);
 
-     for (const car of this.cars) {
-        this.track.view.drawDriftMark(
-          car.carId,
-          this.metersToPixels(car.x),
-          this.metersToPixels(car.y),
-          car.direction,
-          this.metersToPixels(car.length),
-          this.metersToPixels(car.width),
-          car.model.tiresTraction * (car === this.leaderCar ? 1 : 0.8)
-        );
+      if(this.graphicsQuality === "high") {
+        for (const car of this.cars) {
+          this.track.view.drawDriftMark(
+            car.carId,
+            this.metersToPixels(car.x),
+            this.metersToPixels(car.y),
+            car.direction,
+            this.metersToPixels(car.length),
+            this.metersToPixels(car.width),
+            car.model.tiresTraction * (car === this.leaderCar ? 1 : 0.8)
+          );
+        }
       }
     }
 
@@ -118,12 +121,14 @@ class Simulation extends AbstractSimulationObject {
         }
     }
 
-    start(simulationStep = 0.05, simulationSpeed = 1) {
+    start(simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low") {
         if (this.running) return;
         this.simulationStep = simulationStep;
         this.simulationSpeed = simulationSpeed;
+        this.graphicsQuality = graphicsQuality;
         this.running = true;
         this.completeCounter = 100;
+        this.view.graphicsQuality = graphicsQuality;
         requestAnimationFrame(this.simulationLoop);
     }
 
