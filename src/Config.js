@@ -10,8 +10,6 @@ class Config {
     this.scoreWeights = {
       avgSpeedAtFinishLine: 1, // weight for the average speed at the finish line. If the car is not at the finish line, this weight is 0.
       trackDistance: 1, // weight for the distance traveled on the track
-      speedingPenalty: 0, // weight for the speeding penalty.
-      speedingLimitValue: 80/3.6, // value of the speeding limit in meters/second
       avgSpeed: 0, // weight for the average speed of the car.
     };
 

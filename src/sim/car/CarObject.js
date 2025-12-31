@@ -36,7 +36,6 @@ class CarObject extends AbstractSimulationObject {
         this.lifetimeSeconds = 0;
         this.speedSum = 0;
         this.debug = ""
-        this.speedingCounter = 0;
         this.safeDirection = 0;
 
         // create view
@@ -171,11 +170,7 @@ class CarObject extends AbstractSimulationObject {
 
       // track average speed
       if(!this._isFinished) {
-        const speedingLimitValue = this.scoreWeights.speedingLimitValue || 60/3.6; // meters/second, 60 km/h
         this.speedSum += this.model.speed;
-        if (this.model.speed > speedingLimitValue) {
-          this.speedingCounter++;
-        }
       }
 
       // find safe direction
@@ -213,14 +208,10 @@ class CarObject extends AbstractSimulationObject {
       speedScore = Math.max(0, Math.min(1, speedScore));
       const speedScoreAtFinishLine = (distanceProgressScore >= 1) ? speedScore : 0;
 
-      // speeding penalty
-      const speedingPenalty = (this.speedingCounter / this.liftimeFrames)
-
       // calculate total score
       return {
         trackDistance: (this.scoreWeights.trackDistance || 0) * distanceProgressScore,
         avgSpeedAtFinishLine: (this.scoreWeights.avgSpeedAtFinishLine || 0) * speedScoreAtFinishLine,
-        speedingPenalty: -(this.scoreWeights.speedingPenalty || 0) * speedingPenalty,
         avgSpeed: (this.scoreWeights.avgSpeed || 0) * speedScore,
       }
     }
