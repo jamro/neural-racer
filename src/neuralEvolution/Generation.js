@@ -1,18 +1,13 @@
 import NeuralCarObject from '../sim/car/NeuralCarObject';
 import Genome from './Genome';
-import NeuralNet from './NeuralNet';
 
 class Generation {
-    constructor(track, scoreWeights, genomes=null, parent=null) {
+    constructor(track, scoreWeights) {
       this.track = track;
       this.scoreWeights = scoreWeights;
-      if (genomes) {
-        this.cars = genomes.map(genome => new NeuralCarObject(track, this.scoreWeights, genome));
-      } else {
-        this.cars = [];
-      }
-      this.epoch = parent ? parent.epoch + 1 : 0;
-      this.parent = parent;
+      this.cars = [];
+      this.epoch = 1
+      this.parent = null;
       this.scores = Array(this.cars.length).fill(null);
     }
 
@@ -261,7 +256,11 @@ class Generation {
         newGenomes.push(...randomGenomes);        
       }
       
-      const newGeneration = new Generation(this.track, this.scoreWeights, newGenomes, this);
+      const newGeneration = new Generation(this.track, this.scoreWeights);
+      newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(this.track, this.scoreWeights, genome));
+      newGeneration.epoch = this.epoch + 1
+      newGeneration.parent = this;
+      newGeneration.scores = Array(this.cars.length).fill(null);
       return newGeneration;
     }
 }

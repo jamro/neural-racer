@@ -16,8 +16,6 @@ await app.init({
     autoDensity: true,
 });
 
-
-
 // Add the canvas to the DOM
 document.getElementById('app').appendChild(app.canvas);
 
@@ -49,8 +47,10 @@ console.log('PixiJS application initialized!');
 evolution.start();
 
 window.addEventListener('resize', () => {
+  if(app.resize) {
     app.resize(window.innerWidth, window.innerHeight);
     evolution.scaleView(window.innerWidth, window.innerHeight);
+  }
 }); 
 
 // Hot Module Replacement
