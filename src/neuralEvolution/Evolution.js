@@ -40,10 +40,9 @@ class Evolution {
     this.config = config
     this.load(CURRENT_EVOLUTION_FILENAME);
     const { populationSize = 100 } = this.config;
-    const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.config.evolve = this.config.evolve || {};
     this.simulation.setTrack(this.tracks[this.currentTrackIndex]);
-    this.generation = new Generation(this.tracks[this.currentTrackIndex], scoreWeights);
+    this.generation = new Generation(this.tracks[this.currentTrackIndex]);
     this.generation.initialize(populationSize);
 
     this.generation.load(CURRENT_SNAPSHOT_FILENAME);
@@ -96,7 +95,8 @@ class Evolution {
     }
     
     // evolve generation
-    this.generation.calculateScores();
+    const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
+    this.generation.calculateScores(scoreWeights);
     this.generation.store(CURRENT_SNAPSHOT_FILENAME);
     this.store(CURRENT_EVOLUTION_FILENAME);
     this.generation.setTrack(newTrack);

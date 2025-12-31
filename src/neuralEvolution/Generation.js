@@ -1,10 +1,10 @@
 import NeuralCarObject from '../sim/car/NeuralCarObject';
 import Genome from './Genome';
+import { calculateScore } from './fitness';
 
 class Generation {
-    constructor(track, scoreWeights) {
+    constructor(track) {
       this.track = track;
-      this.scoreWeights = scoreWeights;
       this.cars = [];
       this.epoch = 1
       this.parent = null;
@@ -51,7 +51,7 @@ class Generation {
         this.scores = data.scores;
         
         // Restore cars
-        this.cars = genomes.map(genome => new NeuralCarObject(this.track, this.scoreWeights, genome));
+        this.cars = genomes.map(genome => new NeuralCarObject(this.track, genome));
         
         return true;
       } catch (error) {
@@ -83,28 +83,15 @@ class Generation {
     initialize(populationSize=100) {
       this.cars = [];
       for (let i = 0; i < populationSize; i++) {
-        this.cars.push(new NeuralCarObject(this.track, this.scoreWeights));
+        this.cars.push(new NeuralCarObject(this.track));
       }
     }
 
-    findLeader() {
-      let leader = this.cars.length > 0 ? this.cars[0] : null;
-      let leaderScore = 0;
-      for (const car of this.cars) {
-        const score = car.calculateScore();
-        if (score > leaderScore) {
-          leader = car;
-          leaderScore = score;
-        }
-      }
-      return leader;
-    }
-
-    calculateScores() {
+    calculateScores(scoreWeights) {
       this.scores = Array(this.cars.length).fill(null);
       for (let i = 0; i < this.cars.length; i++) {
         const car = this.cars[i];
-        this.scores[i] = car.calculateScore();
+        this.scores[i] = calculateScore(car, scoreWeights);
       }
     }
 
@@ -256,8 +243,8 @@ class Generation {
         newGenomes.push(...randomGenomes);        
       }
       
-      const newGeneration = new Generation(this.track, this.scoreWeights);
-      newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(this.track, this.scoreWeights, genome));
+      const newGeneration = new Generation(this.track);
+      newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(this.track, genome));
       newGeneration.epoch = this.epoch + 1
       newGeneration.parent = this;
       newGeneration.scores = Array(this.cars.length).fill(null);

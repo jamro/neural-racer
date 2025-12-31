@@ -20,7 +20,6 @@ class Simulation extends AbstractSimulationObject {
         this.cars = [];
         this.track = null;
         this.generation = null;
-        this.activeLeaderFollowing = false;
         this.onComplete = () => {}
         this.completeDelay = COMPLETE_DELAY;
         this.frameCount = 0;
@@ -154,18 +153,24 @@ class Simulation extends AbstractSimulationObject {
         }
         this.renderView(deltaSeconds);
 
-        // find leader and set it as focused car
-        if (Math.random() < 0.3) { // 30% chance to find a new leader
-            const leader = this.activeLeaderFollowing ? this.generation.findLeader() : this.generation.cars[0];
-            if (leader) {
-              if (this.leaderCar) {
-                this.leaderCar.active = false
-              }
-              this.leaderCar = leader;
-              this.view.carDetailsView.car = leader;
-              this.leaderCar.active = true;
-            }
+        // follow leader
+        if(this.leaderCar && this.leaderCar.isCrashed && this.generation.activeCount > 0) {
+          this.leaderCar.active = false;
+          this.leaderCar = null;
+        }
+        if(!this.leaderCar && this.generation.activeCount > 0) {
+          let leader = null;
+          for (const car of this.generation.cars) {
+            if (car.isCrashed) continue;
+            leader = car;
+            break;
           }
+          if (leader) {
+            this.leaderCar = leader;
+            this.view.carDetailsView.car = leader;
+            this.leaderCar.active = true;
+          }
+        }
     }
 
     simulationLoop = (currentTime) => {

@@ -3,17 +3,13 @@ import AbstractSimulationObject from '../AbstractSimulationObject';
 import CarPhysicModel from './CarPhysicModel';
 
 class CarObject extends AbstractSimulationObject {
-    constructor(track, scoreWeights) {
+    constructor(track) {
         super();
         this.carId = Math.random().toString(36).substring(2, 15);
         if (!track) {
           throw new Error('Track is required');
         }
-        if (!scoreWeights) {
-          throw new Error('Score weights are required');
-        }
         this.model = new CarPhysicModel();
-        this.scoreWeights = scoreWeights;
         this.track = track;
 
         this.radarBeamAngles = [
@@ -197,30 +193,6 @@ class CarObject extends AbstractSimulationObject {
 
     calculateAverageSpeed() {
       return this.speedSum / this.liftimeFrames;
-    }
-
-    calculateScoreComponents() {
-      // calculate distance progress score
-      const distanceProgressScore = this.calculateCheckpointProgress();
-
-      // speed score
-      let speedScore = (this.calculateAverageSpeed() / this.model.maxSpeed);
-      speedScore = Math.max(0, Math.min(1, speedScore));
-      const speedScoreAtFinishLine = (distanceProgressScore >= 1) ? speedScore : 0;
-
-      // calculate total score
-      return {
-        trackDistance: (this.scoreWeights.trackDistance || 0) * distanceProgressScore,
-        avgSpeedAtFinishLine: (this.scoreWeights.avgSpeedAtFinishLine || 0) * speedScoreAtFinishLine,
-        avgSpeed: (this.scoreWeights.avgSpeed || 0) * speedScore,
-      }
-    }
-
-    calculateScore() {
-      const components = this.calculateScoreComponents();
-      const values = Object.values(components);
-      const total = values.reduce((a, b) => a + b, 0);
-      return total;
     }
 
     renderView(delta) { // delta is in seconds

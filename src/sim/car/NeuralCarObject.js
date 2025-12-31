@@ -2,8 +2,8 @@ import CarObject from './CarObject';
 import NeuralNet from '../../neuralEvolution/NeuralNet';
 
 class NeuralCarObject extends CarObject {
-    constructor(track, scoreWeights, genome=null) {
-        super(track, scoreWeights);
+    constructor(track, genome=null) {
+        super(track);
 
         this.neuralNet = new NeuralNet(
           [17, 32, 24, 2],
