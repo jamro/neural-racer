@@ -48,6 +48,11 @@ console.log('PixiJS application initialized!');
 
 evolution.start();
 
+window.addEventListener('resize', () => {
+    app.resize(window.innerWidth, window.innerHeight);
+    evolution.scaleView(window.innerWidth, window.innerHeight);
+}); 
+
 // Hot Module Replacement
 if (module.hot) {
     module.hot.accept();

@@ -61,6 +61,19 @@ class Evolution {
     this.simulation.stop(); // Stop simulation loop
     this.simulation.stopRender(); // Stop render loop
   }
+  scaleView(width, height) {
+    if(this.simulation) {
+      this.simulation.scaleView(width, height);
+    }
+  }
+
+  getViewWidth() {
+    return this.simulation.view.width;
+  }
+
+  getViewHeight() {
+    return this.simulation.view.height;
+  }
 
   onEpochComplete() {
     const { replayInterval = 6, trackPassThreshold = 0.25 } = this.config;
