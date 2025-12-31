@@ -1,5 +1,5 @@
 import NeuralCarObject from '../sim/car/NeuralCarObject';
-import Genome from './Genome';
+import { Genome } from './Genome';
 import { calculateScore } from './fitness';
 
 class Generation {
@@ -11,53 +11,15 @@ class Generation {
       this.scores = Array(this.cars.length).fill(null);
     }
 
-    store(filename) {
-      try {
-        // Serialize genomes (convert Float32Array to regular array)
-        const serializedGenomes = this.cars.map(car => 
-          Array.from(car.genome.genes)
-        );
-        
-        const data = {
-          genomes: serializedGenomes,
-          epoch: this.epoch,
-          scores: this.scores
-        };
-        
-        localStorage.setItem(filename, JSON.stringify(data));
-        return true;
-      } catch (error) {
-        console.error('Failed to store generation:', error);
-        return false;
+    createRandomPopulation(populationSize=100) {
+      this.cars = [];
+      for (let i = 0; i < populationSize; i++) {
+        this.cars.push(new NeuralCarObject(this.track));
       }
     }
 
-    load(filename) {
-      try {
-        const storedData = localStorage.getItem(filename);
-        if (!storedData) {
-          return false;
-        }
-        
-        const data = JSON.parse(storedData);
-        
-        // Deserialize genomes (convert arrays back to Float32Array and create Genome objects)
-        const genomes = data.genomes.map(genesArray => 
-          new Genome(genesArray.length, new Float32Array(genesArray))
-        );
-        
-        // Restore epoch and scores
-        this.epoch = data.epoch;
-        this.scores = data.scores;
-        
-        // Restore cars
-        this.cars = genomes.map(genome => new NeuralCarObject(this.track, genome));
-        
-        return true;
-      } catch (error) {
-        console.error('Failed to load generation:', error);
-        return false;
-      }
+    setPopulation(genomes) {
+      this.cars = genomes.map(genome => new NeuralCarObject(this.track, genome));
     }
 
     get activeCount() {
@@ -78,13 +40,6 @@ class Generation {
 
     setTrack(track) {
       this.track = track;
-    }
-
-    initialize(populationSize=100) {
-      this.cars = [];
-      for (let i = 0; i < populationSize; i++) {
-        this.cars.push(new NeuralCarObject(this.track));
-      }
     }
 
     calculateScores(scoreWeights) {

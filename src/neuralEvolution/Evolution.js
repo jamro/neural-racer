@@ -1,7 +1,7 @@
 import Simulation from '../sim/Simulation';
 import Generation from './Generation';
+import { serializeGenome, deserializeGenome } from './Genome';
 
-const CURRENT_SNAPSHOT_FILENAME = 'current-population-snapshot';
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
 class Evolution { 
@@ -23,29 +23,35 @@ class Evolution {
   store(filename) {
     const data = {
       currentTrackIndex: this.currentTrackIndex,
-      completedTracks: this.completedTracks
+      completedTracks: this.completedTracks,
+      epoch: this.generation.epoch,
+      genomes: this.generation.cars.map(car => serializeGenome(car.genome))
     }
     localStorage.setItem(filename, JSON.stringify(data));
   }
 
-  load(filename) {
-    const data = localStorage.getItem(filename);
-    if (!data) return;
-    const { currentTrackIndex, completedTracks } = JSON.parse(data);
-    this.currentTrackIndex = currentTrackIndex;
-    this.completedTracks = completedTracks;
-  }
-
   initialize(config = {}) {
     this.config = config
-    this.load(CURRENT_EVOLUTION_FILENAME);
     const { populationSize = 100 } = this.config;
     this.config.evolve = this.config.evolve || {};
+
+    let loadedData = localStorage.getItem(CURRENT_EVOLUTION_FILENAME)
+    loadedData = loadedData ? JSON.parse(loadedData) : null;
+
+    if(loadedData) {
+      this.currentTrackIndex = loadedData.currentTrackIndex;
+      this.completedTracks = loadedData.completedTracks;
+      this.generation = new Generation(this.tracks[this.currentTrackIndex]);
+    }
+
     this.simulation.setTrack(this.tracks[this.currentTrackIndex]);
     this.generation = new Generation(this.tracks[this.currentTrackIndex]);
-    this.generation.initialize(populationSize);
-
-    this.generation.load(CURRENT_SNAPSHOT_FILENAME);
+    if(loadedData) {
+      this.generation.setPopulation(loadedData.genomes.map(genome => deserializeGenome(genome)));
+      this.generation.epoch = loadedData.epoch;
+    } else {
+      this.generation.createRandomPopulation(populationSize);
+    }
 
     this.simulation.setGeneration(this.generation);
   }
@@ -97,8 +103,6 @@ class Evolution {
     // evolve generation
     const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.generation.calculateScores(scoreWeights);
-    this.generation.store(CURRENT_SNAPSHOT_FILENAME);
-    this.store(CURRENT_EVOLUTION_FILENAME);
     this.generation.setTrack(newTrack);
     this.generation = this.generation.evolve(this.config.evolve);
 
@@ -109,6 +113,7 @@ class Evolution {
     this.simulation.removeAndDispose();
 
     // run new simulation 
+    this.store(CURRENT_EVOLUTION_FILENAME);
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);

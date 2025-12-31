@@ -1,3 +1,11 @@
+function serializeGenome(genome) {
+  return Array.from(genome.genes);
+}
+
+function deserializeGenome(genes) {
+  return new Genome(genes.length, new Float32Array(genes));
+}
+
 class Genome {
   constructor(length, genes = null) {
     this.genes = genes ?? new Float32Array(length);
@@ -75,4 +83,4 @@ function gaussian(rng = Math.random) {
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
-export default Genome;
+export { Genome, serializeGenome, deserializeGenome };

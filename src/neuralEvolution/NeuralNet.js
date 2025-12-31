@@ -1,4 +1,4 @@
-import Genome from './Genome';
+import { Genome } from './Genome';
 
 class NeuralNet {
   constructor(sizes, activations, genome = null) {
