@@ -40,7 +40,7 @@ const config = new Config();
 PIXI.Ticker.shared.maxFPS = config.frameRate || 30;
 config.setStandardMode();
 
-evolution.initialize(config);
+await evolution.initialize(config);
 
 console.log('PixiJS application initialized!');
 

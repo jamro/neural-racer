@@ -1,6 +1,7 @@
 import Simulation from '../sim/Simulation';
 import Generation from './Generation';
 import { serializeGenome, deserializeGenome } from './Genome';
+import Database from '../loaders/Database';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -16,27 +17,28 @@ class Evolution {
     this.completedTracks = [];
     this.epochLimit = epochLimit;
 
+    this.database = new Database(CURRENT_EVOLUTION_FILENAME);
+
     this.config = {}
   }
 
   // store in local storage
-  store(filename) {
+  async store(filename) {
     const data = {
       currentTrackIndex: this.currentTrackIndex,
       completedTracks: this.completedTracks,
       epoch: this.generation.epoch,
       genomes: this.generation.cars.map(car => serializeGenome(car.genome))
     }
-    localStorage.setItem(filename, JSON.stringify(data));
+    this.database.storeEvolution(data);
   }
 
-  initialize(config = {}) {
+  async initialize(config = {}) {
     this.config = config
     const { populationSize = 100 } = this.config;
     this.config.evolve = this.config.evolve || {};
 
-    let loadedData = localStorage.getItem(CURRENT_EVOLUTION_FILENAME)
-    loadedData = loadedData ? JSON.parse(loadedData) : null;
+    let loadedData = await this.database.loadEvolution();
 
     if(loadedData) {
       this.currentTrackIndex = loadedData.currentTrackIndex;
@@ -80,7 +82,7 @@ class Evolution {
     return this.simulation.view.height;
   }
 
-  onEpochComplete() {
+  async onEpochComplete() {
     const { replayInterval = 6, trackPassThreshold = 0.25 } = this.config;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
@@ -113,12 +115,12 @@ class Evolution {
     this.simulation.removeAndDispose();
 
     // run new simulation 
-    this.store(CURRENT_EVOLUTION_FILENAME);
+    await this.store(CURRENT_EVOLUTION_FILENAME);
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
     this.simulation.setTrack(newTrack);
-    this.simulation.onComplete = () => this.onEpochComplete();
+    this.simulation.onComplete = async () => await this.onEpochComplete();
     this.generation.resetScores();
     this.simulation.setGeneration(this.generation);
 
