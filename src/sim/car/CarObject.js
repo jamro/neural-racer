@@ -130,17 +130,24 @@ class CarObject extends AbstractSimulationObject {
       this.model.updateStep(delta);
 
       // update radar beams
-      for (let index = 0; index < this.radarBeams.length; index++) {
-        const angle = this.radarBeamAngles[index] + this.model.direction
-        this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.model.x, this.model.y, angle);
+      if(!this._isFinished) {
+        for (let index = 0; index < this.radarBeams.length; index++) {
+          const angle = this.radarBeamAngles[index] + this.model.direction
+          this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.model.x, this.model.y, angle);
+        }
+      } else {
+        this.radarBeams = new Array(this.radarBeamCount).fill(null);
       }
 
+      
       // check for checkpoints
-      const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
-      if (checkpointIndex !== false) {
-        this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
+      if(!this._isFinished) {
+        const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
+        if (checkpointIndex !== false) {
+          this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
+        }
       }
-
+      
       // check for finish line
       if (this.checkpointsPassed >= this.track.checkpoints.checkpointCount) {
         this._isFinished = true;

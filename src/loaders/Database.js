@@ -20,47 +20,47 @@ class Database {
     });
   }
 
+  async storeGeneration(data, evolutionId) {
+    if(!evolutionId) {
+      throw new Error('Evolution ID is required');
+    }
+    const db = await this._openDB();
+    const tx = db.transaction(['generations'], 'readwrite');
+    await tx.objectStore('generations').put({evolutionId, ...data}, data.generationId);
+    await tx.done;
+  }
+
   async storeEvolution(data) {
     const db = await this._openDB();
     const tx = db.transaction(['evolution', 'generations'], 'readwrite');
 
     const evolutionData = {
-      currentTrackIndex: data.currentTrackIndex,
+      evolutionId: data.evolutionId,
       completedTracks: data.completedTracks,
+      lastGenerationId: data.generation.generationId,
     };
 
     await Promise.all([
       tx.objectStore('evolution').put(evolutionData, this.filename),
-      tx.objectStore('generations').put(data.generation, this.filename),
+      this.storeGeneration(data.generation, data.evolutionId),
     ]);
 
     await tx.done;
   }
 
-  /**
-   * Load evolution state from two object stores.
-   * @returns {Object|null} Plain object with evolution state, or null if not found
-   */
+
+  async loadGeneration(generationId) {
+    const db = await this._openDB();
+    const tx = db.transaction(['generations'], 'readonly');
+    const generation = await tx.objectStore('generations').get(generationId);
+    return generation;
+  }
+
   async loadEvolution() {
     const db = await this._openDB();
     const tx = db.transaction(['evolution', 'generations'], 'readonly');
-
-    const [evolution, generation] = await Promise.all([
-      tx.objectStore('evolution').get(this.filename),
-      tx.objectStore('generations').get(this.filename),
-    ]);
-
-    // If any required field is missing, return null
-    if (evolution === undefined || generation === undefined) {
-      return null;
-    }
-
-    return {
-      currentTrackIndex: evolution.currentTrackIndex,
-      completedTracks: evolution.completedTracks,
-      epoch: evolution.epoch,
-      generation
-    };
+    const evolution = await tx.objectStore('evolution').get(this.filename);
+    return evolution;
   }
 
   /**

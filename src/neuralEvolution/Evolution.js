@@ -1,6 +1,5 @@
 import Simulation from '../sim/Simulation';
 import { Generation, serializeGeneration, deserializeGeneration } from './Generation';
-import { serializeGenome, deserializeGenome } from './Genome';
 import Database from '../loaders/Database';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,7 +13,6 @@ class Evolution {
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
     this.tracks = tracks;
-    this.currentTrackIndex = 0;
     this.simulation.onComplete = () => this.onEpochComplete();
     this.completedTracks = [];
     this.epochLimit = epochLimit;
@@ -25,9 +23,9 @@ class Evolution {
   }
 
   // store in local storage
-  async store(filename) {
+  async store() {
     const data = {
-      currentTrackIndex: this.currentTrackIndex,
+      evolutionId: this.evolutionId,
       completedTracks: this.completedTracks,
       generation: serializeGeneration(this.generation)
     }
@@ -42,20 +40,15 @@ class Evolution {
     let loadedData = await this.database.loadEvolution();
 
     if(loadedData) {
-      this.currentTrackIndex = loadedData.currentTrackIndex;
+      this.evolutionId = loadedData.evolutionId;
       this.completedTracks = loadedData.completedTracks;
-      this.generation = new Generation(this.tracks[this.currentTrackIndex]);
-    }
-
-    this.simulation.setTrack(this.tracks[this.currentTrackIndex]);
-    
-    if(loadedData) {
-      this.generation = deserializeGeneration(loadedData.generation, this.tracks);
+      const generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
+      this.generation = deserializeGeneration(generationData, this.tracks);
     } else {
-      this.generation = new Generation(this.tracks[this.currentTrackIndex]);
+      this.generation = new Generation(this.tracks[0]);
       this.generation.createRandomPopulation(populationSize);
     }
-
+    this.simulation.setTrack(this.generation.track);
     this.simulation.setGeneration(this.generation);
   }
 
@@ -83,29 +76,36 @@ class Evolution {
     return this.simulation.view.height;
   }
 
+  getNextTrack() {
+    const { replayInterval = 6 } = this.config;
+    let newTrack
+    if (this.generation.epoch % replayInterval === 0 && this.completedTracks.length >= 2) {
+      const randomTrackName = this.completedTracks[Math.floor(Math.random() * this.completedTracks.length)];
+      newTrack = this.tracks.find(track => track.name === randomTrackName);
+      console.log(`Replaying on completed track ${newTrack.name}`);
+    } else {
+      const nextIncompleteTrack = this.tracks.find(track => !this.completedTracks.includes(track.name));
+      newTrack = nextIncompleteTrack;
+      console.log(`Replaying on next incomplete track ${newTrack.name}`);
+    }
+    return newTrack;
+  }
+
   async onEpochComplete() {
-    const { replayInterval = 6, trackPassThreshold = 0.25 } = this.config;
+    const { trackPassThreshold = 0.25 } = this.config;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = this.generation.finishedCount / this.generation.totalCount;
-    // promote to next track if pass rate is high enough
-    if(passRate >= trackPassThreshold && this.simulation.track === this.tracks[this.currentTrackIndex]) { // make sure the promotion does not happen afte replaying on a completed track
-      if (!this.completedTracks.includes(this.currentTrackIndex)) {
-        this.completedTracks.push(this.currentTrackIndex);
-      }
-      this.currentTrackIndex = (this.currentTrackIndex + 1) % this.tracks.length;
+    if(passRate >= trackPassThreshold && !this.completedTracks.includes(this.simulation.track.name)) {
+      this.completedTracks.push(this.simulation.track.name); // mark as completed
     }
-    let newTrack = this.tracks[this.currentTrackIndex];
-    // replay on random, completed track
-    if(this.generation.epoch % replayInterval === 0 && this.completedTracks.length >= 2) {
-      const randomCompletedTrackIndex = this.completedTracks[Math.floor(Math.random() * this.completedTracks.length)];
-      newTrack = this.tracks[randomCompletedTrackIndex];
-      console.log(`Replaying on completed track ${newTrack.name}`);
-    }
-    
+
+    const newTrack = this.getNextTrack();
+
     // evolve generation
     const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.generation.calculateScores(scoreWeights);
+    await this.store();
     this.generation.setTrack(newTrack);
     this.generation = this.generation.evolve(this.config.evolve);
 
@@ -116,13 +116,13 @@ class Evolution {
     this.simulation.removeAndDispose();
 
     // run new simulation 
-    await this.store(CURRENT_EVOLUTION_FILENAME);
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
     this.simulation.setTrack(newTrack);
     this.simulation.onComplete = async () => await this.onEpochComplete();
     this.generation.resetScores();
+    await this.store();
     this.simulation.setGeneration(this.generation);
 
     const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
