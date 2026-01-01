@@ -38,15 +38,12 @@ class GenerationDetailsView extends PIXI.Container {
     const history = []
     let pointer = this.generation.parent;
     while(pointer && history.length < 7) {
-      // find top score. sort in descending order.
-      const scores = pointer.scores.sort((a, b) => b - a);
-      const topScore = scores[0];
-      const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length;
       history.push({
         epoch: pointer.epoch,
-        topScore: topScore,
-        averageScore: averageScore,
-        finishCount: pointer.finishedCount
+        topScore: pointer.overallScore.maxScore,
+        averageScore: pointer.overallScore.averageScore,
+        medianScore: pointer.overallScore.medianScore,
+        finishCount: Math.round(pointer.overallScore.completionRate * pointer.totalCount)
       })
       pointer = pointer.parent;
     }
@@ -61,7 +58,7 @@ class GenerationDetailsView extends PIXI.Container {
     this.statusTextField.text = "Epoch: " + this.generation.epoch + "\n" +
         "Track: " + this.generation.track.name + "\n" +
         "Size: ✕ " + this.generation.crashedCount + ", ▶ " + this.generation.activeCount + ", ✓ " + this.generation.finishedCount + " (" + this.generation.totalCount + ")\n\n" +
-        "History:\n" + (history.map(h => h.epoch + ": ★ " + ((100*h.topScore).toFixed(2)) + ", ≈ " + ((100*h.averageScore).toFixed(2)) + ", ✓ " + h.finishCount ).join("\n") || "-")
+        "History:\n" + (history.map(h => h.epoch + ": ★ " + ((100*h.topScore).toFixed(2)) + ", ≈ " + ((100*h.medianScore).toFixed(2)) + ", ✓ " + h.finishCount ).join("\n") || "-")
   }
   
 }

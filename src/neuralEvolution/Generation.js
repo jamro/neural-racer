@@ -3,17 +3,19 @@ import { Genome, serializeGenome, deserializeGenome } from './Genome';
 import { calculateScore } from './fitness';
 import { v4 as uuidv4 } from 'uuid';
 
-
 function serializeGeneration(generation) {
   return {
     generationId: generation.generationId,
     track: {
       name: generation.track.name,
     },
-    cars: generation.cars.map(car => ({
+    cars: generation.cars.map((car, index) => ({
+      score: generation.scores[index],
+      stats: generation.stats[index],
       genome: serializeGenome(car.genome),
     })),
-    epoch: generation.epoch
+    epoch: generation.epoch,
+    overallScore: generation.overallScore,
   }
 }
 
@@ -23,7 +25,12 @@ function deserializeGeneration(data, tracks) {
   const generation = new Generation(track);
   generation.generationId = data.generationId;
   generation.setPopulation(data.cars.map(car => deserializeGenome(car.genome)));
+  for (let i = 0; i < data.cars.length; i++) {
+    generation.scores[i] = data.cars[i].score;
+    generation.stats[i] = data.cars[i].stats;
+  }
   generation.epoch = data.epoch;
+  generation.overallScore = data.overallScore;
   return generation;
 }
 
@@ -35,6 +42,16 @@ class Generation {
       this.epoch = 1
       this.parent = null;
       this.scores = Array(this.cars.length).fill(null);
+      this.stats = Array(this.cars.length).fill(null);
+
+      this.overallScore = {
+        averageScore: null,
+        medianScore: null,
+        minScore: null,
+        maxScore: null,
+        completionRate: null,
+        averageSpeed: null,
+      }
     }
 
     createRandomPopulation(populationSize=100) {
@@ -70,14 +87,37 @@ class Generation {
 
     calculateScores(scoreWeights) {
       this.scores = Array(this.cars.length).fill(null);
+      this.stats = Array(this.cars.length).fill(null);
       for (let i = 0; i < this.cars.length; i++) {
         const car = this.cars[i];
         this.scores[i] = calculateScore(car, scoreWeights);
+        this.stats[i] = {
+          progress: car.calculateCheckpointProgress(),
+          averageSpeed: car.calculateAverageSpeed(),
+        }
+      }
+
+      this.overallScore = {
+        averageScore: this.scores.reduce((a, b) => a + b, 0) / this.cars.length,
+        medianScore: [...this.scores].sort((a, b) => a - b)[Math.floor(this.scores.length / 2)],
+        minScore: Math.min(...this.scores),
+        maxScore: Math.max(...this.scores),
+        completionRate: this.finishedCount / this.cars.length,
+        averageSpeed: this.stats.reduce((a, b) => a + b.averageSpeed * b.progress, 0) / this.stats.reduce((a, b) => a + b.progress, 0),
       }
     }
 
     resetScores() {
       this.scores = Array(this.cars.length).fill(null);
+      this.stats = Array(this.cars.length).fill(null);
+      this.overallScore = {
+        averageScore: null,
+        medianScore: null,
+        minScore: null,
+        maxScore: null,
+        completionRate: null,
+        averageSpeed: null,
+      }
     }
 
     tournamentSelection(k=2) {

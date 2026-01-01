@@ -18,8 +18,8 @@ function calculateScoreComponents(car, scoreWeights) {
   }
 }
 
-function calculateScore(car, scoreWeights) {
-  const components = calculateScoreComponents(car, scoreWeights);
+function calculateScore(car, scoreWeights, scoreComponents=null) {
+  const components = scoreComponents || calculateScoreComponents(car, scoreWeights);
   const values = Object.values(components);
   const total = values.reduce((a, b) => a + b, 0);
   return total;
