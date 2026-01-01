@@ -3,6 +3,7 @@ class Config {
     this.graphicsQuality = "high"; // "high" or "low"
     this.frameRate = 30; // frame rate in frames per second
     this.populationSize = 200; // number of cars in the population
+    this.populationHistorySize = 20; // number of generations to keep in the population history
     this.simulationStep = 0.060; // time step in seconds
     this.simulationSpeed = 0.5; // number of sim steps per frame
     this.replayInterval = 6; // every how many epochs to run evolution on random, completed track

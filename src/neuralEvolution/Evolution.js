@@ -92,7 +92,7 @@ class Evolution {
   }
 
   async onEpochComplete() {
-    const { trackPassThreshold = 0.25 } = this.config;
+    const { trackPassThreshold = 0.25, populationHistorySize = 10 } = this.config;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = this.generation.finishedCount / this.generation.totalCount;
@@ -123,6 +123,7 @@ class Evolution {
     this.simulation.onComplete = async () => await this.onEpochComplete();
     this.generation.resetScores();
     await this.store();
+    await this.database.trimGenerationHistory(this.evolutionId, populationHistorySize);
     this.simulation.setGeneration(this.generation);
 
     const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;

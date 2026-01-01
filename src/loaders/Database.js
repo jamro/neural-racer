@@ -20,6 +20,34 @@ class Database {
     });
   }
 
+  async trimGenerationHistory(evolutionId, n = 10) {
+    if (!evolutionId) {
+      throw new Error('Evolution ID is required');
+    }
+    
+    const db = await this._openDB();
+    const tx = db.transaction(['generations'], 'readwrite');
+    const store = tx.objectStore('generations');
+    
+    // Get all generations
+    const allGenerations = await store.getAll();
+    
+    // Filter by evolutionId and sort by epoch (descending - highest first)
+    const matchingGenerations = allGenerations
+      .filter(gen => gen.evolutionId === evolutionId)
+      .sort((a, b) => b.epoch - a.epoch);
+    
+    // Keep only the latest n generations
+    const toDelete = matchingGenerations.slice(n);
+    
+    // Delete old generations
+    await Promise.all(
+      toDelete.map(gen => store.delete(gen.generationId))
+    );
+    
+    await tx.done;
+  }
+
   async storeGeneration(data, evolutionId) {
     if(!evolutionId) {
       throw new Error('Evolution ID is required');
