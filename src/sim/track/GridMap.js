@@ -4,9 +4,9 @@ class GridMap {
         this.grid = new Map(); // Map<cellKey, segmentIndices[]>
     }
 
-    // Grid helper methods
     getCellKey(cellX, cellY) {
-        return `${cellX},${cellY}`;
+      // pack into 32-bit int (signed is fine)
+      return (cellX << 16) ^ (cellY & 0xffff);
     }
 
     worldToCell(x, y) {
