@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import CarDetailsView from './CarDetailsView';
 import GenerationDetailsView from './GenerationDetailsView';
-import FpsCounter from '../ui/FpsCounter';
+import SimulationDetailsView from './SimulationDetailsView';
 
 class SimulationView extends PIXI.Container {
     constructor() {
@@ -9,8 +9,10 @@ class SimulationView extends PIXI.Container {
         this.masterContainer = new PIXI.Container();
         this.addChild(this.masterContainer);
 
+        this.simulationDetailsView = new SimulationDetailsView();
         this.carDetailsView = new CarDetailsView();
         this.generationDetailsView = new GenerationDetailsView();
+        this.addChild(this.simulationDetailsView);
         this.addChild(this.carDetailsView);
         this.addChild(this.generationDetailsView);
         this.track = null;
@@ -20,8 +22,6 @@ class SimulationView extends PIXI.Container {
         this.viewHeight = 100;
         this.targetCameraPosition = { x: 0, y: 0, scale: 1 };
 
-        this.fpsCounter = new FpsCounter();
-        this.addChild(this.fpsCounter);
         this._graphicsQuality = "low";
     }
 
@@ -54,14 +54,20 @@ class SimulationView extends PIXI.Container {
         this.masterContainer.addChild(track.view);
     }
 
+    setSimulation(simulation) {
+        this.simulation = simulation;
+        this.simulationDetailsView.simulation = simulation;
+    }
+
     addCar(car) {
         this.cars.push(car);
         this.track.view.carsContainer.addChild(car.view);
     }
 
     renderView(delta) {
-        this.carDetailsView.renderView(delta);
+        this.simulationDetailsView.renderView(delta);
         this.generationDetailsView.renderView(delta);
+        this.carDetailsView.renderView(delta);
         this.masterContainer.x = this.targetCameraPosition.x;
         this.masterContainer.y = this.targetCameraPosition.y;
         if(this.track) {
@@ -103,12 +109,12 @@ class SimulationView extends PIXI.Container {
     scaleView(width, height) {
       this.viewWidth = width;
       this.viewHeight = height;
-      this.carDetailsView.x = - width / 2;
-      this.carDetailsView.y = - height / 2 + 220;
+      this.simulationDetailsView.x = - width / 2;
+      this.simulationDetailsView.y = - height / 2;
       this.generationDetailsView.x = - width / 2;
-      this.generationDetailsView.y = -height / 2;
-      this.fpsCounter.x = width / 2 - this.fpsCounter.width / 2;
-      this.fpsCounter.y = -height / 2;
+      this.generationDetailsView.y = this.simulationDetailsView.y + this.simulationDetailsView.height + 2;
+      this.carDetailsView.x = - width / 2;
+      this.carDetailsView.y = this.generationDetailsView.y + this.generationDetailsView.height + 2;
     }
 }
 

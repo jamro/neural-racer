@@ -16,6 +16,7 @@ class Simulation extends AbstractSimulationObject {
         this.objects = [];
         this.app = app;
         this.view = new SimulationView();
+        this.view.setSimulation(this);
         this.leaderCar = null;
         this.cars = [];
         this.track = null;
@@ -24,6 +25,9 @@ class Simulation extends AbstractSimulationObject {
         this.completeDelay = COMPLETE_DELAY;
         this.frameCount = 0;
         this.graphicsQuality = "low";
+
+        this.carPhysicsProccessingTime = 0;
+        this.carControlProccessingTime = 0;
     }
 
     setTrack(track) {
@@ -202,8 +206,22 @@ class Simulation extends AbstractSimulationObject {
     singleSimulationStep() {
         // Run simulation at fixed timestep
         // Update all objects (all objects are validated to have update method)
+        const activeCount = this.generation.activeCount;
+        let startTime = 0;
+        startTime = performance.now();
+        for (const car of this.generation.cars) {
+          car.control(this.simulationStep);
+        }
+        if(activeCount > 0) {
+          this.carControlProccessingTime = (performance.now() - startTime) / activeCount;
+        }
+
+        startTime = performance.now();
         for (const object of this.objects) {
           object.update(this.simulationStep);
+        }
+        if(activeCount > 0) {
+          this.carPhysicsProccessingTime = (performance.now() - startTime) / activeCount;
         }
 
         // end condition
