@@ -101,15 +101,17 @@ class Evolution {
 
   getNextTrack() {
     const { replayInterval = 6 } = this.config;
-    let newTrack
+    let newTrack = null
     if (this.generation.epoch % replayInterval === 0 && this.completedTracks.length >= 2) {
       const randomTrackName = this.completedTracks[Math.floor(Math.random() * this.completedTracks.length)];
       newTrack = this.tracks.find(track => track.name === randomTrackName);
-      console.log(`Replaying on completed track ${newTrack.name}`);
     } else {
       const nextIncompleteTrack = this.tracks.find(track => !this.completedTracks.includes(track.name));
       newTrack = nextIncompleteTrack;
-      console.log(`Replaying on next incomplete track ${newTrack.name}`);
+    }
+    if(!newTrack) {
+      // return randm track if no track is available
+      return this.tracks[Math.floor(Math.random() * this.tracks.length)];
     }
     return newTrack;
   }
