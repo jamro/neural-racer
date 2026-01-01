@@ -6,7 +6,7 @@ class GenerationDetailsView extends PIXI.Container {
     super();
     this.generation = null
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 248, 218);
+    this.bg.rect(2, 2, 248, 78);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -35,19 +35,6 @@ class GenerationDetailsView extends PIXI.Container {
   renderView(delta) {
     if (!this.generation) return;
 
-    const history = []
-    let pointer = this.generation.parent;
-    while(pointer && history.length < 7) {
-      history.push({
-        epoch: pointer.epoch,
-        topScore: pointer.overallScore.maxScore,
-        averageScore: pointer.overallScore.averageScore,
-        medianScore: pointer.overallScore.medianScore,
-        finishCount: Math.round(pointer.overallScore.completionRate * pointer.totalCount)
-      })
-      pointer = pointer.parent;
-    }
-
     this.statusProgressBar.max = this.generation.totalCount;
     this.statusProgressBar.values = [
       this.generation.crashedCount,
@@ -57,8 +44,7 @@ class GenerationDetailsView extends PIXI.Container {
 
     this.statusTextField.text = "Epoch: " + this.generation.epoch + "\n" +
         "Track: " + this.generation.track.name + "\n" +
-        "Size: ✕ " + this.generation.crashedCount + ", ▶ " + this.generation.activeCount + ", ✓ " + this.generation.finishedCount + " (" + this.generation.totalCount + ")\n\n" +
-        "History:\n" + (history.map(h => h.epoch + ": ★ " + ((100*h.topScore).toFixed(2)) + ", ≈ " + ((100*h.medianScore).toFixed(2)) + ", ✓ " + h.finishCount ).join("\n") || "-")
+        "Size: ✕ " + this.generation.crashedCount + ", ▶ " + this.generation.activeCount + ", ✓ " + this.generation.finishedCount + " (" + this.generation.totalCount + ")"
   }
   
 }

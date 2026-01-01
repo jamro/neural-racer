@@ -40,7 +40,6 @@ class Generation {
       this.track = track;
       this.cars = [];
       this.epoch = 1
-      this.parent = null;
       this.scores = Array(this.cars.length).fill(null);
       this.stats = Array(this.cars.length).fill(null);
 
@@ -267,7 +266,6 @@ class Generation {
       const newGeneration = new Generation(this.track);
       newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(this.track, genome));
       newGeneration.epoch = this.epoch + 1
-      newGeneration.parent = this;
       newGeneration.scores = Array(this.cars.length).fill(null);
       return newGeneration;
     }

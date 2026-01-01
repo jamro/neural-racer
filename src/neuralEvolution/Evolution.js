@@ -1,21 +1,24 @@
 import Simulation from '../sim/Simulation';
 import { Generation, serializeGeneration, deserializeGeneration } from './Generation';
 import Database from '../loaders/Database';
+import GenerationHistory from './GenerationHistory';
+import { deserializeGenome } from './Genome';
 import { v4 as uuidv4 } from 'uuid';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
 class Evolution { 
-  constructor(pixiApp, tracks, epochLimit=Infinity) {
+  constructor(pixiApp, tracks) {
     this.evolutionId = uuidv4();
     this.pixiApp = pixiApp;
     this.simulation = new Simulation(this.pixiApp);
+    this.simulation.view.setEvolution(this);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
     this.tracks = tracks;
     this.simulation.onComplete = () => this.onEpochComplete();
     this.completedTracks = [];
-    this.epochLimit = epochLimit;
+    this.history = new GenerationHistory();
 
     this.database = new Database(CURRENT_EVOLUTION_FILENAME);
 
@@ -44,6 +47,26 @@ class Evolution {
       this.completedTracks = loadedData.completedTracks;
       const generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
       this.generation = deserializeGeneration(generationData, this.tracks);
+
+      const historyData = await this.database.loadGenerationsByEvolutionId(this.evolutionId);
+      for(const historyEntry of historyData) {
+        if(historyEntry.overallScore.averageScore === null) {
+          continue;
+        }
+        this.history.addGenerationData(
+          historyEntry.track.name, 
+          historyEntry.generationId, 
+          historyEntry.overallScore, 
+          historyEntry.epoch, 
+          historyEntry.populationSize, 
+          historyEntry.cars ? historyEntry.cars.map(car => ({
+            genome: deserializeGenome(car.genome),
+            score: car.score,
+            stats: car.stats,
+          })) : null
+        )
+      }
+
     } else {
       this.generation = new Generation(this.tracks[0]);
       this.generation.createRandomPopulation(populationSize);
@@ -105,11 +128,10 @@ class Evolution {
     // evolve generation
     const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.generation.calculateScores(scoreWeights);
+    this.history.addGenerationInstance(this.generation);
     await this.store();
     this.generation.setTrack(newTrack);
     this.generation = this.generation.evolve(this.config.evolve);
-
-    if(this.generation.epoch > this.epochLimit) return;
 
     // remove current track from simulation
     this.simulation.removeObject(this.simulation.track);
@@ -117,6 +139,7 @@ class Evolution {
 
     // run new simulation 
     this.simulation = new Simulation(this.pixiApp);
+    this.simulation.view.setEvolution(this);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
     this.simulation.setTrack(newTrack);

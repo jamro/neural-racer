@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import CarDetailsView from './CarDetailsView';
 import GenerationDetailsView from './GenerationDetailsView';
 import SimulationDetailsView from './SimulationDetailsView';
+import EvolutionDetailsView from './EvolutionDetailsView';
 
 class SimulationView extends PIXI.Container {
     constructor() {
@@ -12,9 +13,11 @@ class SimulationView extends PIXI.Container {
         this.simulationDetailsView = new SimulationDetailsView();
         this.carDetailsView = new CarDetailsView();
         this.generationDetailsView = new GenerationDetailsView();
+        this.evolutionDetailsView = new EvolutionDetailsView();
         this.addChild(this.simulationDetailsView);
         this.addChild(this.carDetailsView);
         this.addChild(this.generationDetailsView);
+        this.addChild(this.evolutionDetailsView);
         this.track = null;
         this.cars = [];
         this.generation = null;
@@ -32,6 +35,10 @@ class SimulationView extends PIXI.Container {
 
     get graphicsQuality() {
         return this._graphicsQuality;
+    }
+
+    setEvolution(evolution) {
+        this.evolutionDetailsView.evolution = evolution;
     }
 
     setGeneration(generation) {
@@ -66,6 +73,7 @@ class SimulationView extends PIXI.Container {
 
     renderView(delta) {
         this.simulationDetailsView.renderView(delta);
+        this.evolutionDetailsView.renderView(delta);
         this.generationDetailsView.renderView(delta);
         this.carDetailsView.renderView(delta);
         this.masterContainer.x = this.targetCameraPosition.x;
@@ -116,8 +124,10 @@ class SimulationView extends PIXI.Container {
       this.simulationDetailsView.y = - height / 2;
       this.generationDetailsView.x = - width / 2;
       this.generationDetailsView.y = this.simulationDetailsView.y + this.simulationDetailsView.height + 2;
+      this.evolutionDetailsView.x = - width / 2;
+      this.evolutionDetailsView.y = this.generationDetailsView.y + this.generationDetailsView.height + 2;
       this.carDetailsView.x = - width / 2;
-      this.carDetailsView.y = this.generationDetailsView.y + this.generationDetailsView.height + 2;
+      this.carDetailsView.y = this.evolutionDetailsView.y + this.evolutionDetailsView.height + 2;
     }
 }
 

@@ -14,7 +14,8 @@ class Database {
           db.createObjectStore('evolution');
         }
         if (!db.objectStoreNames.contains('generations')) {
-          db.createObjectStore('generations');
+          const generationsStore = db.createObjectStore('generations');
+          generationsStore.createIndex('evolutionId', 'evolutionId');
         }
       },
     });
@@ -37,12 +38,16 @@ class Database {
       .filter(gen => gen.evolutionId === evolutionId)
       .sort((a, b) => b.epoch - a.epoch);
     
-    // Keep only the latest n generations
-    const toDelete = matchingGenerations.slice(n);
+    // Keep the latest n generations as-is, compress the rest
+    const toCompress = matchingGenerations.slice(n);
     
-    // Delete old generations
+    // Compress old generations by removing "cars" field and setting compress flag
     await Promise.all(
-      toDelete.map(gen => store.delete(gen.generationId))
+      toCompress.map(gen => {
+        const { cars, ...compressedGen } = gen;
+        const compressedData = { ...compressedGen, compress: true };
+        return store.put(compressedData, gen.generationId);
+      })
     );
     
     await tx.done;
@@ -54,7 +59,7 @@ class Database {
     }
     const db = await this._openDB();
     const tx = db.transaction(['generations'], 'readwrite');
-    await tx.objectStore('generations').put({evolutionId, ...data}, data.generationId);
+    await tx.objectStore('generations').put({evolutionId, populationSize: data.cars.length, ...data}, data.generationId);
     await tx.done;
   }
 
@@ -76,6 +81,11 @@ class Database {
     await tx.done;
   }
 
+  async loadGenerationsByEvolutionId(evolutionId) {
+    const db = await this._openDB();
+    const generations = await db.getAllFromIndex('generations', 'evolutionId', evolutionId);
+    return generations;
+  }
 
   async loadGeneration(generationId) {
     const db = await this._openDB();
