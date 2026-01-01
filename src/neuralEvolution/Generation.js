@@ -1,9 +1,11 @@
 import NeuralCarObject from '../sim/car/NeuralCarObject';
 import { Genome } from './Genome';
 import { calculateScore } from './fitness';
+import { v4 as uuidv4 } from 'uuid';
 
 class Generation {
     constructor(track) {
+      this.generationId = uuidv4();
       this.track = track;
       this.cars = [];
       this.epoch = 1

@@ -12,3 +12,5 @@
 - **meaningful inputs**: to check if the inputs are meaningful, run tests race disabling selected inputs (e.g. by setting them to 0) and compare the results with the original race. Score difference will show if the inputs are helpful.
 - **AI-generated graphics**: AI can be used to generate spritesheets with track tetrues and elements.
 - **Less neurons is more**: GA does not handle well large NNs with many unused neurons. It leads to mutation of non significant parameters and slower evolution.
+- **Flat Data Structures**: Avoid per-step allocations and pointer-heavy containers (Sets, small arrays, string keys) in tight physics loops; using flat, contiguous data with explicit indexing dramatically reduces GC pressure and improves cache locality, enabling many more simulations per second.
+- **Compress genome data**: unoptimized genome data can easly take up to few MBs of memory for a whole population. When storing long population history, it can take up to few 100MBs of memory. To reduce the memory usage, we can compress the genome data using Int16 + scale quantization.

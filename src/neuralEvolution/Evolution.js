@@ -2,11 +2,13 @@ import Simulation from '../sim/Simulation';
 import Generation from './Generation';
 import { serializeGenome, deserializeGenome } from './Genome';
 import Database from '../loaders/Database';
+import { v4 as uuidv4 } from 'uuid';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
 class Evolution { 
   constructor(pixiApp, tracks, epochLimit=Infinity) {
+    this.evolutionId = uuidv4();
     this.pixiApp = pixiApp;
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);

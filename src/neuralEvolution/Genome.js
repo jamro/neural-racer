@@ -1,13 +1,86 @@
-function serializeGenome(genome) {
-  return Array.from(genome.genes);
+import { v4 as uuidv4 } from 'uuid';
+
+// Int16 + scale quantization for storing genomes in IndexedDB
+// - ~2x smaller than Float32
+// - very low quality loss for GA-evolved NN weights (especially in typical ranges)
+// - structured-clone friendly (Int16Array + number)
+
+const I16_MAX = 32767;
+
+function serializeGenome(genome, {
+  // If you want extra robustness to occasional outliers,
+  // set usePercentile=true and percentile=0.999 (requires sorting / extra work).
+  // For speed and simplicity: maxAbs is great.
+  eps = 1e-12,
+} = {}) {
+  const genesF32 =
+    genome.genes instanceof Float32Array ? genome.genes : new Float32Array(genome.genes);
+
+  // Find max absolute value (scale)
+  let maxAbs = 0;
+  for (let i = 0; i < genesF32.length; i++) {
+    const a = Math.abs(genesF32[i]);
+    if (a > maxAbs) maxAbs = a;
+  }
+
+  // Avoid zero/denormal scale (all genes = 0)
+  const scale = Math.max(maxAbs, eps);
+
+  // Quantize
+  const genesQ = new Int16Array(genesF32.length);
+  const invScale = 1.0 / scale;
+
+  for (let i = 0; i < genesF32.length; i++) {
+    // normalize to [-1,1]
+    let x = genesF32[i] * invScale;
+    if (x > 1) x = 1;
+    else if (x < -1) x = -1;
+
+    // map to int16
+    // use rounding to nearest integer
+    genesQ[i] = Math.round(x * I16_MAX);
+  }
+
+  return {
+    genomeId: genome.genomeId,
+    scale,
+    genesQ,           // Int16Array is structured-clone friendly
+    length: genesQ.length,
+  };
 }
 
-function deserializeGenome(genes) {
-  return new Genome(genes.length, new Float32Array(genes));
+/**
+ * Dequantize stored genome -> Genome instance with Float32Array genes
+ */
+function deserializeGenome(data) {
+  if (!data) throw new Error("deserializeGenome: no data");
+
+  const { genomeId, scale } = data;
+
+  if (typeof scale !== "number" || !Number.isFinite(scale) || scale <= 0) {
+    throw new Error(`deserializeGenome: invalid scale: ${scale}`);
+  }
+
+  // Accept either Int16Array or array-like (in case of older records)
+  const genesQ =
+    data.genesQ instanceof Int16Array ? data.genesQ : new Int16Array(data.genesQ);
+
+  // Dequantize
+  const genesF32 = new Float32Array(genesQ.length);
+  const mul = scale / I16_MAX;
+
+  for (let i = 0; i < genesQ.length; i++) {
+    genesF32[i] = genesQ[i] * mul;
+  }
+
+  const genome = new Genome(genesF32.length, genesF32);
+  genome.genomeId = genomeId;
+  return genome;
 }
 
 class Genome {
   constructor(length, genes = null) {
+    this.genomeId = uuidv4();
     this.genes = genes ?? new Float32Array(length);
   }
 

@@ -1,11 +1,12 @@
 import CarView from './CarView';
 import AbstractSimulationObject from '../AbstractSimulationObject';
 import CarPhysicModel from './CarPhysicModel';
+import { v4 as uuidv4 } from 'uuid';
 
 class CarObject extends AbstractSimulationObject {
     constructor(track) {
         super();
-        this.carId = Math.random().toString(36).substring(2, 15);
+        this.carId = uuidv4();
         if (!track) {
           throw new Error('Track is required');
         }
