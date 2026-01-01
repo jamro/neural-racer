@@ -98,9 +98,12 @@ class SimulationView extends PIXI.Container {
           }
           if(leaderCar) {
             for (const car of this.cars) {
-              if(car.active) continue;
+              if(car.active) {
+                car.view.alpha = 1;
+                continue
+              }
               const distanceFromLeader = Math.sqrt(Math.pow(car.x - leaderCar.x, 2) + Math.pow(car.y - leaderCar.y, 2));
-              car.view.alpha = 0.15 + 0.85*Math.min(1, Math.max(0, (distanceFromLeader-5)/15));
+              car.view.alpha = 0.05 + 0.95*Math.min(1, Math.max(0, (distanceFromLeader-5)/15));
             }
           }
         }

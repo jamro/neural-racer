@@ -27,8 +27,8 @@ class DustContainer extends PIXI.ParticleContainer {
     }
 
     addDust(x, y, direction, carLength, carWidth, amount) {
-      for(let i = 0; i < amount*amount*amount*10; i++) {
-        this.createDustParticleSet(x, y, direction, carLength, carWidth, amount*amount*amount);
+      for(let i = 0; i < amount*amount*10; i++) {
+        this.createDustParticleSet(x, y, direction, carLength, carWidth, amount*amount);
       }
     }
 
@@ -76,8 +76,8 @@ class DustContainer extends PIXI.ParticleContainer {
         rotation: Math.random() * 2 * Math.PI,
         tint: DUST_COLORS[Math.floor(Math.random() * DUST_COLORS.length)],
       });
-      particle.growSpeed = 0.01 + Math.random() * (0.07 + 0.03*amount);
-      particle.fadeSpeed = 0.01 + Math.random() * 0.01;
+      particle.growSpeed = 0.005 + Math.random() * (0.01 + 0.01*amount);
+      particle.fadeSpeed = 0.003 + Math.random() * 0.003;
       particle.vx = vx;
       particle.vy = vy;
       this.addParticle(particle);

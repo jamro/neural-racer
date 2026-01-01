@@ -87,6 +87,7 @@ class TrackView extends PIXI.Container {
       includeInHighQuality(this.driftMarks);
       this.carsContainer.parent.setChildIndex(this.carsContainer, this.carsContainer.parent.children.length - 1);
       includeInHighQuality(this.dustContainer);
+      this.dustContainer.parent.setChildIndex(this.dustContainer, this.dustContainer.parent.children.length - 1);
     }
 
     get graphicsQuality() {
