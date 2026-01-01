@@ -1,11 +1,5 @@
 import { openDB } from 'idb';
 
-/**
- * Database class for persisting evolution state using IndexedDB.
- * Uses two object stores:
- * - evolution: Object containing { currentTrackIndex, completedTracks, epoch }
- * - genomes: Array (serialized genomes)
- */
 class Database {
   constructor(filename = 'current-evolution') {
     this.filename = filename;
@@ -13,58 +7,31 @@ class Database {
     this.dbVersion = 2;
   }
 
-  /**
-   * Open or create the IndexedDB database with all object stores.
-   * @returns {Promise<IDBPDatabase>} Database instance
-   */
   async _openDB() {
     return openDB(this.dbName, this.dbVersion, {
       upgrade(db, oldVersion) {
-        // Clean up old object stores if migrating from version 1
-        if (oldVersion < 2) {
-          if (db.objectStoreNames.contains('currentTrackIndex')) {
-            db.deleteObjectStore('currentTrackIndex');
-          }
-          if (db.objectStoreNames.contains('completedTracks')) {
-            db.deleteObjectStore('completedTracks');
-          }
-          if (db.objectStoreNames.contains('epoch')) {
-            db.deleteObjectStore('epoch');
-          }
-        }
-        
-        // Create object stores if they don't exist
         if (!db.objectStoreNames.contains('evolution')) {
           db.createObjectStore('evolution');
         }
-        if (!db.objectStoreNames.contains('genomes')) {
-          db.createObjectStore('genomes');
+        if (!db.objectStoreNames.contains('generations')) {
+          db.createObjectStore('generations');
         }
       },
     });
   }
 
-  /**
-   * Store evolution state across two object stores.
-   * @param {Object} data - Plain object containing evolution state:
-   *   - currentTrackIndex: number
-   *   - completedTracks: number[]
-   *   - epoch: number
-   *   - genomes: Array (serialized genomes)
-   */
   async storeEvolution(data) {
     const db = await this._openDB();
-    const tx = db.transaction(['evolution', 'genomes'], 'readwrite');
+    const tx = db.transaction(['evolution', 'generations'], 'readwrite');
 
     const evolutionData = {
       currentTrackIndex: data.currentTrackIndex,
       completedTracks: data.completedTracks,
-      epoch: data.epoch,
     };
 
     await Promise.all([
       tx.objectStore('evolution').put(evolutionData, this.filename),
-      tx.objectStore('genomes').put(data.genomes, this.filename),
+      tx.objectStore('generations').put(data.generation, this.filename),
     ]);
 
     await tx.done;
@@ -76,15 +43,15 @@ class Database {
    */
   async loadEvolution() {
     const db = await this._openDB();
-    const tx = db.transaction(['evolution', 'genomes'], 'readonly');
+    const tx = db.transaction(['evolution', 'generations'], 'readonly');
 
-    const [evolution, genomes] = await Promise.all([
+    const [evolution, generation] = await Promise.all([
       tx.objectStore('evolution').get(this.filename),
-      tx.objectStore('genomes').get(this.filename),
+      tx.objectStore('generations').get(this.filename),
     ]);
 
     // If any required field is missing, return null
-    if (evolution === undefined || genomes === undefined) {
+    if (evolution === undefined || generation === undefined) {
       return null;
     }
 
@@ -92,7 +59,7 @@ class Database {
       currentTrackIndex: evolution.currentTrackIndex,
       completedTracks: evolution.completedTracks,
       epoch: evolution.epoch,
-      genomes,
+      generation
     };
   }
 
@@ -101,11 +68,11 @@ class Database {
    */
   async clearEvolution() {
     const db = await this._openDB();
-    const tx = db.transaction(['evolution', 'genomes'], 'readwrite');
+    const tx = db.transaction(['evolution', 'generations'], 'readwrite');
 
     await Promise.all([
       tx.objectStore('evolution').delete(this.filename),
-      tx.objectStore('genomes').delete(this.filename),
+      tx.objectStore('generations').delete(this.filename),
     ]);
 
     await tx.done;

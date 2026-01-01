@@ -1,5 +1,5 @@
 import Simulation from '../sim/Simulation';
-import Generation from './Generation';
+import { Generation, serializeGeneration, deserializeGeneration } from './Generation';
 import { serializeGenome, deserializeGenome } from './Genome';
 import Database from '../loaders/Database';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,8 +29,7 @@ class Evolution {
     const data = {
       currentTrackIndex: this.currentTrackIndex,
       completedTracks: this.completedTracks,
-      epoch: this.generation.epoch,
-      genomes: this.generation.cars.map(car => serializeGenome(car.genome))
+      generation: serializeGeneration(this.generation)
     }
     this.database.storeEvolution(data);
   }
@@ -49,11 +48,11 @@ class Evolution {
     }
 
     this.simulation.setTrack(this.tracks[this.currentTrackIndex]);
-    this.generation = new Generation(this.tracks[this.currentTrackIndex]);
+    
     if(loadedData) {
-      this.generation.setPopulation(loadedData.genomes.map(genome => deserializeGenome(genome)));
-      this.generation.epoch = loadedData.epoch;
+      this.generation = deserializeGeneration(loadedData.generation, this.tracks);
     } else {
+      this.generation = new Generation(this.tracks[this.currentTrackIndex]);
       this.generation.createRandomPopulation(populationSize);
     }
 

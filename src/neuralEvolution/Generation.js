@@ -1,7 +1,31 @@
 import NeuralCarObject from '../sim/car/NeuralCarObject';
-import { Genome } from './Genome';
+import { Genome, serializeGenome, deserializeGenome } from './Genome';
 import { calculateScore } from './fitness';
 import { v4 as uuidv4 } from 'uuid';
+
+
+function serializeGeneration(generation) {
+  return {
+    generationId: generation.generationId,
+    track: {
+      name: generation.track.name,
+    },
+    cars: generation.cars.map(car => ({
+      genome: serializeGenome(car.genome),
+    })),
+    epoch: generation.epoch
+  }
+}
+
+function deserializeGeneration(data, tracks) {
+  const track = tracks.find(track => track.name === data.track.name);
+  if(!track) throw new Error(`Track ${data.track.name} not found`);
+  const generation = new Generation(track);
+  generation.generationId = data.generationId;
+  generation.setPopulation(data.cars.map(car => deserializeGenome(car.genome)));
+  generation.epoch = data.epoch;
+  return generation;
+}
 
 class Generation {
     constructor(track) {
@@ -209,4 +233,4 @@ class Generation {
     }
 }
 
-export default Generation;
+export { serializeGeneration, deserializeGeneration, Generation };
