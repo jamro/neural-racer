@@ -5,7 +5,7 @@ class EvolutionDetailsView extends PIXI.Container {
   constructor() {
     super();
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 248, 188);
+    this.bg.rect(2, 2, 248, 158);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -34,11 +34,11 @@ class EvolutionDetailsView extends PIXI.Container {
   }
 
   setEvolutionHistory(evolutionHistory, trackName) {
-    // take last 10
+    // take last 8
     const history = evolutionHistory.getScoreHistoryForTrack(
       trackName,
       ['maxScore', 'medianScore', 'completionRate']
-    ).slice(-10);
+    ).slice(-8);
 
     this.statusTextField.text = "History:\n" + (history.map(h => h.epoch.toString().padStart(3, ' ') + ": ★ " + ((100*h.maxScore).toFixed(1).padStart(5, ' ')) + ", ≈ " + ((100*h.medianScore).toFixed(1).padStart(5, ' ')) + ", ✓ " + Math.round(100*h.completionRate).toString().padStart(3, ' ') + "%" ).join("\n") || "-")
   }

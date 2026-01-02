@@ -5,7 +5,7 @@ class SimulationDetailsView extends PIXI.Container {
   constructor() {
     super();
     this.bg = new PIXI.Graphics();
-    this.bg.rect(2, 2, 248, 98);
+    this.bg.rect(2, 2, 248, 43);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
@@ -43,10 +43,7 @@ class SimulationDetailsView extends PIXI.Container {
     }
 
     this.statusTextField.text = "FPS: " + (this.fps || '???') + "\n" + 
-    "Memory: " + (Math.round(usedJSHeapSize / 1024 / 1024) + "MB / " + Math.round(jsHeapSizeLimit / 1024 / 1024) + "MB") + "\n" +
-    "Car processing time:\n" + 
-    " - Control: " + (simulation.carControlProccessingTime.toFixed(2)) + "ms\n" +
-    " - Physics: " + (simulation.carPhysicsProccessingTime.toFixed(2)) + "ms\n"
+    "Memory: " + ((usedJSHeapSize / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB / " + (jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB")
   }
 
   onTick(delta) {
