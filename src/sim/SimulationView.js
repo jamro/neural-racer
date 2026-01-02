@@ -3,6 +3,7 @@ import CarDetailsView from './CarDetailsView';
 import GenerationDetailsView from './GenerationDetailsView';
 import SimulationDetailsView from './SimulationDetailsView';
 import EvolutionDetailsView from './EvolutionDetailsView';
+import { metersToPixels } from './unitConversion'; // @TODO avoid conversion in view class
 
 class SimulationView extends PIXI.Container {
     constructor() {
@@ -92,11 +93,11 @@ class SimulationView extends PIXI.Container {
           for (const car of this.cars) {
             this.track.view.drawDriftMark(
               car.carId,
-              car.metersToPixels(car.x),
-              car.metersToPixels(car.y),
+              metersToPixels(car.x),
+              metersToPixels(car.y),
               car.direction,
-              car.metersToPixels(car.length),
-              car.metersToPixels(car.width),
+              metersToPixels(car.length),
+              metersToPixels(car.width),
               car.isCrashed ? 0 : (car.model.tiresTraction * (car.active ? 1 : 0.8)),
               (car.active && !car.isCrashed) ? car.model.tiresTraction : 0
             );

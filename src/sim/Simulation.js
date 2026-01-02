@@ -1,12 +1,10 @@
-import AbstractSimulationObject from './AbstractSimulationObject';
 import SimulationView from './SimulationView';
-
+import { metersToPixels } from './unitConversion';
 
 const COMPLETE_DELAY = 20;
 
-class Simulation extends AbstractSimulationObject {
+class Simulation {
     constructor(app = null) {
-        super();
 
         this.simulationStep = 0.05;
         this.simulationSpeed = 1;
@@ -75,31 +73,13 @@ class Simulation extends AbstractSimulationObject {
     updateCamera() {
       if (this.leaderCar) {
           this.view.setCameraPosition(
-          this.metersToPixels(-this.leaderCar.x),
-          this.metersToPixels(-this.leaderCar.y)
+          metersToPixels(-this.leaderCar.x),
+          metersToPixels(-this.leaderCar.y)
         );
       }
     }
 
-    /**
-     * Validates that an object implements the AbstractSimulationObject interface
-     * @param {Object} object - Object to validate
-     * @throws {Error} If object doesn't implement required methods
-     */
-    validateSimulationObject(object) {
-        if (!object) {
-            throw new Error('Object cannot be null or undefined');
-        }
-        if (typeof object.update !== 'function') {
-            throw new Error('Simulation object must implement update(delta) method');
-        }
-        if (typeof object.renderView !== 'function') {
-            throw new Error('Simulation object must implement renderView(delta) method');
-        }
-    }
-
     addObject(object) {
-        this.validateSimulationObject(object);
         this.objects.push(object);
     }
 
@@ -248,8 +228,6 @@ class Simulation extends AbstractSimulationObject {
         if (this.view.parent) {
             this.view.parent.removeChild(this.view);
         }
-        this.view.destroy();
-        this.objects.forEach(object => object.destroy());
         this.objects = [];
         this.cars = [];
         this.track.reset();

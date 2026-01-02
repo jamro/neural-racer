@@ -1,11 +1,10 @@
 import CarView from './CarView';
-import AbstractSimulationObject from '../AbstractSimulationObject';
 import CarPhysicModel from './CarPhysicModel';
 import { v4 as uuidv4 } from 'uuid';
+import { metersToPixels } from '../unitConversion';
 
-class CarObject extends AbstractSimulationObject {
+class CarObject {
     constructor(track) {
-        super();
         this.carId = uuidv4();
         if (!track) {
           throw new Error('Track is required');
@@ -37,8 +36,8 @@ class CarObject extends AbstractSimulationObject {
 
         // create view
         this.view = new CarView(
-          this.metersToPixels(this.model.length),
-          this.metersToPixels(this.model.width),
+          metersToPixels(this.model.length),
+          metersToPixels(this.model.width),
           this.radarBeamAngles
         );
     }
@@ -204,15 +203,15 @@ class CarObject extends AbstractSimulationObject {
     }
 
     renderView(delta) { // delta is in seconds
-      this.view.x = this.metersToPixels(this.model.x);
-      this.view.y = this.metersToPixels(this.model.y);
+      this.view.x = metersToPixels(this.model.x);
+      this.view.y = metersToPixels(this.model.y);
       this.view.rotation = this.model.direction;
       this.view.crashed = this._isCrashed;
 
       if (!this._isCrashed && !this._isFinished) {  // only render radar if the car is not crashed or finished
         const beamMaxLength = 100 // for rendering only
         this.view.renderRadar(
-          this.radarBeams.map(beam => this.metersToPixels(beam !== null ? beam : beamMaxLength)),
+          this.radarBeams.map(beam => metersToPixels(beam !== null ? beam : beamMaxLength)),
           this.safeDirection
         );
       }

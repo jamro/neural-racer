@@ -1,13 +1,12 @@
-import AbstractSimulationObject from '../AbstractSimulationObject';
 import TrackView from './TrackView';
 import TrackSegments from './TrackSegments';
 import Checkpoints from './Checkpoints';
+import { metersToPixels } from '../unitConversion';
 
-class TrackObject extends AbstractSimulationObject {
+class TrackObject {
     constructor(cellSize = 4) {
-        super();
         this.name = 'Unknown Track';
-        this.view = new TrackView(this.metersToPixels(0.5));
+        this.view = new TrackView(metersToPixels(0.5));
         this.wallSegments = new TrackSegments(cellSize);
         this.checkpoints = new Checkpoints(cellSize);
     }
@@ -83,10 +82,10 @@ class TrackObject extends AbstractSimulationObject {
     addCheckpoint(ax, ay, bx, by) {
       this.checkpoints.addSegment(ax, ay, bx, by);
       this.view.addCheckpoint(
-        this.metersToPixels(ax),
-        this.metersToPixels(ay),
-        this.metersToPixels(bx),
-        this.metersToPixels(by)
+        metersToPixels(ax),
+        metersToPixels(ay),
+        metersToPixels(bx),
+        metersToPixels(by)
       );
     }
 
@@ -94,20 +93,20 @@ class TrackObject extends AbstractSimulationObject {
     addSegment(ax, ay, bx, by) {
       this.wallSegments.addSegment(ax, ay, bx, by);
       this.view.addSegment(
-        this.metersToPixels(ax),
-        this.metersToPixels(ay),
-        this.metersToPixels(bx),
-        this.metersToPixels(by)
+        metersToPixels(ax),
+        metersToPixels(ay),
+        metersToPixels(bx),
+        metersToPixels(by)
       );
     }
 
     addTrackShape(shape) {
       const scaledShape = shape.map(segment => {
         return {
-          ax: this.metersToPixels(segment.ax),
-          ay: this.metersToPixels(segment.ay),
-          bx: this.metersToPixels(segment.bx),
-          by: this.metersToPixels(segment.by),
+          ax: metersToPixels(segment.ax),
+          ay: metersToPixels(segment.ay),
+          bx: metersToPixels(segment.bx),
+          by: metersToPixels(segment.by),
         };
       });
       this.view.addTrackShape(scaledShape);
@@ -117,10 +116,10 @@ class TrackObject extends AbstractSimulationObject {
 
       this.view.addTrackGraphic(
         filename, 
-        this.metersToPixels(x),
-        this.metersToPixels(y),
-        this.metersToPixels(width),
-        this.metersToPixels(height),
+        metersToPixels(x),
+        metersToPixels(y),
+        metersToPixels(width),
+        metersToPixels(height),
         rotation,
         scaleX,
         scaleY
