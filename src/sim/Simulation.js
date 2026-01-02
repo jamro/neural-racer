@@ -13,11 +13,9 @@ class Simulation {
         this.renderRunning = false;
         this.app = app;
         this.view = new SimulationView();
-        this.view.setSimulation(this);
         this.leaderCar = null;
         this.cars = [];
         this.track = null;
-        this.generation = null;
         this.onComplete = () => {}
         this.completeDelay = COMPLETE_DELAY;
         this.frameCount = 0;
@@ -25,6 +23,7 @@ class Simulation {
 
         this.carPhysicsProccessingTime = 0;
         this.carControlProccessingTime = 0;
+        this.activeCars = 0
     }
 
     setTrack(track) {
@@ -49,18 +48,13 @@ class Simulation {
         );
         this.cars.push(car);
         this.view.addCar(car);
+        this.activeCars++;
     }
 
-    setGeneration(generation) {
-        if (this.generation) {
-            throw new Error('Generation already set');
-        }
-        this.generation = generation;
-
+    addGeneration(generation) {
         for (const car of generation.cars) {
             this.addCar(car);
         }
-        this.view.setGeneration(generation);
     }
 
     updateCamera() {
@@ -115,22 +109,22 @@ class Simulation {
         }
         this.track.renderView(deltaSeconds);
         this.view.renderView(deltaSeconds);
+        this.view.updateStats(this);
 
         // follow leader
-        if(this.leaderCar && this.leaderCar.isCrashed && this.generation.activeCount > 0) {
+        if(this.leaderCar && this.leaderCar.isCrashed && this.activeCars > 0) {
           this.leaderCar.active = false;
           this.leaderCar = null;
         }
-        if(!this.leaderCar && this.generation.activeCount > 0) {
+        if(!this.leaderCar && this.activeCars > 0) {
           let leader = null;
-          for (const car of this.generation.cars) {
+          for (const car of this.cars) {
             if (car.isCrashed) continue;
             leader = car;
             break;
           }
           if (leader) {
             this.leaderCar = leader;
-            this.view.carDetailsView.car = leader;
             this.leaderCar.active = true;
           }
         }
@@ -163,26 +157,26 @@ class Simulation {
     }
 
     singleSimulationStep() {
-        const activeCount = this.generation.activeCount;
+        this.activeCars = this.cars.filter(car => !car.isCrashed && !car.isFinished).length;
         let startTime = 0;
         startTime = performance.now();
         for (const car of this.cars) {
           car.control(this.simulationStep);
         }
-        if(activeCount > 0) {
-          this.carControlProccessingTime = (performance.now() - startTime) / activeCount;
+        if(this.activeCars > 0) {
+          this.carControlProccessingTime = (performance.now() - startTime) / this.activeCars;
         }
 
         startTime = performance.now();
         for (const car of this.cars) {
           car.update(this.track, this.simulationStep);
         }
-        if(activeCount > 0) {
-          this.carPhysicsProccessingTime = (performance.now() - startTime) / activeCount;
+        if(this.activeCars > 0) {
+          this.carPhysicsProccessingTime = (performance.now() - startTime) / this.activeCars;
         }
 
         // end condition
-        if (this.generation.activeCount === 0) {
+        if (this.activeCars === 0) {
           this.completeCounter--;
         }
         if(this.completeCounter <= 0) {
@@ -211,8 +205,8 @@ class Simulation {
             this.track.view.parent.removeChild(this.track.view);
         }
         this.track = null;
-        this.generation = null;
         this.frameCount = 0;
+        this.activeCars = 0;
     }
 }
 

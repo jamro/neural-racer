@@ -5,7 +5,6 @@ class CarDetailsView extends PIXI.Container {
 
   constructor() {
     super();
-    this.car = null
     this.bg = new PIXI.Graphics();
     this.bg.rect(2, 2, 248, 158);
     this.bg.fill({
@@ -26,15 +25,14 @@ class CarDetailsView extends PIXI.Container {
     this.addChild(this.statusTextField);
   }
 
-  renderView(delta) {
-    if (!this.car) return;
-
-    this.statusTextField.text = "Distance: " + (100*this.car.checkpointsProgress).toFixed(1) + "%\n" +
-        "Speed: " + (this.car.model.speed*3.6).toFixed(1) + " km/h\n\n" +
-        "Throttle: " + (100*this.car.model.throttleValue).toFixed(1) + "%\n" +
-        "Brake: " + (100*this.car.model.brakeValue).toFixed(1) + "%\n" +
-        "Turn: " + (100*this.car.model.turnValue).toFixed(1) + "%\n\n" +
-        "DEBUG:\n" + (this.car.debug || '-none-') + "\n";
+  update(car) {
+    if(!car) return;
+    this.statusTextField.text = "Distance: " + (100*car.checkpointsProgress).toFixed(1) + "%\n" +
+        "Speed: " + (car.model.speed*3.6).toFixed(1) + " km/h\n\n" +
+        "Throttle: " + (100*car.model.throttleValue).toFixed(1) + "%\n" +
+        "Brake: " + (100*car.model.brakeValue).toFixed(1) + "%\n" +
+        "Turn: " + (100*car.model.turnValue).toFixed(1) + "%\n\n" +
+        "DEBUG:\n" + (car.debug || '-none-') + "\n";
   }
 
 }

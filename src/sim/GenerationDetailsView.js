@@ -4,7 +4,6 @@ import ProgressBar from '../ui/ProgressBar';
 class GenerationDetailsView extends PIXI.Container {
   constructor() {
     super();
-    this.generation = null
     this.bg = new PIXI.Graphics();
     this.bg.rect(2, 2, 248, 78);
     this.bg.fill({
@@ -32,19 +31,27 @@ class GenerationDetailsView extends PIXI.Container {
     this.statusProgressBar.colors = [0xff0000, 0xffffff, 0x8888ff];
   }
 
-  renderView(delta) {
-    if (!this.generation) return;
+  update(simulation) {
 
-    this.statusProgressBar.max = this.generation.totalCount;
+    let totalCars = 0
+    let crashedCars = 0
+    let finishedCars = 0
+    for (const car of simulation.cars) {
+      totalCars++;
+      if(car.isCrashed) crashedCars++;
+      if(car.isFinished) finishedCars++;
+    }
+
+    this.statusProgressBar.max = totalCars;
     this.statusProgressBar.values = [
-      this.generation.crashedCount,
-      this.generation.activeCount,
-      this.generation.finishedCount
-    ]
+      crashedCars, 
+      totalCars - crashedCars - finishedCars, 
+      finishedCars
+    ];
 
-    this.statusTextField.text = "Epoch: " + this.generation.epoch + "\n" +
-        "Track: " + this.generation.trackName + "\n" +
-        "Size: ✕ " + this.generation.crashedCount + ", ▶ " + this.generation.activeCount + ", ✓ " + this.generation.finishedCount + " (" + this.generation.totalCount + ")"
+    this.statusTextField.text = "Epoch: " + simulation.epoch + "\n" +
+        "Track: " + simulation.track.name + "\n" +
+        "Size: ✕ " + crashedCars + ", ▶ " + (totalCars - crashedCars - finishedCars) + ", ✓ " + finishedCars + " (" + totalCars + ")"
   }
   
 }

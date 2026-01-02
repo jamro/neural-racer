@@ -4,7 +4,6 @@ class SimulationDetailsView extends PIXI.Container {
 
   constructor() {
     super();
-    this.simulation = null
     this.bg = new PIXI.Graphics();
     this.bg.rect(2, 2, 248, 98);
     this.bg.fill({
@@ -34,9 +33,7 @@ class SimulationDetailsView extends PIXI.Container {
     }, 1000);
   }
 
-  renderView(delta) {
-    if (!this.simulation) return;
-
+  update(simulation) {
     // be sure that memory is supported
     let usedJSHeapSize = 0;
     let jsHeapSizeLimit = 0;
@@ -48,8 +45,8 @@ class SimulationDetailsView extends PIXI.Container {
     this.statusTextField.text = "FPS: " + (this.fps || '???') + "\n" + 
     "Memory: " + (Math.round(usedJSHeapSize / 1024 / 1024) + "MB / " + Math.round(jsHeapSizeLimit / 1024 / 1024) + "MB") + "\n" +
     "Car processing time:\n" + 
-    " - Control: " + (this.simulation.carControlProccessingTime.toFixed(2)) + "ms\n" +
-    " - Physics: " + (this.simulation.carPhysicsProccessingTime.toFixed(2)) + "ms\n"
+    " - Control: " + (simulation.carControlProccessingTime.toFixed(2)) + "ms\n" +
+    " - Physics: " + (simulation.carPhysicsProccessingTime.toFixed(2)) + "ms\n"
   }
 
   onTick(delta) {

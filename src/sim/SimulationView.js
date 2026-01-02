@@ -21,7 +21,6 @@ class SimulationView extends PIXI.Container {
         this.addChild(this.evolutionDetailsView);
         this.track = null;
         this.cars = [];
-        this.generation = null;
         this.viewWidth = 100;
         this.viewHeight = 100;
         this.targetCameraPosition = { x: 0, y: 0, scale: 1 };
@@ -36,15 +35,6 @@ class SimulationView extends PIXI.Container {
 
     get graphicsQuality() {
         return this._graphicsQuality;
-    }
-
-    setEvolution(evolution) {
-        this.evolutionDetailsView.evolution = evolution;
-    }
-
-    setGeneration(generation) {
-        this.generation = generation;
-        this.generationDetailsView.generation = generation;
     }
 
     setCameraPosition(x, y, snapFactor = 0.5) {
@@ -62,21 +52,22 @@ class SimulationView extends PIXI.Container {
         this.masterContainer.addChild(track.view);
     }
 
-    setSimulation(simulation) {
-        this.simulation = simulation;
-        this.simulationDetailsView.simulation = simulation;
-    }
-
     addCar(car) {
         this.cars.push(car);
         this.track.view.carsContainer.addChild(car.view);
     }
 
+    updateStats(simulation) {
+      this.simulationDetailsView.update(simulation);
+      this.generationDetailsView.update(simulation);
+      this.carDetailsView.update(simulation.leaderCar);
+    }
+
+    setEvolutionHistory(evolutionHistory, trackName) {
+      this.evolutionDetailsView.setEvolutionHistory(evolutionHistory, trackName);
+    }
+
     renderView(delta) {
-        this.simulationDetailsView.renderView(delta);
-        this.evolutionDetailsView.renderView(delta);
-        this.generationDetailsView.renderView(delta);
-        this.carDetailsView.renderView(delta);
         this.masterContainer.x = this.targetCameraPosition.x;
         this.masterContainer.y = this.targetCameraPosition.y;
         if(this.track) {
