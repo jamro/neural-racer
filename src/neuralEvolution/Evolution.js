@@ -110,8 +110,8 @@ class Evolution {
       newTrack = nextIncompleteTrack;
     }
     if(!newTrack) {
-      // return randm track if no track is available
-      return this.tracks[Math.floor(Math.random() * this.tracks.length)];
+      this.completedTracks = [];
+      return this.tracks[0];
     }
     return newTrack;
   }

@@ -37,7 +37,16 @@ class SimulationDetailsView extends PIXI.Container {
   renderView(delta) {
     if (!this.simulation) return;
 
-    this.statusTextField.text = "FPS: " + (this.fps || '???') + "\n\n" + 
+    // be sure that memory is supported
+    let usedJSHeapSize = 0;
+    let jsHeapSizeLimit = 0;
+    if(performance.memory) {
+      usedJSHeapSize = performance.memory.usedJSHeapSize;
+      jsHeapSizeLimit = performance.memory.jsHeapSizeLimit;
+    }
+
+    this.statusTextField.text = "FPS: " + (this.fps || '???') + "\n" + 
+    "Memory: " + (Math.round(usedJSHeapSize / 1024 / 1024) + "MB / " + Math.round(jsHeapSizeLimit / 1024 / 1024) + "MB") + "\n" +
     "Car processing time:\n" + 
     " - Control: " + (this.simulation.carControlProccessingTime.toFixed(2)) + "ms\n" +
     " - Physics: " + (this.simulation.carPhysicsProccessingTime.toFixed(2)) + "ms\n"

@@ -18,7 +18,7 @@ class GenerationHistory {
       trackName,
       populationSize,
       overallScore,
-      carsData, // { genome, score, stats } 
+      carsData, // { score, stats } 
     };
 
     // Check if generation already exists in this track
@@ -42,8 +42,7 @@ class GenerationHistory {
       generation.overallScore, 
       generation.epoch, 
       generation.totalCount, 
-      generation.cars.map((car, index) => ({
-        genome: car.genome,
+      generation.cars.map((_, index) => ({
         score: generation.scores[index],
         stats: generation.stats[index],
       }))
