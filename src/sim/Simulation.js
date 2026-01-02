@@ -24,13 +24,18 @@ class Simulation {
         this.carPhysicsProccessingTime = 0;
         this.carControlProccessingTime = 0;
         this.activeCars = 0
+        this.epoch = null;
     }
 
     setTrack(track) {
+        if(!track) {
+            throw new Error('Track not provided');
+        }
         if (this.track) {
             throw new Error('Track already set');
         }
         this.track = track;
+        console.log('setTrack', track);
         this.track.view.pixiApp = this.app;
         this.view.setTrack(track);
     }
@@ -66,8 +71,9 @@ class Simulation {
       }
     }
 
-    start(simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low") {
+    start(epoch, simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low") {
         if (this.running) return;
+        this.epoch = epoch;
         this.simulationStep = simulationStep;
         this.simulationSpeed = simulationSpeed;
         this.graphicsQuality = graphicsQuality;
@@ -205,6 +211,7 @@ class Simulation {
             this.track.view.parent.removeChild(this.track.view);
         }
         this.track = null;
+        console.log('removeAndDispose', this.track);
         this.frameCount = 0;
         this.activeCars = 0;
     }

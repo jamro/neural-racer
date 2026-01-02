@@ -44,7 +44,7 @@ await evolution.initialize(config);
 
 console.log('PixiJS application initialized!');
 
-evolution.start();
+evolution.startSimulation();
 
 window.addEventListener('resize', () => {
   if(app.resize) {

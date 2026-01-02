@@ -10,19 +10,18 @@ const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 class Evolution { 
   constructor(pixiApp, tracks) {
     this.evolutionId = uuidv4();
+
     this.pixiApp = pixiApp;
-    this.simulation = new Simulation(this.pixiApp);
-    this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
-    this.pixiApp.stage.addChild(this.simulation.view);
     this.tracks = tracks;
     this.currentTrack = null;
-    this.simulation.onComplete = () => this.onEpochComplete();
     this.completedTracks = [];
+    this.generation = null;
+    this.simulation = null;
     this.history = new GenerationHistory();
 
     this.database = new Database(CURRENT_EVOLUTION_FILENAME);
 
-    this.config = {}
+    this.config = {};
   }
 
   // store in local storage
@@ -78,21 +77,26 @@ class Evolution {
       this.currentTrack = this.tracks[0]
       this.generation.createRandomPopulation(populationSize);
     }
+  }
+
+  startSimulation() {
+    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
+    this.simulation = new Simulation(this.pixiApp);
+    this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
+    this.pixiApp.stage.addChild(this.simulation.view);
+    this.simulation.onComplete = () => this.onEpochComplete();
     this.simulation.setTrack(this.currentTrack);
     this.simulation.addGeneration(this.generation);
     this.simulation.view.setEvolutionHistory(this.history, this.currentTrack.name);
-  }
-
-  start() {
-    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
-    this.simulation.start(simulationStep, simulationSpeed, graphicsQuality); // Start simulation loop
+    this.simulation.start(this.generation.epoch, simulationStep, simulationSpeed, graphicsQuality); // Start simulation loop
     this.simulation.startRender(); // Start render loop
   }
 
-  stop() {
+  stopSimulation() {
     this.simulation.stop(); // Stop simulation loop
     this.simulation.stopRender(); // Stop render loop
   }
+  
   scaleView(width, height) {
     if(this.simulation) {
       this.simulation.scaleView(width, height);
@@ -145,20 +149,11 @@ class Evolution {
     this.simulation.removeAndDispose();
 
     // run new simulation 
-    this.simulation = new Simulation(this.pixiApp);
-    this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
-    this.pixiApp.stage.addChild(this.simulation.view);
-    this.simulation.setTrack(this.currentTrack);
-    this.simulation.view.setEvolutionHistory(this.history, this.currentTrack.name);
-    this.simulation.onComplete = async () => await this.onEpochComplete();
     this.generation.resetScores();
     await this.store();
     await this.database.trimGenerationHistory(this.evolutionId, populationHistorySize);
-    this.simulation.addGeneration(this.generation);
 
-    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
-    this.simulation.start(simulationStep, simulationSpeed, graphicsQuality); // Start simulation loop
-    this.simulation.startRender(); // Start render loop
+    this.startSimulation();
   }
 }
 
