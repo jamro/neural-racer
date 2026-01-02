@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
 
-const CANVAS_WIDTH = 260;
-const CANVAS_HEIGHT = 200;
-const PADDING = 12;
+const CANVAS_WIDTH = 210;
+const CANVAS_HEIGHT = 180;
+const PADDING = 0;
 const NODE_RADIUS = 3;
 const MIN_NODE_OUTLINE_WIDTH = 0;
 const MAX_NODE_OUTLINE_WIDTH = 1;
@@ -25,10 +25,11 @@ class NetworkPreview extends PIXI.Container {
         const numLayers = sizes.length;
         const weights = genome ? this._extractWeights(network, genome) : null;
         
-        // Calculate layout
+        // Calculate layout - spread columns across full width minus padding
         const numHiddenLayers = Math.max(0, numLayers - 2);
         const numColumns = 1 + (numHiddenLayers * this.hiddenLayerColumns) + 1;
-        const columnSpacing = CANVAS_WIDTH / (numColumns + 1);
+        const availableWidth = CANVAS_WIDTH - 2 * PADDING;
+        const columnSpacing = numColumns > 1 ? availableWidth / (numColumns - 1) : 0;
         
         // Process signals (activations or fallback to weights)
         const signals = this._getSignals(sizes, weights, activations);
@@ -40,11 +41,11 @@ class NetworkPreview extends PIXI.Container {
         
         // Draw connections first (behind nodes)
         if (weights) {
-            this._drawConnections(sizes, weights, activations, signals, columnSpacing);
+            this._drawConnections(sizes, weights, activations, signals, numColumns, columnSpacing);
         }
         
         // Draw nodes
-        this._drawNodes(sizes, signals, weightedInputSums, columnSpacing);
+        this._drawNodes(sizes, signals, weightedInputSums, numColumns, columnSpacing);
     }
 
     _extractWeights(network, genome) {
@@ -109,7 +110,7 @@ class NetworkPreview extends PIXI.Container {
         return { signals, maxAbs: maxAbs || 1.0 };
     }
 
-    _getNodePosition(layer, node, numNodes, numLayers, columnSpacing) {
+    _getNodePosition(layer, node, numNodes, numLayers, totalNumColumns, columnSpacing) {
         const isHidden = layer > 0 && layer < numLayers - 1;
         const numColumns = isHidden ? this.hiddenLayerColumns : 1;
         const nodesPerColumn = Math.ceil(numNodes / numColumns);
@@ -126,18 +127,29 @@ class NetworkPreview extends PIXI.Container {
             columnIndex = 1 + (hiddenLayerIndex * this.hiddenLayerColumns) + Math.floor(node / nodesPerColumn);
         }
         
-        const x = (columnIndex + 1) * columnSpacing;
+        // Calculate x position: spread columns across full width minus padding
+        // First column at PADDING, last column at CANVAS_WIDTH - PADDING
+        const x = totalNumColumns > 1 
+            ? PADDING + columnIndex * columnSpacing
+            : CANVAS_WIDTH / 2; // Center if only one column
         
-        // Calculate y position within column
+        // Calculate y position within column, ensuring node stays within bounds
         const columnNodeIndex = node % nodesPerColumn;
         const startNode = Math.floor(node / nodesPerColumn) * nodesPerColumn;
         const endNode = Math.min(startNode + nodesPerColumn, numNodes);
         const nodesInColumn = endNode - startNode;
         
-        const nodeSpacing = nodesInColumn > 1 ? (CANVAS_HEIGHT - 2 * PADDING) / (nodesInColumn - 1) : 0;
-        const y = nodesInColumn === 1 ? CANVAS_HEIGHT / 2 : PADDING + columnNodeIndex * nodeSpacing;
+        // Calculate spacing accounting for node radius to keep nodes within bounds
+        const availableHeight = CANVAS_HEIGHT - 2 * (PADDING + NODE_RADIUS);
+        const nodeSpacing = nodesInColumn > 1 ? availableHeight / (nodesInColumn - 1) : 0;
+        const y = nodesInColumn === 1 
+            ? CANVAS_HEIGHT / 2 
+            : PADDING + NODE_RADIUS + columnNodeIndex * nodeSpacing;
         
-        return { x, y };
+        // Clamp y to ensure node stays within bounds
+        const clampedY = Math.max(NODE_RADIUS, Math.min(CANVAS_HEIGHT - NODE_RADIUS, y));
+        
+        return { x, y: clampedY };
     }
 
     _calculateWeightedInputSums(sizes, weights, activations) {
@@ -169,7 +181,7 @@ class NetworkPreview extends PIXI.Container {
         return { sums, maxAbs: maxAbsSum || 1.0 };
     }
 
-    _drawNodes(sizes, signals, weightedInputSums, columnSpacing) {
+    _drawNodes(sizes, signals, weightedInputSums, totalNumColumns, columnSpacing) {
         const numLayers = sizes.length;
         
         for (let layer = 0; layer < numLayers; layer++) {
@@ -178,7 +190,7 @@ class NetworkPreview extends PIXI.Container {
             const layerWeightedSums = weightedInputSums?.sums[layer] || [];
             
             for (let node = 0; node < numNodes; node++) {
-                const pos = this._getNodePosition(layer, node, numNodes, numLayers, columnSpacing);
+                const pos = this._getNodePosition(layer, node, numNodes, numLayers, totalNumColumns, columnSpacing);
                 const outputSignal = layerSignals[node]; // Output activation (after activation function)
                 const weightedSum = layerWeightedSums[node]; // Weighted input sum (before activation)
                 
@@ -226,7 +238,7 @@ class NetworkPreview extends PIXI.Container {
         }
     }
 
-    _drawConnections(sizes, weights, activations, signals, columnSpacing) {
+    _drawConnections(sizes, weights, activations, signals, totalNumColumns, columnSpacing) {
         const numLayers = sizes.length;
         let maxAbsSignal = 0;
         
@@ -253,10 +265,10 @@ class NetworkPreview extends PIXI.Container {
             const inputActivations = activations?.[layer];
             
             for (let o = 0; o < sizes[layer + 1]; o++) {
-                const outputPos = this._getNodePosition(layer + 1, o, sizes[layer + 1], numLayers, columnSpacing);
+                const outputPos = this._getNodePosition(layer + 1, o, sizes[layer + 1], numLayers, totalNumColumns, columnSpacing);
                 
                 for (let i = 0; i < sizes[layer]; i++) {
-                    const inputPos = this._getNodePosition(layer, i, sizes[layer], numLayers, columnSpacing);
+                    const inputPos = this._getNodePosition(layer, i, sizes[layer], numLayers, totalNumColumns, columnSpacing);
                     const signal = inputActivations 
                         ? inputActivations[i] * layerWeights[o][i]
                         : layerWeights[o][i];

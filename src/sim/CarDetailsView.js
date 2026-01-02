@@ -25,8 +25,8 @@ class CarDetailsView extends PIXI.Container {
     this.addChild(this.statusTextField);
 
     this.networkPreview = new NetworkPreview();
-    this.networkPreview.x = -5;
-    this.networkPreview.y = 155;
+    this.networkPreview.x = 20;
+    this.networkPreview.y = 165;
     this.addChild(this.networkPreview);
   }
 
