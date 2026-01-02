@@ -58,7 +58,7 @@ if (module.hot) {
     module.hot.accept();
     
     module.hot.dispose(() => {
-        evolution.stop();
+        evolution.stopSimulation();
         app.destroy(true, {
             children: true,
             texture: true,

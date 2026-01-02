@@ -40,7 +40,6 @@ class Simulation {
             throw new Error('Track already set');
         }
         this.track = track;
-        console.log('setTrack', track);
         this.track.view.pixiApp = this.app;
         this.view.setTrack(track);
     }

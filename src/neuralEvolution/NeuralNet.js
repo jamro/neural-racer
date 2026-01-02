@@ -34,6 +34,9 @@ class NeuralNet {
     this._b = new Float32Array(maxN);
     this._out = new Float32Array(sizes[sizes.length - 1]);
 
+    // Store last activations for visualization
+    this._lastActivations = null;
+
     // --- Activation statistics (O(neurons) memory, not O(time)) ---
     // Track counts per neuron for:
     // tanh: saturation rate (|output| > 0.95)
@@ -205,6 +208,10 @@ class NeuralNet {
     // input -> a
     for (let i = 0; i < sizes[0]; i++) this._a[i] = inputs[i];
 
+    // Capture activations for visualization
+    this._lastActivations = [];
+    this._lastActivations.push(new Float32Array(this._a.slice(0, sizes[0]))); // Input layer
+
     let a = this._a, b = this._b;
     let off = 0;
 
@@ -253,6 +260,9 @@ class NeuralNet {
         }
       }
 
+      // Capture activations for this layer
+      this._lastActivations.push(new Float32Array(b.slice(0, outD)));
+
       off += outD * inD + outD;
       const tmp = a; a = b; b = tmp;
     }
@@ -260,6 +270,10 @@ class NeuralNet {
     const finalD = sizes[sizes.length - 1];
     for (let i = 0; i < finalD; i++) out[i] = a[i];
     return out;
+  }
+
+  getLastActivations() {
+    return this._lastActivations;
   }
 
   dispose() {

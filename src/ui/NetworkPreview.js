@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
-const CANVAS_WIDTH = 180;
-const CANVAS_HEIGHT = 100;
+const CANVAS_WIDTH = 360;
+const CANVAS_HEIGHT = 200;
 
 class NetworkPreview extends PIXI.Container {
     constructor() {
@@ -11,7 +11,7 @@ class NetworkPreview extends PIXI.Container {
         this.addChild(this.canvas);
     }
 
-    renderView(network, genome = null) {
+    renderView(network, genome = null, activations = null) {
         this.canvas.clear();
         if (!network) return;
 
@@ -28,12 +28,19 @@ class NetworkPreview extends PIXI.Container {
         const maxNodes = Math.max(...sizes);
         const nodeRadius = 3;
         
-        // Calculate node signal strengths if weights are available
-        const nodeSignals = weights ? this._calculateNodeSignals(sizes, weights) : null;
+        // Use real activations if available, otherwise fall back to weight-based signals
+        let nodeSignals = null;
+        if (activations && activations.length === numLayers) {
+            // Use real activations from forward pass
+            nodeSignals = this._processActivations(activations);
+        } else if (weights) {
+            // Fall back to weight-based signal calculation
+            nodeSignals = this._calculateNodeSignals(sizes, weights);
+        }
 
         // Draw connections (before nodes so they appear behind)
         if (weights) {
-            this._drawConnections(sizes, layerSpacing, padding, maxNodes, nodeRadius, weights);
+            this._drawConnections(sizes, layerSpacing, padding, maxNodes, nodeRadius, weights, activations);
         }
 
         // Draw nodes with color based on signal strength
@@ -84,6 +91,33 @@ class NetworkPreview extends PIXI.Container {
         return weights;
     }
 
+    _processActivations(activations) {
+        const nodeSignals = [];
+        let maxAbsSignal = 0;
+        
+        // Process real activations from forward pass
+        for (let layer = 0; layer < activations.length; layer++) {
+            const layerActivations = activations[layer];
+            if (!layerActivations) continue;
+            
+            nodeSignals[layer] = [];
+            
+            for (let node = 0; node < layerActivations.length; node++) {
+                const activation = layerActivations[node];
+                const absActivation = Math.abs(activation);
+                nodeSignals[layer][node] = activation;
+                maxAbsSignal = Math.max(maxAbsSignal, absActivation);
+            }
+        }
+        
+        // Ensure minimum range for visualization (avoid all-gray when values are very small)
+        if (maxAbsSignal < 0.001) {
+            maxAbsSignal = 1.0; // Normalize to [-1, 1] range for visualization
+        }
+        
+        return { signals: nodeSignals, maxAbsSignal };
+    }
+
     _calculateNodeSignals(sizes, weights) {
         const nodeSignals = [];
         let maxAbsSignal = 0;
@@ -126,10 +160,11 @@ class NetworkPreview extends PIXI.Container {
     }
 
     _getColorForSignal(signal, maxAbsSignal) {
-        if (maxAbsSignal === 0) return 0x888888; // Gray if no signal
+        if (maxAbsSignal === 0 || maxAbsSignal < 0.001) return 0x888888; // Gray if no signal
         
         const normalizedSignal = Math.abs(signal) / maxAbsSignal;
-        const intensity = Math.min(255, Math.floor(128 + normalizedSignal * 127)); // 128-255 range
+        // Use full range 0-255 for better visibility, with minimum brightness for non-zero signals
+        const intensity = Math.min(255, Math.max(64, Math.floor(64 + normalizedSignal * 191))); // 64-255 range
         
         if (signal >= 0) {
             // Red for positive signals
@@ -140,20 +175,54 @@ class NetworkPreview extends PIXI.Container {
         }
     }
 
-    _drawConnections(sizes, layerSpacing, padding, maxNodes, nodeRadius, weights) {
+    _drawConnections(sizes, layerSpacing, padding, maxNodes, nodeRadius, weights, activations = null) {
         const numLayers = sizes.length;
         
-        // Find max absolute weight for normalization
-        let maxAbsWeight = 0;
-        for (const layerWeights of weights) {
-            for (const nodeWeights of layerWeights) {
-                for (const weight of nodeWeights) {
-                    maxAbsWeight = Math.max(maxAbsWeight, Math.abs(weight));
+        // Calculate actual signal flow if activations are available
+        let connectionSignals = null;
+        let maxAbsSignal = 0;
+        
+        if (activations && activations.length === numLayers) {
+            // Calculate signal flow: activation * weight for each connection
+            connectionSignals = [];
+            for (let layer = 0; layer < numLayers - 1; layer++) {
+                const layerWeights = weights[layer];
+                const inputActivations = activations[layer];
+                const numInputNodes = sizes[layer];
+                const numOutputNodes = sizes[layer + 1];
+                
+                const layerSignals = [];
+                for (let outputNode = 0; outputNode < numOutputNodes; outputNode++) {
+                    const nodeSignals = [];
+                    for (let inputNode = 0; inputNode < numInputNodes; inputNode++) {
+                        const inputActivation = inputActivations[inputNode];
+                        const weight = layerWeights[outputNode][inputNode];
+                        const signal = inputActivation * weight;
+                        nodeSignals.push(signal);
+                        maxAbsSignal = Math.max(maxAbsSignal, Math.abs(signal));
+                    }
+                    layerSignals.push(nodeSignals);
                 }
+                connectionSignals.push(layerSignals);
             }
         }
         
-        if (maxAbsWeight === 0) return; // Avoid division by zero
+        // Fall back to weight-based visualization if no activations
+        if (!connectionSignals) {
+            let maxAbsWeight = 0;
+            for (const layerWeights of weights) {
+                for (const nodeWeights of layerWeights) {
+                    for (const weight of nodeWeights) {
+                        maxAbsWeight = Math.max(maxAbsWeight, Math.abs(weight));
+                    }
+                }
+            }
+            maxAbsSignal = maxAbsWeight;
+        }
+        
+        if (maxAbsSignal === 0 || maxAbsSignal < 0.001) {
+            maxAbsSignal = 1.0; // Avoid division by zero and ensure visibility
+        }
 
         for (let layer = 0; layer < numLayers - 1; layer++) {
             const numInputNodes = sizes[layer];
@@ -164,6 +233,7 @@ class NetworkPreview extends PIXI.Container {
             const outputSpacing = numOutputNodes > 1 ? (CANVAS_HEIGHT - 2 * padding) / (numOutputNodes - 1) : 0;
             
             const layerWeights = weights[layer];
+            const layerSignals = connectionSignals ? connectionSignals[layer] : null;
             
             for (let outputNode = 0; outputNode < numOutputNodes; outputNode++) {
                 const outputY = numOutputNodes === 1 ? CANVAS_HEIGHT / 2 : padding + outputNode * outputSpacing;
@@ -172,13 +242,19 @@ class NetworkPreview extends PIXI.Container {
                     const inputY = numInputNodes === 1 ? CANVAS_HEIGHT / 2 : padding + inputNode * inputSpacing;
                     const weight = layerWeights[outputNode][inputNode];
                     
-                    // Calculate line width based on absolute weight strength (0.5-2 pixels)
-                    const normalizedWeight = Math.abs(weight) / maxAbsWeight;
-                    const lineWidth = 0.5 + normalizedWeight * 1.5;
+                    // Use actual signal flow if available, otherwise use weight
+                    let signal = weight;
+                    if (layerSignals && layerSignals[outputNode] && layerSignals[outputNode][inputNode] !== undefined) {
+                        signal = layerSignals[outputNode][inputNode];
+                    }
+                    
+                    // Calculate line width based on absolute signal strength (0.5-2.5 pixels)
+                    const normalizedSignal = Math.abs(signal) / maxAbsSignal;
+                    const lineWidth = 0.5 + normalizedSignal * 2.0;
                     
                     // Color with intensity: red for positive, blue for negative
-                    const colorIntensity = Math.min(255, Math.floor(128 + normalizedWeight * 127)); // 128-255 range
-                    const color = weight >= 0 
+                    const colorIntensity = Math.min(255, Math.max(64, Math.floor(64 + normalizedSignal * 191))); // 64-255 range
+                    const color = signal >= 0 
                         ? (colorIntensity << 16) | 0x000000  // Red
                         : 0x000000 | colorIntensity;          // Blue
                     
