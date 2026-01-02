@@ -2,8 +2,11 @@ import * as PIXI from 'pixi.js';
 
 const CANVAS_WIDTH = 260;
 const CANVAS_HEIGHT = 200;
-const PADDING = 10;
-const NODE_RADIUS = 3;
+const PADDING = 12;
+const NODE_RADIUS = 3.5;
+const NODE_OUTLINE_WIDTH = 1;
+const MIN_CONNECTION_ALPHA = 0.15;
+const MIN_NODE_ALPHA = 0.3;
 
 class NetworkPreview extends PIXI.Container {
     constructor(hiddenLayerColumns = 2) {
@@ -142,14 +145,37 @@ class NetworkPreview extends PIXI.Container {
                 const pos = this._getNodePosition(layer, node, numNodes, numLayers, columnSpacing);
                 const signal = layerSignals[node];
                 
-                this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                const alpha = signal !== undefined 
+                const normalized = signal !== undefined 
                     ? Math.min(1.0, Math.max(0, Math.abs(signal) / signals.maxAbs))
-                    : 0.3;
-                this.canvas.fill({ 
-                    color: signal !== undefined ? 0xFFFFFF : 0x888888, 
-                    alpha: 0.2 + 0.8*alpha*alpha 
-                });
+                    : 0;
+                
+                // Calculate alpha with better range
+                const alpha = signal !== undefined 
+                    ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalized * normalized
+                    : 0.2;
+                
+                // Draw node with outline for better visibility
+                const nodeColor = signal !== undefined ? 0xFFFFFF : 0x888888;
+                
+                // Outer glow for active nodes
+                if (signal !== undefined && normalized > 0.3) {
+                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS + 1.5);
+                    this.canvas.fill({ color: nodeColor, alpha: alpha * 0.2 });
+                }
+                
+                // Main node
+                this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                this.canvas.fill({ color: nodeColor, alpha });
+                
+                // Subtle outline for contrast
+                if (signal !== undefined) {
+                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                    this.canvas.stroke({ 
+                        color: 0xFFFFFF, 
+                        width: NODE_OUTLINE_WIDTH, 
+                        alpha: Math.min(0.4, alpha * 0.6) 
+                    });
+                }
             }
         }
     }
@@ -175,7 +201,7 @@ class NetworkPreview extends PIXI.Container {
         
         if (maxAbsSignal < 0.001) maxAbsSignal = 1.0;
         
-        // Draw connections
+        // Draw connections with improved visual quality
         for (let layer = 0; layer < numLayers - 1; layer++) {
             const layerWeights = weights[layer];
             const inputActivations = activations?.[layer];
@@ -192,12 +218,19 @@ class NetworkPreview extends PIXI.Container {
                     const normalized = Math.abs(signal) / maxAbsSignal;
                     const normalizedSq = normalized * normalized;
                     
+                    // Improved alpha calculation with better range
+                    const alpha = MIN_CONNECTION_ALPHA + (1 - MIN_CONNECTION_ALPHA) * normalized;
+                    
+                    // Line width with smoother scaling
+                    const lineWidth = 0.4 + normalizedSq * normalizedSq * 1.8;
+                    
+                    // Draw connection
                     this.canvas.moveTo(inputPos.x + NODE_RADIUS, inputPos.y);
                     this.canvas.lineTo(outputPos.x - NODE_RADIUS, outputPos.y);
                     this.canvas.stroke({ 
                         color: 0xFFFFFF, 
-                        width: 0.5 + normalizedSq * normalizedSq * 2.0,
-                        alpha: Math.min(1.0, Math.max(0, normalized))
+                        width: lineWidth,
+                        alpha: alpha
                     });
                 }
             }
