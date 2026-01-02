@@ -130,10 +130,6 @@ class TrackObject {
         this.view.renderView(viewWidth, viewHeight, xOffset, yOffset);
     }
 
-    update(delta) {
-        // nothing to update, tracks don't move
-    }
-
     rayIntersectionsMinLength(ox, oy, angle) {
         return this.wallSegments.rayIntersectionsMinLength(ox, oy, angle);
     }
@@ -151,6 +147,7 @@ class TrackObject {
     }
 
     reset() {
+      this.view.carsContainer.removeChildren();
       this.view.driftMarks.clear();
     }
 }

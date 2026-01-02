@@ -3,7 +3,7 @@
 
 function calculateScoreComponents(car, scoreWeights) {
   // calculate distance progress score
-  const distanceProgressScore = car.calculateCheckpointProgress();
+  const distanceProgressScore = car.checkpointsProgress;
 
   // speed score
   let speedScore = (car.calculateAverageSpeed() / car.model.maxSpeed);

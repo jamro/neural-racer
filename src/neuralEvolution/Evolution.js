@@ -136,7 +136,6 @@ class Evolution {
     this.generation = this.generation.evolve(this.config.evolve);
 
     // remove current track from simulation
-    this.simulation.removeObject(this.simulation.track);
     this.simulation.removeAndDispose();
 
     // run new simulation 

@@ -11,7 +11,6 @@ class Simulation {
         
         this.running = false;
         this.renderRunning = false;
-        this.objects = [];
         this.app = app;
         this.view = new SimulationView();
         this.view.setSimulation(this);
@@ -34,12 +33,7 @@ class Simulation {
         }
         this.track = track;
         this.track.view.pixiApp = this.app;
-        this.addObject(track);
         this.view.setTrack(track);
-    }
-
-    renderView(delta) {
-      this.view.renderView(delta);
     }
 
     addCar(car) {
@@ -54,7 +48,6 @@ class Simulation {
           startSegment.angle + Math.PI / 2 + angleJitter
         );
         this.cars.push(car);
-        this.addObject(car);
         this.view.addCar(car);
     }
 
@@ -77,17 +70,6 @@ class Simulation {
           metersToPixels(-this.leaderCar.y)
         );
       }
-    }
-
-    addObject(object) {
-        this.objects.push(object);
-    }
-
-    removeObject(object) {
-        const index = this.objects.indexOf(object);
-        if (index > -1) {
-            this.objects.splice(index, 1);
-        }
     }
 
     start(simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low") {
@@ -124,18 +106,15 @@ class Simulation {
     renderLoop = (ticker) => {
         if (!this.renderRunning) return;
         
-        // Call render on all game objects
-        // PixiJS ticker callback receives a ticker object with deltaTime in seconds
-        // Handle both ticker object and direct delta value for compatibility
         const deltaSeconds = ticker && typeof ticker.deltaTime === 'number' 
             ? ticker.deltaTime 
             : (typeof ticker === 'number' ? ticker / 60 : 0.016); // Fallback to ~60fps if unknown format
         
-        for (const object of this.objects) {
-            // All objects are validated to have render method
-            object.renderView(deltaSeconds);
+        for (const car of this.cars) {
+            car.renderView(deltaSeconds);
         }
-        this.renderView(deltaSeconds);
+        this.track.renderView(deltaSeconds);
+        this.view.renderView(deltaSeconds);
 
         // follow leader
         if(this.leaderCar && this.leaderCar.isCrashed && this.generation.activeCount > 0) {
@@ -184,12 +163,10 @@ class Simulation {
     }
 
     singleSimulationStep() {
-        // Run simulation at fixed timestep
-        // Update all objects (all objects are validated to have update method)
         const activeCount = this.generation.activeCount;
         let startTime = 0;
         startTime = performance.now();
-        for (const car of this.generation.cars) {
+        for (const car of this.cars) {
           car.control(this.simulationStep);
         }
         if(activeCount > 0) {
@@ -197,8 +174,8 @@ class Simulation {
         }
 
         startTime = performance.now();
-        for (const object of this.objects) {
-          object.update(this.simulationStep);
+        for (const car of this.cars) {
+          car.update(this.track, this.simulationStep);
         }
         if(activeCount > 0) {
           this.carPhysicsProccessingTime = (performance.now() - startTime) / activeCount;
@@ -228,9 +205,11 @@ class Simulation {
         if (this.view.parent) {
             this.view.parent.removeChild(this.view);
         }
-        this.objects = [];
         this.cars = [];
         this.track.reset();
+        if(this.track.view.parent) {
+            this.track.view.parent.removeChild(this.track.view);
+        }
         this.track = null;
         this.generation = null;
         this.frameCount = 0;

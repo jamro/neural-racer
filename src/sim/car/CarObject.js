@@ -4,13 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { metersToPixels } from '../unitConversion';
 
 class CarObject {
-    constructor(track) {
+    constructor() {
         this.carId = uuidv4();
-        if (!track) {
-          throw new Error('Track is required');
-        }
         this.model = new CarPhysicModel();
-        this.track = track;
 
         this.radarBeamAngles = [
           -90 * Math.PI / 180,
@@ -40,6 +36,8 @@ class CarObject {
           metersToPixels(this.model.width),
           this.radarBeamAngles
         );
+
+        this.checkpointsProgress = 0;
     }
 
     get x() {
@@ -113,7 +111,7 @@ class CarObject {
       return this.model.width;
     }
 
-    update(delta) { // delta is in seconds
+    update(track, delta) { // delta is in seconds
       if (this._isCrashed) return;
 
       if(this._isFinished) {
@@ -132,7 +130,7 @@ class CarObject {
       if(!this._isFinished) {
         for (let index = 0; index < this.radarBeams.length; index++) {
           const angle = this.radarBeamAngles[index] + this.model.direction
-          this.radarBeams[index] = this.track.rayIntersectionsMinLength(this.model.x, this.model.y, angle);
+          this.radarBeams[index] = track.rayIntersectionsMinLength(this.model.x, this.model.y, angle);
         }
       } else {
         this.radarBeams = new Array(this.radarBeamCount).fill(null);
@@ -141,19 +139,19 @@ class CarObject {
       
       // check for checkpoints
       if(!this._isFinished) {
-        const checkpointIndex = this.track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
+        const checkpointIndex = track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
         if (checkpointIndex !== false) {
           this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
         }
       }
       
       // check for finish line
-      if (this.checkpointsPassed >= this.track.checkpoints.checkpointCount) {
+      if (this.checkpointsPassed >= track.checkpoints.checkpointCount) {
         this._isFinished = true;
       }
 
       // check for collisions
-      if (!this._isFinished && this.track.isBoxCollidingWithWall(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction) !== false) {
+      if (!this._isFinished && track.isBoxCollidingWithWall(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction) !== false) {
         if (this.model.speed > 0) {
           console.log('Collision detected, stopping car');
           this._isCrashed = true;
@@ -192,10 +190,8 @@ class CarObject {
         safeAngle = 0;
       }
       this.safeDirection += (safeAngle - this.safeDirection) * 0.15;
-    }
 
-    calculateCheckpointProgress() {
-      return (this.checkpointsPassed + this.track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.model.x, this.model.y)-1) / (this.track.checkpoints.checkpointCount-1)
+      this.checkpointsProgress = (this.checkpointsPassed + track.checkpoints.projectionBetweenGates(this.checkpointsPassed-1, this.model.x, this.model.y)-1) / (track.checkpoints.checkpointCount-1)
     }
 
     calculateAverageSpeed() {

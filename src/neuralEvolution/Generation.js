@@ -56,12 +56,12 @@ class Generation {
     createRandomPopulation(populationSize=100) {
       this.cars = [];
       for (let i = 0; i < populationSize; i++) {
-        this.cars.push(new NeuralCarObject(this.track));
+        this.cars.push(new NeuralCarObject());
       }
     }
 
     setPopulation(genomes) {
-      this.cars = genomes.map(genome => new NeuralCarObject(this.track, genome));
+      this.cars = genomes.map(genome => new NeuralCarObject(genome));
     }
 
     get activeCount() {
@@ -91,7 +91,7 @@ class Generation {
         const car = this.cars[i];
         this.scores[i] = calculateScore(car, scoreWeights);
         this.stats[i] = {
-          progress: car.calculateCheckpointProgress(),
+          progress: car.checkpointsProgress,
           averageSpeed: car.calculateAverageSpeed(),
         }
       }
@@ -264,7 +264,7 @@ class Generation {
       }
       
       const newGeneration = new Generation(this.track);
-      newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(this.track, genome));
+      newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(genome));
       newGeneration.epoch = this.epoch + 1
       newGeneration.scores = Array(this.cars.length).fill(null);
       return newGeneration;

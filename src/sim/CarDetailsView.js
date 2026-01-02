@@ -29,7 +29,7 @@ class CarDetailsView extends PIXI.Container {
   renderView(delta) {
     if (!this.car) return;
 
-    this.statusTextField.text = "Distance: " + (100*this.car.calculateCheckpointProgress()).toFixed(1) + "%\n" +
+    this.statusTextField.text = "Distance: " + (100*this.car.checkpointsProgress).toFixed(1) + "%\n" +
         "Speed: " + (this.car.model.speed*3.6).toFixed(1) + " km/h\n\n" +
         "Throttle: " + (100*this.car.model.throttleValue).toFixed(1) + "%\n" +
         "Brake: " + (100*this.car.model.brakeValue).toFixed(1) + "%\n" +
