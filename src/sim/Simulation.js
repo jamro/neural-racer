@@ -2,6 +2,9 @@ import SimulationView from './SimulationView';
 import { metersToPixels } from './unitConversion';
 
 const COMPLETE_DELAY = 20;
+const LEADER_RELOAD_DELAY = 20;
+const SLOW_CAMERA_SNAP_FACTOR = 0.01;
+const FAST_CAMERA_SNAP_FACTOR = 0.5;
 
 class Simulation {
     constructor(app = null) {
@@ -18,6 +21,8 @@ class Simulation {
         this.track = null;
         this.onComplete = () => {}
         this.completeDelay = COMPLETE_DELAY;
+        this.leaderReloadDelay = LEADER_RELOAD_DELAY;
+        this.cameraSnapFactor = FAST_CAMERA_SNAP_FACTOR;
         this.frameCount = 0;
         this.graphicsQuality = "low";
 
@@ -64,9 +69,10 @@ class Simulation {
 
     updateCamera() {
       if (this.leaderCar) {
-          this.view.setCameraPosition(
+        this.view.setCameraPosition(
           metersToPixels(-this.leaderCar.x),
-          metersToPixels(-this.leaderCar.y)
+          metersToPixels(-this.leaderCar.y),
+          this.cameraSnapFactor
         );
       }
     }
@@ -118,8 +124,13 @@ class Simulation {
 
         // follow leader
         if(this.leaderCar && this.leaderCar.isCrashed && this.activeCars > 0) {
+          this.leaderReloadDelay--;
+        }
+        if(this.leaderReloadDelay <= 0) {
           this.leaderCar.active = false;
           this.leaderCar = null;
+          this.leaderReloadDelay = LEADER_RELOAD_DELAY;
+          this.cameraSnapFactor = SLOW_CAMERA_SNAP_FACTOR;
         }
         if(!this.leaderCar && this.activeCars > 0) {
           let leader = null;
@@ -132,6 +143,9 @@ class Simulation {
             this.leaderCar = leader;
             this.leaderCar.active = true;
           }
+        }
+        if(this.leaderCar) {
+          this.cameraSnapFactor += (FAST_CAMERA_SNAP_FACTOR - this.cameraSnapFactor)*0.01
         }
     }
 
