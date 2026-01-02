@@ -3,10 +3,11 @@ import * as PIXI from 'pixi.js';
 const CANVAS_WIDTH = 260;
 const CANVAS_HEIGHT = 200;
 const PADDING = 12;
-const NODE_RADIUS = 3.5;
-const NODE_OUTLINE_WIDTH = 1;
-const MIN_CONNECTION_ALPHA = 0.15;
-const MIN_NODE_ALPHA = 0.3;
+const NODE_RADIUS = 3;
+const MIN_NODE_OUTLINE_WIDTH = 0;
+const MAX_NODE_OUTLINE_WIDTH = 1;
+const MIN_CONNECTION_ALPHA = 0;
+const MIN_NODE_ALPHA = 0;
 
 class NetworkPreview extends PIXI.Container {
     constructor(hiddenLayerColumns = 2) {
@@ -32,13 +33,18 @@ class NetworkPreview extends PIXI.Container {
         // Process signals (activations or fallback to weights)
         const signals = this._getSignals(sizes, weights, activations);
         
+        // Calculate weighted input sums for each node (for stroke visualization)
+        const weightedInputSums = weights && activations 
+            ? this._calculateWeightedInputSums(sizes, weights, activations)
+            : null;
+        
         // Draw connections first (behind nodes)
         if (weights) {
             this._drawConnections(sizes, weights, activations, signals, columnSpacing);
         }
         
         // Draw nodes
-        this._drawNodes(sizes, signals, columnSpacing);
+        this._drawNodes(sizes, signals, weightedInputSums, columnSpacing);
     }
 
     _extractWeights(network, genome) {
@@ -134,48 +140,88 @@ class NetworkPreview extends PIXI.Container {
         return { x, y };
     }
 
-    _drawNodes(sizes, signals, columnSpacing) {
+    _calculateWeightedInputSums(sizes, weights, activations) {
+        const sums = [];
+        let maxAbsSum = 0;
+        
+        // Input layer has no incoming connections
+        sums[0] = new Array(sizes[0]).fill(0);
+        
+        // Calculate weighted input sum for each node (sum of all incoming weighted inputs)
+        for (let layer = 0; layer < sizes.length - 1; layer++) {
+            const layerWeights = weights[layer];
+            const inputActivations = activations[layer];
+            const outD = sizes[layer + 1];
+            
+            sums[layer + 1] = [];
+            
+            for (let o = 0; o < outD; o++) {
+                let sum = 0;
+                for (let i = 0; i < sizes[layer]; i++) {
+                    // Weighted input: activation × weight
+                    sum += inputActivations[i] * layerWeights[o][i];
+                }
+                sums[layer + 1][o] = sum;
+                maxAbsSum = Math.max(maxAbsSum, Math.abs(sum));
+            }
+        }
+        
+        return { sums, maxAbs: maxAbsSum || 1.0 };
+    }
+
+    _drawNodes(sizes, signals, weightedInputSums, columnSpacing) {
         const numLayers = sizes.length;
         
         for (let layer = 0; layer < numLayers; layer++) {
             const numNodes = sizes[layer];
             const layerSignals = signals.signals[layer] || [];
+            const layerWeightedSums = weightedInputSums?.sums[layer] || [];
             
             for (let node = 0; node < numNodes; node++) {
                 const pos = this._getNodePosition(layer, node, numNodes, numLayers, columnSpacing);
-                const signal = layerSignals[node];
+                const outputSignal = layerSignals[node]; // Output activation (after activation function)
+                const weightedSum = layerWeightedSums[node]; // Weighted input sum (before activation)
                 
-                const normalized = signal !== undefined 
-                    ? Math.min(1.0, Math.max(0, Math.abs(signal) / signals.maxAbs))
+                // Normalize output activation for fill
+                const normalizedOutput = outputSignal !== undefined 
+                    ? Math.min(1.0, Math.max(0, Math.abs(outputSignal) / signals.maxAbs))
                     : 0;
                 
-                // Calculate alpha with better range
-                const alpha = signal !== undefined 
-                    ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalized * normalized
+                // Normalize weighted input sum for stroke
+                const normalizedInputSum = weightedSum !== undefined && weightedInputSums
+                    ? Math.min(1.0, Math.max(0, Math.abs(weightedSum) / weightedInputSums.maxAbs))
+                    : 0;
+                
+                // Fill alpha based on output activation
+                const fillAlpha = outputSignal !== undefined 
+                    ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedOutput * normalizedOutput
                     : 0.2;
                 
-                // Draw node with outline for better visibility
-                const nodeColor = signal !== undefined ? 0xFFFFFF : 0x888888;
+                // Stroke alpha/width based on weighted input sum
+                const strokeAlpha = weightedSum !== undefined && weightedInputSums
+                    ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedInputSum
+                    : 0.3;
+                const strokeWidth = MIN_NODE_OUTLINE_WIDTH + (MAX_NODE_OUTLINE_WIDTH - MIN_NODE_OUTLINE_WIDTH) * normalizedInputSum;
                 
-                // Outer glow for active nodes
-                if (signal !== undefined && normalized > 0.3) {
+                const nodeColor = outputSignal !== undefined ? 0xFFFFFF : 0x888888;
+                
+                // Outer glow for active nodes (based on output)
+                if (outputSignal !== undefined && normalizedOutput > 0.3) {
                     this.canvas.circle(pos.x, pos.y, NODE_RADIUS + 1.5);
-                    this.canvas.fill({ color: nodeColor, alpha: alpha * 0.2 });
+                    this.canvas.fill({ color: nodeColor, alpha: fillAlpha * 0.2 });
                 }
                 
-                // Main node
+                // Main node - fill shows output activation
                 this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                this.canvas.fill({ color: nodeColor, alpha });
+                this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
                 
-                // Subtle outline for contrast
-                if (signal !== undefined) {
-                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                    this.canvas.stroke({ 
-                        color: 0xFFFFFF, 
-                        width: NODE_OUTLINE_WIDTH, 
-                        alpha: Math.min(0.4, alpha * 0.6) 
-                    });
-                }
+                // Stroke shows weighted input sum
+                this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                this.canvas.stroke({ 
+                    color: 0xFFFFFF, 
+                    width: strokeWidth, 
+                    alpha: strokeAlpha
+                });
             }
         }
     }

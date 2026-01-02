@@ -1,6 +1,36 @@
 import CarObject from './CarObject';
 import NeuralNet from '../../neuralEvolution/NeuralNet';
 
+/**
+ * Neural Network Architecture:
+ * 
+ * Inputs:
+ * --- RADAR GROUP ----
+ *  0. Radar Beam #1
+ *  1. Radar Beam #2
+ *  2. Radar Beam #3
+ *  3. Radar Beam #4
+ *  4. Radar Beam #5
+ *  5. Radar Beam #6
+ *  6. Radar Beam #7
+ *  7. Radar Beam #8
+ *  8. Radar Beam #9
+ *  9. Time To Collision (short range)
+ * 10. Time To Collision (long range)
+ * 11. Left Right Balance
+ * --- TURN GROUP ----
+ * 12. Safe Direction
+ * 13. Previous Turn Control
+ * --- TRACTION GROUP ----
+ * 14. Speed
+ * 15. Yaw Rate
+ * 16. Slip Ratio
+ * 
+ * Outputs:
+ *  0. Throttle
+ *  1. Turn
+ */
+
 class NeuralCarObject extends CarObject {
     constructor(genome=null) {
         super();
@@ -92,29 +122,29 @@ class NeuralCarObject extends CarObject {
         inputs[i] = d === null ? 0 : Math.exp(-kArray[i] * d) // 0 means no obstacle, 1 means close to obstacle
       }
 
-      // use speed as input (index 9)
-      inputs.push(Math.min(Math.abs(this.speed) / this.maxSpeed, 1))
+      // use short range time to collision as input (index 9)
+      const timeToCollision = this.calculateTimeToCollision();
+      inputs.push(Math.exp(-Math.min(timeToCollision, 10.0)/1.5));
 
-      // use previous turn control as input (index 10) 
-      inputs.push(this.prevTurnControl);
+      // use long range TTC as input (index 10)
+      const ttcMax = 8.0;
+      const ttcLinear = 1 - Math.min(timeToCollision, ttcMax) / ttcMax;
+      inputs.push(Math.max(0, ttcLinear));
 
       // use left right balance as input (index 11)
       inputs.push(this.calculateLeftRightBalance());
 
-      // use time to collision as input (index 12)
-      const timeToCollision = this.calculateTimeToCollision();
-      inputs.push(Math.exp(-Math.min(timeToCollision, 10.0)/1.5));
-
-      // use safe direction as input (index 13)
+      // use safe direction as input (index 12)
       const radarAngleMin = this.radarBeamAngles[0]
       const radarAngleMax = this.radarBeamAngles[this.radarBeamCount - 1]
       const normalizedSafeDirection = 2*(this.safeDirection - radarAngleMin) / (radarAngleMax - radarAngleMin) - 1
       inputs.push(normalizedSafeDirection);
-      
-      // use long range TTC as input (index 14)
-      const ttcMax = 8.0;
-      const ttcLinear = 1 - Math.min(timeToCollision, ttcMax) / ttcMax;
-      inputs.push(Math.max(0, ttcLinear));
+
+      // use previous turn control as input (index 13) 
+      inputs.push(this.prevTurnControl);
+
+      // use speed as input (index 14)
+      inputs.push(Math.min(Math.abs(this.speed) / this.maxSpeed, 1))
 
       // use yaw rate as input (index 15)
       inputs.push(Math.max(-1, Math.min(1, this.model.yawRate / this.model.yawRateMax)));
