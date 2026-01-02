@@ -16,6 +16,7 @@ class Evolution {
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
     this.tracks = tracks;
+    this.currentTrack = null;
     this.simulation.onComplete = () => this.onEpochComplete();
     this.completedTracks = [];
     this.history = new GenerationHistory();
@@ -30,7 +31,8 @@ class Evolution {
     const data = {
       evolutionId: this.evolutionId,
       completedTracks: this.completedTracks,
-      generation: serializeGeneration(this.generation)
+      currentTrack: this.currentTrack.name,
+      generation: serializeGeneration(this.generation, this.currentTrack.name)
     }
     this.database.storeEvolution(data);
   }
@@ -45,8 +47,13 @@ class Evolution {
     if(loadedData) {
       this.evolutionId = loadedData.evolutionId;
       this.completedTracks = loadedData.completedTracks;
+      this.currentTrack = this.tracks.find(track => track.name === loadedData.currentTrack);
+      if(!this.currentTrack) {
+        console.warn(`Current track ${loadedData.currentTrack} not found, using first track`);
+        this.currentTrack = this.tracks[0];
+      }
       const generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
-      this.generation = deserializeGeneration(generationData, this.tracks);
+      this.generation = deserializeGeneration(generationData);
 
       const historyData = await this.database.loadGenerationsByEvolutionId(this.evolutionId);
       for(const historyEntry of historyData) {
@@ -54,7 +61,7 @@ class Evolution {
           continue;
         }
         this.history.addGenerationData(
-          historyEntry.track.name, 
+          historyEntry.trackName, 
           historyEntry.generationId, 
           historyEntry.overallScore, 
           historyEntry.epoch, 
@@ -68,10 +75,11 @@ class Evolution {
       }
 
     } else {
-      this.generation = new Generation(this.tracks[0]);
+      this.generation = new Generation();
+      this.currentTrack = this.tracks[0]
       this.generation.createRandomPopulation(populationSize);
     }
-    this.simulation.setTrack(this.generation.track);
+    this.simulation.setTrack(this.currentTrack);
     this.simulation.setGeneration(this.generation);
   }
 
@@ -125,15 +133,13 @@ class Evolution {
       this.completedTracks.push(this.simulation.track.name); // mark as completed
     }
 
-    const newTrack = this.getNextTrack();
-
     // evolve generation
     const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.generation.calculateScores(scoreWeights);
-    this.history.addGenerationInstance(this.generation);
+    this.history.addGenerationInstance(this.generation, this.currentTrack.name);
     await this.store();
-    this.generation.setTrack(newTrack);
     this.generation = this.generation.evolve(this.config.evolve);
+    this.currentTrack = this.getNextTrack();
 
     // remove current track from simulation
     this.simulation.removeAndDispose();
@@ -143,7 +149,7 @@ class Evolution {
     this.simulation.view.setEvolution(this);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
-    this.simulation.setTrack(newTrack);
+    this.simulation.setTrack(this.currentTrack);
     this.simulation.onComplete = async () => await this.onEpochComplete();
     this.generation.resetScores();
     await this.store();

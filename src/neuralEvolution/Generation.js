@@ -3,12 +3,10 @@ import { Genome, serializeGenome, deserializeGenome } from './Genome';
 import { calculateScore } from './fitness';
 import { v4 as uuidv4 } from 'uuid';
 
-function serializeGeneration(generation) {
+function serializeGeneration(generation, trackName) {
   return {
     generationId: generation.generationId,
-    track: {
-      name: generation.track.name,
-    },
+    trackName: trackName, // keep track to restore generation history
     cars: generation.cars.map((car, index) => ({
       score: generation.scores[index],
       stats: generation.stats[index],
@@ -19,10 +17,8 @@ function serializeGeneration(generation) {
   }
 }
 
-function deserializeGeneration(data, tracks) {
-  const track = tracks.find(track => track.name === data.track.name);
-  if(!track) throw new Error(`Track ${data.track.name} not found`);
-  const generation = new Generation(track);
+function deserializeGeneration(data) {
+  const generation = new Generation();
   generation.generationId = data.generationId;
   generation.setPopulation(data.cars.map(car => deserializeGenome(car.genome)));
   for (let i = 0; i < data.cars.length; i++) {
@@ -35,9 +31,8 @@ function deserializeGeneration(data, tracks) {
 }
 
 class Generation {
-    constructor(track) {
+    constructor() {
       this.generationId = uuidv4();
-      this.track = track;
       this.cars = [];
       this.epoch = 1
       this.scores = Array(this.cars.length).fill(null);
@@ -78,10 +73,6 @@ class Generation {
 
     get totalCount() {
       return this.cars.length;
-    }
-
-    setTrack(track) {
-      this.track = track;
     }
 
     calculateScores(scoreWeights) {
@@ -263,7 +254,7 @@ class Generation {
         newGenomes.push(...randomGenomes);        
       }
       
-      const newGeneration = new Generation(this.track);
+      const newGeneration = new Generation();
       newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(genome));
       newGeneration.epoch = this.epoch + 1
       newGeneration.scores = Array(this.cars.length).fill(null);

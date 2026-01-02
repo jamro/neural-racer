@@ -43,7 +43,7 @@ class GenerationDetailsView extends PIXI.Container {
     ]
 
     this.statusTextField.text = "Epoch: " + this.generation.epoch + "\n" +
-        "Track: " + this.generation.track.name + "\n" +
+        "Track: " + this.generation.trackName + "\n" +
         "Size: ✕ " + this.generation.crashedCount + ", ▶ " + this.generation.activeCount + ", ✓ " + this.generation.finishedCount + " (" + this.generation.totalCount + ")"
   }
   

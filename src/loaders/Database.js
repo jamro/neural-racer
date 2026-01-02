@@ -71,6 +71,7 @@ class Database {
       evolutionId: data.evolutionId,
       completedTracks: data.completedTracks,
       lastGenerationId: data.generation.generationId,
+      currentTrack: data.currentTrack,
     };
 
     await Promise.all([

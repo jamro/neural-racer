@@ -35,9 +35,9 @@ class GenerationHistory {
     this.tracks[trackName].sort((a, b) => a.epoch - b.epoch);
   }
 
-  addGenerationInstance(generation) {
+  addGenerationInstance(generation, trackName) {
     this.addGenerationData(
-      generation.track.name, 
+      trackName, 
       generation.generationId, 
       generation.overallScore, 
       generation.epoch, 
