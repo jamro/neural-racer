@@ -71,8 +71,7 @@ class SimulationView extends PIXI.Container {
         this.masterContainer.x = this.targetCameraPosition.x;
         this.masterContainer.y = this.targetCameraPosition.y;
         if(this.track) {
-          this.track.renderView(
-            delta, 
+          this.track.view.renderView(
             this.viewWidth, 
             this.viewHeight,
             this.masterContainer.x,

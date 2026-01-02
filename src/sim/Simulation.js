@@ -113,7 +113,6 @@ class Simulation {
         for (const car of this.cars) {
             car.renderView(deltaSeconds);
         }
-        this.track.renderView(deltaSeconds);
         this.view.renderView(deltaSeconds);
         this.view.updateStats(this);
 
@@ -206,7 +205,7 @@ class Simulation {
             this.view.parent.removeChild(this.view);
         }
         this.cars = [];
-        this.track.reset();
+        this.track.view.reset();
         if(this.track.view.parent) {
             this.track.view.parent.removeChild(this.track.view);
         }

@@ -96,7 +96,13 @@ class DustContainer extends PIXI.ParticleContainer {
           this.particles.splice(this.particles.indexOf(particle), 1);
         }
       }
+    }
 
+    removeAllParticles() {
+      for (const particle of this.particles) {
+        this.removeParticle(particle);
+      }
+      this.particles = [];
     }
 } 
 

@@ -186,6 +186,12 @@ class TrackView extends PIXI.Container {
         }
       }
     }
+
+    reset() {
+      this.carsContainer.removeChildren();
+      this.driftMarks.clear();
+      this.dustContainer.removeAllParticles();
+    }
 }
 
 export default TrackView;
