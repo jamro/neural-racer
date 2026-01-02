@@ -142,6 +142,10 @@ class CarObject {
         const checkpointIndex = track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
         if (checkpointIndex !== false) {
           this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
+
+          if(checkpointIndex + 1  < this.checkpointsPassed && !this._isFinished) {
+            this._isCrashed = true;
+          }
         }
       }
       
