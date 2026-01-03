@@ -114,6 +114,7 @@ class SimulationDetailsView extends PIXI.Container {
       color: 0x000000,
       alpha: 0.8
     });
+
     this.networkPreview.scaleView(Math.max(100,width - this.networkPreview.x), barHeight);
   }
 

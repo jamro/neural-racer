@@ -1,3 +1,4 @@
+import { COLOR_POSITIVE, COLOR_NEGATIVE } from './NetworkPreviewConstants';
 /**
  * Utility functions for network visualization
  */
@@ -6,8 +7,8 @@
  * Gets color for a value (positive = red, negative = blue, zero = gray)
  */
 export function getColorForValue(value) {
-    if (value === undefined || value === 0) return 0x888888;
-    return value > 0 ? 0xFF6600 : 0x6666FF;
+    if (value === undefined || value === 0) return 0x333333;
+    return value > 0 ? COLOR_POSITIVE : COLOR_NEGATIVE;
 }
 
 /**
