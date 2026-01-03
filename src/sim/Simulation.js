@@ -223,7 +223,6 @@ class Simulation {
             this.track.view.parent.removeChild(this.track.view);
         }
         this.track = null;
-        console.log('removeAndDispose', this.track);
         this.frameCount = 0;
         this.activeCars = 0;
     }

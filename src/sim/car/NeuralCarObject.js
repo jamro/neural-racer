@@ -144,10 +144,12 @@ class NeuralCarObject extends CarObject {
       inputs.push(this.prevTurnControl);
 
       // use speed as input (index 14)
-      inputs.push(Math.min(Math.abs(this.speed) / this.maxSpeed, 1))
+      const v01 = Math.min(Math.abs(this.speed) / this.maxSpeed, 1)
+      inputs.push(Math.sqrt(v01)) // sqrt to make small values more visible and give better control
 
       // use yaw rate as input (index 15)
-      inputs.push(Math.max(-1, Math.min(1, this.model.yawRate / this.model.yawRateMax)));
+      const yawIn = Math.tanh(2 * this.model.yawRate / this.model.yawRateMax);
+      inputs.push(yawIn);
 
       // use slip ratio as input (index 16)
       const slipScale = 0.5
@@ -155,7 +157,7 @@ class NeuralCarObject extends CarObject {
 
       const outputs = this.neuralNet.forward(inputs);
 
-      this.debug = this.model.tiresTraction.toFixed(2)
+      this.debug = inputs[15].toFixed(2)
       
       const throttleOutput = outputs[0];
       const turnOutput = outputs[1];

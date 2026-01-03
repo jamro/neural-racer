@@ -2,18 +2,22 @@ import * as PIXI from 'pixi.js';
 
 const CANVAS_WIDTH = 210;
 const CANVAS_HEIGHT = 180;
-const PADDING = 0;
 const NODE_RADIUS = 3;
-const MIN_NODE_OUTLINE_WIDTH = 0;
+const MIN_NODE_OUTLINE_WIDTH = 0.1;
 const MAX_NODE_OUTLINE_WIDTH = 1;
 const MIN_CONNECTION_ALPHA = 0;
 const MIN_NODE_ALPHA = 0;
+const INPUT_STROKE_ALPHA = 0.5;
+const OUTPUT_T_HORIZONTAL_SCALE = 5;
+const OUTPUT_T_VERTICAL_SCALE = 50;
+const OUTPUT_T_SCALE_ALPHA = 0.2;
 
 class NetworkPreview extends PIXI.Container {
-    constructor(hiddenLayerColumns = 2) {
+    constructor(hiddenLayerColumns = 2, inputNeuronGroups = [9, 2, 1, 1, 1, 1, 2]) {
         super();
         this.canvas = new PIXI.Graphics();
         this.hiddenLayerColumns = hiddenLayerColumns;
+        this.inputNeuronGroups = inputNeuronGroups;
         this.addChild(this.canvas);
     }
 
@@ -24,28 +28,14 @@ class NetworkPreview extends PIXI.Container {
         const { sizes } = network;
         const numLayers = sizes.length;
         const weights = genome ? this._extractWeights(network, genome) : null;
+        const numColumns = 1 + Math.max(0, numLayers - 2) * this.hiddenLayerColumns + 1;
+        const columnSpacing = numColumns > 1 ? CANVAS_WIDTH / (numColumns - 1) : 0;
         
-        // Calculate layout - spread columns across full width minus padding
-        const numHiddenLayers = Math.max(0, numLayers - 2);
-        const numColumns = 1 + (numHiddenLayers * this.hiddenLayerColumns) + 1;
-        const availableWidth = CANVAS_WIDTH - 2 * PADDING;
-        const columnSpacing = numColumns > 1 ? availableWidth / (numColumns - 1) : 0;
-        
-        // Process signals (activations or fallback to weights)
         const signals = this._getSignals(sizes, weights, activations);
+        const weightedInputSums = weights && activations ? this._calculateWeightedInputSums(sizes, weights, activations) : null;
         
-        // Calculate weighted input sums for each node (for stroke visualization)
-        const weightedInputSums = weights && activations 
-            ? this._calculateWeightedInputSums(sizes, weights, activations)
-            : null;
-        
-        // Draw connections first (behind nodes)
-        if (weights) {
-            this._drawConnections(sizes, weights, activations, signals, numColumns, columnSpacing);
-        }
-        
-        // Draw nodes
-        this._drawNodes(sizes, signals, weightedInputSums, numColumns, columnSpacing);
+        if (weights) this._drawConnections(sizes, weights, activations, numLayers, numColumns, columnSpacing);
+        this._drawNodes(sizes, signals, weightedInputSums, numLayers, numColumns, columnSpacing);
     }
 
     _extractWeights(network, genome) {
@@ -53,242 +43,309 @@ class NetworkPreview extends PIXI.Container {
         const genes = genome.genes || genome;
         const weights = [];
         let offset = 0;
-        
         for (let l = 0; l < sizes.length - 1; l++) {
-            const inD = sizes[l];
-            const outD = sizes[l + 1];
+            const inD = sizes[l], outD = sizes[l + 1];
             const layerWeights = [];
-            
             for (let o = 0; o < outD; o++) {
                 const row = [];
-                for (let i = 0; i < inD; i++) {
-                    row.push(genes[offset + o * inD + i]);
-                }
+                for (let i = 0; i < inD; i++) row.push(genes[offset + o * inD + i]);
                 layerWeights.push(row);
             }
-            
             weights.push(layerWeights);
-            offset += outD * inD + outD; // Skip biases
+            offset += outD * inD + outD;
         }
-        
         return weights;
     }
 
     _getSignals(sizes, weights, activations) {
-        // Use real activations if available
         if (activations?.length === sizes.length) {
             let maxAbs = 0;
             const signals = activations.map(layer => {
                 if (!layer) return [];
-                const layerSignals = Array.from(layer);
-                layerSignals.forEach(s => maxAbs = Math.max(maxAbs, Math.abs(s)));
-                return layerSignals;
+                const arr = Array.from(layer);
+                arr.forEach(s => maxAbs = Math.max(maxAbs, Math.abs(s)));
+                return arr;
             });
             return { signals, maxAbs: maxAbs || 1.0 };
         }
-        
-        // Fallback: calculate from weights
         if (!weights) return { signals: [], maxAbs: 1.0 };
         
         const signals = sizes.map(() => []);
         let maxAbs = 0;
-        
         for (let l = 0; l < sizes.length - 1; l++) {
-            const layerWeights = weights[l];
-            const outD = sizes[l + 1];
-            
-            for (let o = 0; o < outD; o++) {
+            for (let o = 0; o < sizes[l + 1]; o++) {
                 let sum = 0;
-                for (let i = 0; i < sizes[l]; i++) {
-                    sum += layerWeights[o][i];
-                }
+                for (let i = 0; i < sizes[l]; i++) sum += weights[l][o][i];
                 signals[l + 1][o] = sum;
                 maxAbs = Math.max(maxAbs, Math.abs(sum));
             }
         }
-        
         return { signals, maxAbs: maxAbs || 1.0 };
+    }
+
+    _getInputGroups(numNodes) {
+        const groups = [...this.inputNeuronGroups];
+        let total = groups.reduce((sum, g) => sum + g, 0);
+        while (total < numNodes) { groups.push(1); total++; }
+        while (total > numNodes) {
+            const last = groups[groups.length - 1];
+            if (last > 1) { groups[groups.length - 1] = last - 1; total--; }
+            else { groups.pop(); total--; }
+        }
+        return groups;
+    }
+
+    _getInputNodeYPosition(node, numNodes) {
+        const groups = this._getInputGroups(numNodes);
+        const nodeSpacing = 2 * NODE_RADIUS;
+        const groupHeights = groups.map(size => size > 1 ? (size - 1) * nodeSpacing : 0);
+        const totalHeightNeeded = groupHeights.reduce((sum, h) => sum + h, 0);
+        const availableHeight = CANVAS_HEIGHT - 2 * NODE_RADIUS;
+        
+        let nodeIndex = 0, groupIndex = 0, positionInGroup = 0;
+        for (let g = 0; g < groups.length; g++) {
+            if (node < nodeIndex + groups[g]) {
+                groupIndex = g;
+                positionInGroup = node - nodeIndex;
+                break;
+            }
+            nodeIndex += groups[g];
+        }
+        
+        let currentY = NODE_RADIUS;
+        const numGroups = groups.length;
+        if (numGroups === 1) {
+            currentY = (CANVAS_HEIGHT - groupHeights[0]) / 2;
+        } else if (totalHeightNeeded <= availableHeight) {
+            const spacing = (availableHeight - totalHeightNeeded) / (numGroups - 1);
+            for (let g = 0; g < groupIndex; g++) currentY += groupHeights[g] + spacing;
+        } else {
+            const scale = availableHeight / totalHeightNeeded;
+            for (let g = 0; g < groupIndex; g++) currentY += groupHeights[g] * scale;
+        }
+        
+        return currentY + positionInGroup * (groups[groupIndex] > 1 ? nodeSpacing : 0);
     }
 
     _getNodePosition(layer, node, numNodes, numLayers, totalNumColumns, columnSpacing) {
         const isHidden = layer > 0 && layer < numLayers - 1;
-        const numColumns = isHidden ? this.hiddenLayerColumns : 1;
-        const nodesPerColumn = Math.ceil(numNodes / numColumns);
+        const nodesPerColumn = Math.ceil(numNodes / (isHidden ? this.hiddenLayerColumns : 1));
         
-        // Calculate column index
-        let columnIndex;
+        const columnIndex = layer === 0 ? 0 : 
+            layer === numLayers - 1 ? 1 + Math.max(0, numLayers - 2) * this.hiddenLayerColumns :
+            1 + (layer - 1) * this.hiddenLayerColumns + Math.floor(node / nodesPerColumn);
+        
+        const x = totalNumColumns > 1 ? columnIndex * columnSpacing : CANVAS_WIDTH / 2;
+        
+        let y;
         if (layer === 0) {
-            columnIndex = 0;
+            y = this._getInputNodeYPosition(node, numNodes);
         } else if (layer === numLayers - 1) {
-            const numHiddenLayers = Math.max(0, numLayers - 2);
-            columnIndex = 1 + (numHiddenLayers * this.hiddenLayerColumns);
+            // Output layer: top/bottom padding = half of spacing
+            // spacing = CANVAS_HEIGHT / numNodes, padding = spacing / 2
+            const spacing = CANVAS_HEIGHT / numNodes;
+            const padding = spacing / 2;
+            y = padding + node * spacing;
         } else {
-            const hiddenLayerIndex = layer - 1;
-            columnIndex = 1 + (hiddenLayerIndex * this.hiddenLayerColumns) + Math.floor(node / nodesPerColumn);
+            const columnNodeIndex = node % nodesPerColumn;
+            const startNode = Math.floor(node / nodesPerColumn) * nodesPerColumn;
+            const nodesInColumn = Math.min(startNode + nodesPerColumn, numNodes) - startNode;
+            const availableHeight = CANVAS_HEIGHT - 2 * NODE_RADIUS;
+            const nodeSpacing = nodesInColumn > 1 ? availableHeight / (nodesInColumn - 1) : 0;
+            y = nodesInColumn === 1 ? CANVAS_HEIGHT / 2 : NODE_RADIUS + columnNodeIndex * nodeSpacing;
         }
         
-        // Calculate x position: spread columns across full width minus padding
-        // First column at PADDING, last column at CANVAS_WIDTH - PADDING
-        const x = totalNumColumns > 1 
-            ? PADDING + columnIndex * columnSpacing
-            : CANVAS_WIDTH / 2; // Center if only one column
-        
-        // Calculate y position within column, ensuring node stays within bounds
-        const columnNodeIndex = node % nodesPerColumn;
-        const startNode = Math.floor(node / nodesPerColumn) * nodesPerColumn;
-        const endNode = Math.min(startNode + nodesPerColumn, numNodes);
-        const nodesInColumn = endNode - startNode;
-        
-        // Calculate spacing accounting for node radius to keep nodes within bounds
-        const availableHeight = CANVAS_HEIGHT - 2 * (PADDING + NODE_RADIUS);
-        const nodeSpacing = nodesInColumn > 1 ? availableHeight / (nodesInColumn - 1) : 0;
-        const y = nodesInColumn === 1 
-            ? CANVAS_HEIGHT / 2 
-            : PADDING + NODE_RADIUS + columnNodeIndex * nodeSpacing;
-        
-        // Clamp y to ensure node stays within bounds
-        const clampedY = Math.max(NODE_RADIUS, Math.min(CANVAS_HEIGHT - NODE_RADIUS, y));
-        
-        return { x, y: clampedY };
+        return { x, y: Math.max(NODE_RADIUS, Math.min(CANVAS_HEIGHT - NODE_RADIUS, y)) };
     }
 
     _calculateWeightedInputSums(sizes, weights, activations) {
-        const sums = [];
+        const sums = [new Array(sizes[0]).fill(0)];
         let maxAbsSum = 0;
-        
-        // Input layer has no incoming connections
-        sums[0] = new Array(sizes[0]).fill(0);
-        
-        // Calculate weighted input sum for each node (sum of all incoming weighted inputs)
-        for (let layer = 0; layer < sizes.length - 1; layer++) {
-            const layerWeights = weights[layer];
-            const inputActivations = activations[layer];
-            const outD = sizes[layer + 1];
-            
-            sums[layer + 1] = [];
-            
-            for (let o = 0; o < outD; o++) {
+        for (let l = 0; l < sizes.length - 1; l++) {
+            sums[l + 1] = [];
+            for (let o = 0; o < sizes[l + 1]; o++) {
                 let sum = 0;
-                for (let i = 0; i < sizes[layer]; i++) {
-                    // Weighted input: activation × weight
-                    sum += inputActivations[i] * layerWeights[o][i];
-                }
-                sums[layer + 1][o] = sum;
+                for (let i = 0; i < sizes[l]; i++) sum += activations[l][i] * weights[l][o][i];
+                sums[l + 1][o] = sum;
                 maxAbsSum = Math.max(maxAbsSum, Math.abs(sum));
             }
         }
-        
         return { sums, maxAbs: maxAbsSum || 1.0 };
     }
 
-    _drawNodes(sizes, signals, weightedInputSums, totalNumColumns, columnSpacing) {
-        const numLayers = sizes.length;
-        
+    _drawRoundedRectTop(x, y, w, h, r, color, alpha) {
+        this.canvas.moveTo(x + r, y);
+        this.canvas.arc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
+        this.canvas.lineTo(x + w, y + h);
+        this.canvas.lineTo(x, y + h);
+        this.canvas.lineTo(x, y + r);
+        this.canvas.arc(x + r, y + r, r, Math.PI, 0, false);
+        this.canvas.fill({ color, alpha });
+    }
+
+    _drawRoundedRectBottom(x, y, w, h, r, color, alpha) {
+        this.canvas.moveTo(x, y);
+        this.canvas.lineTo(x + w, y);
+        this.canvas.lineTo(x + w, y + h - r);
+        this.canvas.arc(x + w - r, y + h - r, r, 0, Math.PI / 2, false);
+        this.canvas.lineTo(x + r, y + h);
+        this.canvas.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false);
+        this.canvas.fill({ color, alpha });
+    }
+
+    _drawNodes(sizes, signals, weightedInputSums, numLayers, totalNumColumns, columnSpacing) {
         for (let layer = 0; layer < numLayers; layer++) {
-            const numNodes = sizes[layer];
             const layerSignals = signals.signals[layer] || [];
             const layerWeightedSums = weightedInputSums?.sums[layer] || [];
+            const isOutputLayer = layer === numLayers - 1;
+            const isInputLayer = layer === 0;
+            const rectSize = NODE_RADIUS * 2;
+            const inputGroups = isInputLayer ? this._getInputGroups(sizes[layer]) : null;
             
-            for (let node = 0; node < numNodes; node++) {
-                const pos = this._getNodePosition(layer, node, numNodes, numLayers, totalNumColumns, columnSpacing);
-                const outputSignal = layerSignals[node]; // Output activation (after activation function)
-                const weightedSum = layerWeightedSums[node]; // Weighted input sum (before activation)
+            for (let node = 0; node < sizes[layer]; node++) {
+                const pos = this._getNodePosition(layer, node, sizes[layer], numLayers, totalNumColumns, columnSpacing);
+                const outputSignal = layerSignals[node];
+                const weightedSum = layerWeightedSums[node];
                 
-                // Normalize output activation for fill
-                const normalizedOutput = outputSignal !== undefined 
-                    ? Math.min(1.0, Math.max(0, Math.abs(outputSignal) / signals.maxAbs))
-                    : 0;
+                const absSignal = outputSignal !== undefined ? Math.abs(outputSignal) : 0;
+                const normalizedOutput = isOutputLayer ? Math.sqrt(absSignal) : 
+                    (outputSignal !== undefined ? Math.min(1, absSignal / signals.maxAbs) : 0);
+                const normalizedInputSum = weightedSum !== undefined && weightedInputSums ? 
+                    Math.min(1, Math.abs(weightedSum) / weightedInputSums.maxAbs) : 0;
                 
-                // Normalize weighted input sum for stroke
-                const normalizedInputSum = weightedSum !== undefined && weightedInputSums
-                    ? Math.min(1.0, Math.max(0, Math.abs(weightedSum) / weightedInputSums.maxAbs))
-                    : 0;
-                
-                // Fill alpha based on output activation
-                const fillAlpha = outputSignal !== undefined 
-                    ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedOutput * normalizedOutput
-                    : 0.2;
-                
-                // Stroke alpha/width based on weighted input sum
-                const strokeAlpha = weightedSum !== undefined && weightedInputSums
-                    ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedInputSum
-                    : 0.3;
+                const fillAlpha = outputSignal !== undefined ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedOutput * normalizedOutput : 0.2;
+                const strokeAlpha = weightedSum !== undefined && weightedInputSums ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedInputSum : 0.3;
                 const strokeWidth = MIN_NODE_OUTLINE_WIDTH + (MAX_NODE_OUTLINE_WIDTH - MIN_NODE_OUTLINE_WIDTH) * normalizedInputSum;
-                
                 const nodeColor = outputSignal !== undefined ? 0xFFFFFF : 0x888888;
                 
-                // Outer glow for active nodes (based on output)
-                if (outputSignal !== undefined && normalizedOutput > 0.3) {
-                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS + 1.5);
-                    this.canvas.fill({ color: nodeColor, alpha: fillAlpha * 0.2 });
+                if (isInputLayer) {
+                    let nodeIndex = 0, isInGroup = false, positionInGroup = -1, groupSize = 1;
+                    for (let g = 0; g < inputGroups.length; g++) {
+                        if (node >= nodeIndex && node < nodeIndex + inputGroups[g]) {
+                            isInGroup = inputGroups[g] > 1;
+                            positionInGroup = node - nodeIndex;
+                            groupSize = inputGroups[g];
+                            break;
+                        }
+                        nodeIndex += inputGroups[g];
+                    }
+                    
+                    const x = pos.x - rectSize/2, y = pos.y - rectSize/2;
+                    const isTopInGroup = isInGroup && positionInGroup === 0;
+                    const isBottomInGroup = isInGroup && positionInGroup === groupSize - 1;
+                    
+                    if (isTopInGroup) {
+                        this._drawRoundedRectTop(x, y, rectSize, rectSize, NODE_RADIUS, nodeColor, fillAlpha);
+                    } else if (isBottomInGroup) {
+                        this._drawRoundedRectBottom(x, y, rectSize, rectSize, NODE_RADIUS, nodeColor, fillAlpha);
+                    } else if (isInGroup) {
+                        this.canvas.rect(x, y, rectSize, rectSize);
+                        this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
+                    } else {
+                        this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                        this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
+                        this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                        this.canvas.stroke({ color: 0xFFFFFF, width: 1, alpha: INPUT_STROKE_ALPHA });
+                    }
+                } else if (isOutputLayer) {
+                    // Output neurons: draw circle with stroke
+                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                    this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
+                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                    this.canvas.stroke({ color: 0xFFFFFF, width: strokeWidth, alpha: strokeAlpha });
+                    
+                    // Draw T-shape indicator: horizontal line + vertical line (centered)
+                    const horizontalLength = OUTPUT_T_HORIZONTAL_SCALE;
+                    const verticalLength = OUTPUT_T_VERTICAL_SCALE;
+                    const startX = pos.x + NODE_RADIUS;
+                    const endX = startX + horizontalLength;
+                    const centerY = pos.y;
+                    const topY = centerY - verticalLength / 2;
+                    const bottomY = centerY + verticalLength / 2;
+                    
+                    this.canvas.moveTo(startX, centerY);
+                    this.canvas.lineTo(endX, centerY);
+                    this.canvas.moveTo(endX, topY);
+                    this.canvas.lineTo(endX, bottomY);
+                    this.canvas.stroke({ color: 0xFFFFFF, width: 1, alpha: OUTPUT_T_SCALE_ALPHA });
+                    
+                    // Draw progress bar on vertical line (maps output from -1 to 1 to bottom to top)
+                    if (outputSignal !== undefined) {
+                        const clampedValue = Math.max(-1, Math.min(1, outputSignal));
+                        // Map from [-1, 1] to [bottomY, topY], starting from centerY
+                        const progressY = centerY - (clampedValue * verticalLength / 2);
+                        const barStartY = centerY;
+                        const barEndY = progressY;
+                        
+                        this.canvas.moveTo(endX, barStartY);
+                        this.canvas.lineTo(endX, barEndY);
+                        this.canvas.stroke({ color: 0xFFFFFF, width: 2, alpha: 0.8 });
+                    }
+                } else {
+                    // Hidden layers: draw as circles
+                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                    this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
+                    this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
+                    this.canvas.stroke({ color: 0xFFFFFF, width: strokeWidth, alpha: strokeAlpha });
                 }
-                
-                // Main node - fill shows output activation
-                this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
-                
-                // Stroke shows weighted input sum
-                this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                this.canvas.stroke({ 
-                    color: 0xFFFFFF, 
-                    width: strokeWidth, 
-                    alpha: strokeAlpha
-                });
+            }
+            
+            if (isInputLayer && inputGroups) {
+                let nodeIndex = 0;
+                for (let g = 0; g < inputGroups.length; g++) {
+                    const groupSize = inputGroups[g];
+                    if (groupSize > 1) {
+                        const firstPos = this._getNodePosition(layer, nodeIndex, sizes[layer], numLayers, totalNumColumns, columnSpacing);
+                        const lastPos = this._getNodePosition(layer, nodeIndex + groupSize - 1, sizes[layer], numLayers, totalNumColumns, columnSpacing);
+                        this.canvas.roundRect(firstPos.x - rectSize/2, Math.min(firstPos.y, lastPos.y) - NODE_RADIUS, 
+                            rectSize, Math.max(firstPos.y, lastPos.y) - Math.min(firstPos.y, lastPos.y) + NODE_RADIUS * 2, NODE_RADIUS);
+                        this.canvas.stroke({ color: 0xFFFFFF, width: 1, alpha: INPUT_STROKE_ALPHA });
+                    }
+                    nodeIndex += groupSize;
+                }
             }
         }
     }
 
-    _drawConnections(sizes, weights, activations, signals, totalNumColumns, columnSpacing) {
-        const numLayers = sizes.length;
+    _drawConnections(sizes, weights, activations, numLayers, totalNumColumns, columnSpacing) {
         let maxAbsSignal = 0;
-        
-        // Calculate connection signals and find max
         for (let layer = 0; layer < numLayers - 1; layer++) {
-            const layerWeights = weights[layer];
             const inputActivations = activations?.[layer];
-            
             for (let o = 0; o < sizes[layer + 1]; o++) {
                 for (let i = 0; i < sizes[layer]; i++) {
-                    const signal = inputActivations 
-                        ? inputActivations[i] * layerWeights[o][i]
-                        : layerWeights[o][i];
-                    maxAbsSignal = Math.max(maxAbsSignal, Math.abs(signal));
+                    maxAbsSignal = Math.max(maxAbsSignal, Math.abs(inputActivations ? inputActivations[i] * weights[layer][o][i] : weights[layer][o][i]));
                 }
             }
         }
-        
         if (maxAbsSignal < 0.001) maxAbsSignal = 1.0;
-        
-        // Draw connections with improved visual quality
+
         for (let layer = 0; layer < numLayers - 1; layer++) {
-            const layerWeights = weights[layer];
             const inputActivations = activations?.[layer];
-            
             for (let o = 0; o < sizes[layer + 1]; o++) {
                 const outputPos = this._getNodePosition(layer + 1, o, sizes[layer + 1], numLayers, totalNumColumns, columnSpacing);
-                
                 for (let i = 0; i < sizes[layer]; i++) {
                     const inputPos = this._getNodePosition(layer, i, sizes[layer], numLayers, totalNumColumns, columnSpacing);
-                    const signal = inputActivations 
-                        ? inputActivations[i] * layerWeights[o][i]
-                        : layerWeights[o][i];
-                    
+                    const signal = inputActivations ? inputActivations[i] * weights[layer][o][i] : weights[layer][o][i];
                     const normalized = Math.abs(signal) / maxAbsSignal;
                     const normalizedSq = normalized * normalized;
                     
-                    // Improved alpha calculation with better range
-                    const alpha = MIN_CONNECTION_ALPHA + (1 - MIN_CONNECTION_ALPHA) * normalized;
+                    const startX = inputPos.x + NODE_RADIUS;
+                    const startY = inputPos.y;
+                    const endX = outputPos.x - NODE_RADIUS;
+                    const endY = outputPos.y;
+                    const curveOffset = Math.abs(endX - startX) * 0.3;
                     
-                    // Line width with smoother scaling
-                    const lineWidth = 0.4 + normalizedSq * normalizedSq * 1.8;
-                    
-                    // Draw connection
-                    this.canvas.moveTo(inputPos.x + NODE_RADIUS, inputPos.y);
-                    this.canvas.lineTo(outputPos.x - NODE_RADIUS, outputPos.y);
+                    // Cubic bezier with horizontal tangents at start and end
+                    this.canvas.moveTo(startX, startY);
+                    this.canvas.bezierCurveTo(
+                        startX + curveOffset, startY,  // First control point: horizontal from start
+                        endX - curveOffset, endY,      // Second control point: horizontal to end
+                        endX, endY                      // End point
+                    );
                     this.canvas.stroke({ 
                         color: 0xFFFFFF, 
-                        width: lineWidth,
-                        alpha: alpha
+                        width: 0.4 + normalizedSq * normalizedSq * 1.8,
+                        alpha: MIN_CONNECTION_ALPHA + (1 - MIN_CONNECTION_ALPHA) * normalized
                     });
                 }
             }
