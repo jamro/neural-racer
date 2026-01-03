@@ -15,11 +15,11 @@ import NeuralNet from '../../neuralEvolution/NeuralNet';
  *  6. Radar Beam #7
  *  7. Radar Beam #8
  *  8. Radar Beam #9
- *  9. Time To Collision (short range)
- * 10. Time To Collision (long range)
- * 11. Left Right Balance
+ *  9. Long Range Time To Collision (derived from Radar + Speed)
+ * 10. Short Range Time To Collision (derived from Radar + Speed)
+ * 11. Left Right Balance (derived from Radar)
  * --- TURN GROUP ----
- * 12. Safe Direction
+ * 12. Safe Direction (derived from Radar)
  * 13. Previous Turn Control
  * --- TRACTION GROUP ----
  * 14. Speed

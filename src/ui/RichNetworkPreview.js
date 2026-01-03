@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import NetworkPreview from './NetworkPreview';
+import NetworkPreview from './networkPreview/NetworkPreview';
 
 class RichNetworkPreview extends PIXI.Container {
   constructor() {
