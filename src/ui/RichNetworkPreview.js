@@ -75,26 +75,26 @@ class RichNetworkPreview extends PIXI.Container {
     const scale = this.fitDiagramToView(Math.max(width - 80, 100), height);
 
 
-    this.turnIcon.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 11
+    this.turnIcon.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 11 * scale
     this.turnIcon.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.25
     this.turnIcon.scale.set(scale*0.45);
-    this.throttleIcon.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 11
+    this.throttleIcon.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 11 * scale  
     this.throttleIcon.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.75
     this.throttleIcon.scale.set(scale*0.45);
 
-    this.radarLabel.x = this.netDiagram.x - 10
+    this.radarLabel.x = this.netDiagram.x - 10 * scale
     this.radarLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.238
     this.radarLabel.scale.set(scale, scale);
 
-    this.turnHistoryLabel.x = this.netDiagram.x - 10
+    this.turnHistoryLabel.x = this.netDiagram.x - 10 * scale
     this.turnHistoryLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.54
     this.turnHistoryLabel.scale.set(scale, scale);
 
-    this.speedLabel.x = this.netDiagram.x - 10
+    this.speedLabel.x = this.netDiagram.x - 10 * scale
     this.speedLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.7
     this.speedLabel.scale.set(scale, scale);
 
-    this.tractionLabel.x = this.netDiagram.x - 10
+    this.tractionLabel.x = this.netDiagram.x - 10 * scale
     this.tractionLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.88
     this.tractionLabel.scale.set(scale, scale);
   }
