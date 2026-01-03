@@ -92,6 +92,10 @@ const TEXTURE_REGISTRY = {
 
     // Finishline textures
     finishline001: 'assets/img/finishline001.png',
+
+    // User Interface textures
+    ui_turn_icon: 'assets/img/turn_icon.png',
+    ui_throttle_icon: 'assets/img/throttle_icon.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -309,3 +313,9 @@ export async function loadCrate003Texture() { return await loadTexture('crates00
 export function getCrate003Texture() { return getTexture('crates003'); }
 export async function loadCrate004Texture() { return await loadTexture('crates004'); }
 export function getCrate004Texture() { return getTexture('crates004'); }
+
+// User Interface texture exports
+export async function loadUiTurnIconTexture() { return await loadTexture('ui_turn_icon'); }
+export function getUiTurnIconTexture() { return getTexture('ui_turn_icon'); }
+export async function loadUiThrottleIconTexture() { return await loadTexture('ui_throttle_icon'); }
+export function getUiThrottleIconTexture() { return getTexture('ui_throttle_icon'); }

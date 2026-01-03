@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import NetworkPreview from './networkPreview/NetworkPreview';
+import { getUiTurnIconTexture, getUiThrottleIconTexture } from '../loaders/AssetLoader';
 
 class RichNetworkPreview extends PIXI.Container {
   constructor() {
@@ -17,10 +18,15 @@ class RichNetworkPreview extends PIXI.Container {
     ])
     this.addChild(this.netDiagram);
 
-    this.turnLabel = this.addLabel("Turn");
-    this.turnLabel.anchor.set(0, 0.5);
-    this.throttleLabel = this.addLabel("Throttle");
-    this.throttleLabel.anchor.set(0, 0.5);
+    this.turnIcon = this.addChild(new PIXI.Sprite(getUiTurnIconTexture()));
+    this.throttleIcon = this.addChild(new PIXI.Sprite(getUiThrottleIconTexture()));
+    this.turnIcon.anchor.set(0, 0.5);
+    this.throttleIcon.anchor.set(0, 0.5);
+    this.turnIcon.alpha = 0.8;
+    this.throttleIcon.alpha = 0.8;
+    this.addChild(this.turnIcon);
+    this.addChild(this.throttleIcon);
+
     this.radarLabel = this.addLabel("Radar Beams");
     this.radarLabel.anchor.set(1, 0.5);
     this.turnHistoryLabel = this.addLabel("Turn History");
@@ -68,13 +74,13 @@ class RichNetworkPreview extends PIXI.Container {
   scaleView(width, height) {
     const scale = this.fitDiagramToView(Math.max(width - 80, 100), height);
 
-    this.turnLabel.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 15
-    this.turnLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.25
-    this.turnLabel.scale.set(scale, scale);
 
-    this.throttleLabel.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 15
-    this.throttleLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.75
-    this.throttleLabel.scale.set(scale, scale);
+    this.turnIcon.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 11
+    this.turnIcon.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.25
+    this.turnIcon.scale.set(scale*0.45);
+    this.throttleIcon.x = this.netDiagram.x + this.netDiagram.canvasWidth * scale + 11
+    this.throttleIcon.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.75
+    this.throttleIcon.scale.set(scale*0.45);
 
     this.radarLabel.x = this.netDiagram.x - 10
     this.radarLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.238

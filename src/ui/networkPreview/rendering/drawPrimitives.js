@@ -3,7 +3,8 @@ import {
   INPUT_STROKE_ALPHA,
   OUTPUT_T_HORIZONTAL_SCALE,
   OUTPUT_T_VERTICAL_SCALE,
-  OUTPUT_T_SCALE_ALPHA
+  OUTPUT_T_SCALE_ALPHA,
+  CONNECTION_WIDTH_MAX
 } from '../NetworkPreviewConstants.js';
 
 export function drawRoundedRectTop(canvas, x, y, w, h, r, color, alpha) {
@@ -73,21 +74,29 @@ export function drawOutputNode(canvas, pos, outputSignal, nodeColor, fillAlpha, 
   const startX = pos.x + NODE_RADIUS;
   const endX = startX + OUTPUT_T_HORIZONTAL_SCALE;
   const centerY = pos.y;
-  const topY = centerY - OUTPUT_T_VERTICAL_SCALE / 2;
-  const bottomY = centerY + OUTPUT_T_VERTICAL_SCALE / 2;
+  const radius = OUTPUT_T_VERTICAL_SCALE / 2;
+  const arcCenterX = endX + radius;
+  const topY = centerY - radius;
+  const bottomY = centerY + radius;
 
   canvas.moveTo(startX, centerY);
   canvas.lineTo(endX, centerY);
-  canvas.moveTo(endX, topY);
-  canvas.lineTo(endX, bottomY);
+  // Vertical scale: full circle
+  canvas.circle(arcCenterX, centerY, radius);
   canvas.stroke({ color: 0xFFFFFF, width: 1, alpha: OUTPUT_T_SCALE_ALPHA });
 
   if (outputSignal !== undefined) {
     const clampedValue = Math.max(-1, Math.min(1, outputSignal));
-    const progressY = centerY - (clampedValue * OUTPUT_T_VERTICAL_SCALE / 2);
-    canvas.moveTo(endX, centerY);
-    canvas.lineTo(endX, progressY);
-    canvas.stroke({ color: nodeColor, width: 2, alpha: 0.8 });
+    // Map [-1, 1] -> angle [0, 2PI]
+    // -1 -> 0, 0 -> PI, +1 -> 2PI
+    const indicatorAngle = Math.PI * (1 + clampedValue);
+    // Bar starts at middle left part of the circle (angle PI) and sweeps to indicator angle
+    const startAngle = Math.PI;
+    canvas.moveTo(arcCenterX - radius, centerY);
+    // Negative values: counter-clockwise (true), positive values: clockwise (false)
+    const isCounterClockwise = clampedValue < 0;
+    canvas.arc(arcCenterX, centerY, radius, startAngle, indicatorAngle, isCounterClockwise);
+    canvas.stroke({ color: nodeColor, width: CONNECTION_WIDTH_MAX, alpha: 0.8 });
   }
 }
 
