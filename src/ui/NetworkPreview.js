@@ -11,6 +11,8 @@ const INPUT_STROKE_ALPHA = 0.5;
 const OUTPUT_T_HORIZONTAL_SCALE = 5;
 const OUTPUT_T_VERTICAL_SCALE = 50;
 const OUTPUT_T_SCALE_ALPHA = 0.2;
+const COLOR_POSITIVE = 0xFF6600; // Red for positive values
+const COLOR_NEGATIVE = 0x6666FF; // Light blue for negative values
 
 class NetworkPreview extends PIXI.Container {
     constructor(hiddenLayerColumns = 1, inputNeuronGroups = [9, 2, 1, 1, 1, 1, 2]) {
@@ -173,6 +175,11 @@ class NetworkPreview extends PIXI.Container {
         return { x, y: Math.max(NODE_RADIUS, Math.min(CANVAS_HEIGHT - NODE_RADIUS, y)) };
     }
 
+    _getColorForValue(value) {
+        if (value === undefined || value === 0) return 0x888888;
+        return value > 0 ? COLOR_POSITIVE : COLOR_NEGATIVE;
+    }
+
     _calculateWeightedInputSums(sizes, weights, activations) {
         const sums = [new Array(sizes[0]).fill(0)];
         let maxAbsSum = 0;
@@ -231,7 +238,8 @@ class NetworkPreview extends PIXI.Container {
                 const fillAlpha = outputSignal !== undefined ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedOutput * normalizedOutput : 0.2;
                 const strokeAlpha = weightedSum !== undefined && weightedInputSums ? MIN_NODE_ALPHA + (1 - MIN_NODE_ALPHA) * normalizedInputSum : 0.3;
                 const strokeWidth = MIN_NODE_OUTLINE_WIDTH + (MAX_NODE_OUTLINE_WIDTH - MIN_NODE_OUTLINE_WIDTH) * normalizedInputSum;
-                const nodeColor = outputSignal !== undefined ? 0xFFFFFF : 0x888888;
+                const nodeColor = this._getColorForValue(outputSignal);
+                const strokeColor = this._getColorForValue(weightedSum);
                 
                 if (isInputLayer) {
                     let nodeIndex = 0, isInGroup = false, positionInGroup = -1, groupSize = 1;
@@ -260,14 +268,14 @@ class NetworkPreview extends PIXI.Container {
                         this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
                         this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
                         this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                        this.canvas.stroke({ color: 0xFFFFFF, width: 1, alpha: INPUT_STROKE_ALPHA });
+                        this.canvas.stroke({ color: strokeColor, width: 1, alpha: INPUT_STROKE_ALPHA });
                     }
                 } else if (isOutputLayer) {
                     // Output neurons: draw circle with stroke
                     this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
                     this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
                     this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                    this.canvas.stroke({ color: 0xFFFFFF, width: strokeWidth, alpha: strokeAlpha });
+                    this.canvas.stroke({ color: strokeColor, width: strokeWidth, alpha: strokeAlpha });
                     
                     // Draw T-shape indicator: horizontal line + vertical line (centered)
                     const horizontalLength = OUTPUT_T_HORIZONTAL_SCALE;
@@ -294,14 +302,14 @@ class NetworkPreview extends PIXI.Container {
                         
                         this.canvas.moveTo(endX, barStartY);
                         this.canvas.lineTo(endX, barEndY);
-                        this.canvas.stroke({ color: 0xFFFFFF, width: 2, alpha: 0.8 });
+                        this.canvas.stroke({ color: nodeColor, width: 2, alpha: 0.8 });
                     }
                 } else {
                     // Hidden layers: draw as circles
                     this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
                     this.canvas.fill({ color: nodeColor, alpha: fillAlpha });
                     this.canvas.circle(pos.x, pos.y, NODE_RADIUS);
-                    this.canvas.stroke({ color: 0xFFFFFF, width: strokeWidth, alpha: strokeAlpha });
+                    this.canvas.stroke({ color: strokeColor, width: strokeWidth, alpha: strokeAlpha });
                 }
             }
             
@@ -343,6 +351,7 @@ class NetworkPreview extends PIXI.Container {
                     const signal = inputActivations ? inputActivations[i] * weights[layer][o][i] : weights[layer][o][i];
                     const normalized = Math.abs(signal) / maxAbsSignal;
                     const normalizedSq = normalized * normalized;
+                    const connectionColor = this._getColorForValue(signal);
                     
                     const startX = inputPos.x + NODE_RADIUS;
                     const startY = inputPos.y;
@@ -358,7 +367,7 @@ class NetworkPreview extends PIXI.Container {
                         endX, endY                      // End point
                     );
                     this.canvas.stroke({ 
-                        color: 0xFFFFFF, 
+                        color: connectionColor, 
                         width: 0.4 + normalizedSq * normalizedSq * 1.8,
                         alpha: MIN_CONNECTION_ALPHA + (1 - MIN_CONNECTION_ALPHA) * normalized
                     });
