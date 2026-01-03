@@ -8,15 +8,37 @@ import { NetworkRenderer } from './NetworkRenderer.js';
  * Main class for rendering neural network previews
  */
 class NetworkPreview extends PIXI.Container {
-    constructor(hiddenLayerColumns = 1, inputNeuronGroups = [9, 2, 1, 1, 1, 1, 2]) {
+    /**
+     * @param {Array<Object>} inputConfig "segments" config for the artificial input layer.
+     *   - { range: [start, end], group: true }  // outlines this range as a group, no other change
+     *   - { index: i }                          // single input as an individual entry
+     *
+     * If `artificialSources` is provided (also supports the legacy typo `artificalSources`),
+     * the input is skipped in the artificial layer and we draw extra "artificial edges"
+     * from those sources to the real input neuron (second column).
+     *
+     *   - { index: i, artificialSources: [0, 3, 5] }
+     *
+     * Example:
+     * [
+     *   { range: [0, 8], group: true },
+     *   { index: 9, artificialSources: [3, 5] },
+     *   { index: 10, artificialSources: [3, 5] },
+     *   { index: 11, artificialSources: [0, 1, 2, 6, 7, 8] },
+     *   { index: 12, artificialSources: [0, 1, 2, 3, 4, 5, 6, 7, 8] },
+     *   { index: 13 },
+     *   { index: 14 },
+     *   { range: [15, 16], group: true }
+     * ]
+     */
+    constructor(inputConfig = []) {
         super();
         this.canvas = new PIXI.Graphics();
-        this.hiddenLayerColumns = hiddenLayerColumns;
-        this.inputNeuronGroups = inputNeuronGroups;
+        this.inputConfig = inputConfig;
         this.addChild(this.canvas);
         
         // Initialize helper classes
-        this.positionCalculator = new NodePositionCalculator(hiddenLayerColumns, inputNeuronGroups);
+        this.positionCalculator = new NodePositionCalculator(inputConfig);
         this.renderer = new NetworkRenderer(this.canvas, this.positionCalculator);
     }
 
@@ -44,29 +66,34 @@ class NetworkPreview extends PIXI.Container {
         // Extract weights if genome is provided
         const weights = genome ? extractWeights(network, genome) : null;
         
-        // Calculate layout
-        const numColumns = 1 + Math.max(0, numLayers - 2) * this.hiddenLayerColumns + 1;
+        // Calculate layout - add 1 column for the intermediate layer between input and first hidden
+        // Layout: input (col 0) -> intermediate (col 1) -> hidden layers -> output (last col)
+        // We render one visual column per hidden layer (simpler + clearer).
+        const numColumns = 2 + Math.max(0, numLayers - 2) + 1;
         const columnSpacing = numColumns > 1 ? CANVAS_WIDTH / (numColumns - 1) : 0;
         
-        // Get input groups once (cached in positionCalculator)
-        const inputGroups = sizes[0] ? this.positionCalculator.getInputGroups(sizes[0]) : [];
+        // Build input layout once (cached in positionCalculator)
+        const inputLayout = sizes[0] ? this.positionCalculator.getInputLayout(sizes[0]) : null;
         
         // Process network data
         const signals = getSignals(sizes, weights, activations);
         const weightedInputSums = weights && activations ? 
             calculateWeightedInputSums(sizes, weights, activations) : null;
-        
-        // Render connections first (so they appear behind nodes)
-        if (weights) {
-            this.renderer.drawConnections(
-                sizes, weights, activations, numLayers, numColumns, columnSpacing, inputGroups
-            );
-        }
-        
-        // Render nodes
-        this.renderer.drawNodes(
-            sizes, signals, weightedInputSums, numLayers, numColumns, columnSpacing, inputGroups
-        );
+
+        // Render using a single "model" object to avoid plumbing a long argument list.
+        this.renderer.render({
+            sizes,
+            weights,
+            activations,
+            signals,
+            weightedInputSums,
+            layout: {
+                numLayers,
+                numColumns,
+                columnSpacing,
+                inputLayout
+            }
+        });
     }
 }
 

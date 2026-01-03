@@ -15,9 +15,9 @@ import NeuralNet from '../../neuralEvolution/NeuralNet';
  *  6. Radar Beam #7
  *  7. Radar Beam #8
  *  8. Radar Beam #9
- *  9. Long Range Time To Collision (derived from Radar + Speed)
- * 10. Short Range Time To Collision (derived from Radar + Speed)
- * 11. Left Right Balance (derived from Radar)
+ *  9. Long Range Time To Collision (derived from Radar #4-#6 + Speed)
+ * 10. Short Range Time To Collision (derived from Radar #4-#6 + Speed)
+ * 11. Left Right Balance (derived from Radar, #1-#3 and #7-#9)
  * --- TURN GROUP ----
  * 12. Safe Direction (derived from Radar)
  * 13. Previous Turn Control
@@ -46,7 +46,7 @@ class NeuralCarObject extends CarObject {
     }
 
     calculateLeftRightBalance() {
-      const n = this.radarBeamCount;
+      const n = this.radarBeamCount-1;
       if (n < 7) throw new Error("radarBeams length must be at least 7");
     
       const Rmax = 100; // maximum radar range in meters

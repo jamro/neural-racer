@@ -3,6 +3,8 @@ import CarPhysicModel from './CarPhysicModel';
 import { v4 as uuidv4 } from 'uuid';
 import { metersToPixels } from '../unitConversion';
 
+const NO_PROGRESS_MAX_FRAMES = 300;
+
 class CarObject {
     constructor() {
         this.carId = uuidv4();
@@ -29,6 +31,7 @@ class CarObject {
         this.speedSum = 0;
         this.debug = ""
         this.safeDirection = 0;
+        this.noProgressCounter = 0;
 
         // create view
         this.view = new CarView(
@@ -139,13 +142,23 @@ class CarObject {
       
       // check for checkpoints
       if(!this._isFinished) {
+        const oldCheckpointIndex = this.checkpointsPassed;
         const checkpointIndex = track.isBoxCollidingWithCheckpoint(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction);
         if (checkpointIndex !== false) {
+
           this.checkpointsPassed = Math.max(this.checkpointsPassed, checkpointIndex+1);
 
           if(checkpointIndex + 1  < this.checkpointsPassed && !this._isFinished) {
             this._isCrashed = true;
           }
+        }
+        if(oldCheckpointIndex === this.checkpointsPassed) {
+          this.noProgressCounter++;
+        } else {
+          this.noProgressCounter = 0;
+        }
+        if(this.noProgressCounter > NO_PROGRESS_MAX_FRAMES) {
+          this._isCrashed = true;
         }
       }
       

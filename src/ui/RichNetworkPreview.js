@@ -5,7 +5,16 @@ class RichNetworkPreview extends PIXI.Container {
   constructor() {
     super();
 
-    this.netDiagram = new NetworkPreview();
+    this.netDiagram = new NetworkPreview([
+      { range: [0, 8], group: true },
+      { index: 9, artificialSources: [3, 5] },
+      { index: 10, artificialSources: [3, 5] },
+      { index: 11, artificialSources: [0,1,2,6,7,8] },
+      { index: 12, artificialSources: [0,1,2,3,4,5,6,7,8] },
+      { index: 13 },
+      { index: 14 },
+      { range: [15, 16], group: true }
+    ])
     this.addChild(this.netDiagram);
 
     this.turnLabel = this.addLabel("Turn");
@@ -14,12 +23,6 @@ class RichNetworkPreview extends PIXI.Container {
     this.throttleLabel.anchor.set(0, 0.5);
     this.radarLabel = this.addLabel("Radar Beams");
     this.radarLabel.anchor.set(1, 0.5);
-    this.ttcLable = this.addLabel("Time to Collision");
-    this.ttcLable.anchor.set(1, 0.5);
-    this.sideBalanceLabel = this.addLabel("Side Balance");
-    this.sideBalanceLabel.anchor.set(1, 0.5);
-    this.safeDirectionLabel = this.addLabel("Safe Direction");
-    this.safeDirectionLabel.anchor.set(1, 0.5);
     this.turnHistoryLabel = this.addLabel("Turn History");
     this.turnHistoryLabel.anchor.set(1, 0.5);
     this.speedLabel = this.addLabel("Speed");
@@ -74,31 +77,19 @@ class RichNetworkPreview extends PIXI.Container {
     this.throttleLabel.scale.set(scale, scale);
 
     this.radarLabel.x = this.netDiagram.x - 10
-    this.radarLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.18
+    this.radarLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.238
     this.radarLabel.scale.set(scale, scale);
 
-    this.ttcLable.x = this.netDiagram.x - 10
-    this.ttcLable.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.45
-    this.ttcLable.scale.set(scale, scale);
-
-    this.sideBalanceLabel.x = this.netDiagram.x - 10
-    this.sideBalanceLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.567
-    this.sideBalanceLabel.scale.set(scale, scale);
-
-    this.safeDirectionLabel.x = this.netDiagram.x - 10
-    this.safeDirectionLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.658
-    this.safeDirectionLabel.scale.set(scale, scale);
-
     this.turnHistoryLabel.x = this.netDiagram.x - 10
-    this.turnHistoryLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.75
+    this.turnHistoryLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.54
     this.turnHistoryLabel.scale.set(scale, scale);
 
     this.speedLabel.x = this.netDiagram.x - 10
-    this.speedLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.842
+    this.speedLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.7
     this.speedLabel.scale.set(scale, scale);
 
     this.tractionLabel.x = this.netDiagram.x - 10
-    this.tractionLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.96
+    this.tractionLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * scale * 0.88
     this.tractionLabel.scale.set(scale, scale);
   }
 }
