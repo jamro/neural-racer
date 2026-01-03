@@ -25,6 +25,11 @@ class SimulationView extends PIXI.Container {
         this.viewHeight = 100;
         this.targetCameraPosition = { x: 0, y: 0, scale: 1 };
 
+        this.cameraOffset = {
+          x: 248/2,
+          y: 0,
+        }
+
         this._graphicsQuality = "low";
     }
 
@@ -38,6 +43,8 @@ class SimulationView extends PIXI.Container {
     }
 
     setCameraPosition(x, y, snapFactor = 0.5) {
+        x += this.cameraOffset.x;
+        y += this.cameraOffset.y;
         x *= this.targetCameraPosition.scale;
         y *= this.targetCameraPosition.scale;
         this.targetCameraPosition.x += (x - this.targetCameraPosition.x) * snapFactor;
