@@ -88,6 +88,14 @@ class Database {
     return generations;
   }
 
+  async findLatestGenerationByEvolutionId(evolutionId) {
+    const db = await this._openDB();
+    const generations = await db.getAllFromIndex('generations', 'evolutionId', evolutionId);
+    // find generation with highest epoch
+    const latestGeneration = generations.reduce((latest, current) => current.epoch > latest.epoch ? current : latest, generations[0]);
+    return latestGeneration;
+  }
+
   async loadGeneration(generationId) {
     const db = await this._openDB();
     const tx = db.transaction(['generations'], 'readonly');

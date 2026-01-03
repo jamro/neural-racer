@@ -50,7 +50,11 @@ class Evolution {
         console.warn(`Current track ${loadedData.currentTrack} not found, using first track`);
         this.currentTrack = this.tracks[0];
       }
-      const generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
+      let generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
+      if(!generationData) {
+        console.warn(`Generation data (${loadedData.lastGenerationId}) not found for evolution ${this.evolutionId}, loading latest generation`);
+        generationData = await this.database.findLatestGenerationByEvolutionId(this.evolutionId);
+      }
       this.generation = deserializeGeneration(generationData);
 
       const historyData = await this.database.loadGenerationsByEvolutionId(this.evolutionId);

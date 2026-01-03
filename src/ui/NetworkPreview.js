@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 const CANVAS_WIDTH = 210;
 const CANVAS_HEIGHT = 180;
 const NODE_RADIUS = 3;
-const MIN_NODE_OUTLINE_WIDTH = 0.1;
+const MIN_NODE_OUTLINE_WIDTH = 0;
 const MAX_NODE_OUTLINE_WIDTH = 1;
 const MIN_CONNECTION_ALPHA = 0;
 const MIN_NODE_ALPHA = 0;
@@ -13,7 +13,7 @@ const OUTPUT_T_VERTICAL_SCALE = 50;
 const OUTPUT_T_SCALE_ALPHA = 0.2;
 
 class NetworkPreview extends PIXI.Container {
-    constructor(hiddenLayerColumns = 2, inputNeuronGroups = [9, 2, 1, 1, 1, 1, 2]) {
+    constructor(hiddenLayerColumns = 1, inputNeuronGroups = [9, 2, 1, 1, 1, 1, 2]) {
         super();
         this.canvas = new PIXI.Graphics();
         this.hiddenLayerColumns = hiddenLayerColumns;

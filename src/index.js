@@ -23,15 +23,17 @@ document.getElementById('app').appendChild(app.canvas);
 await loadTextures(getTextureKeys());
 
 // Load assets
-const tracksUrls = [
-    'assets/tracks/lesson_001.svg',
-    'assets/tracks/lesson_002.svg',
-    'assets/tracks/lesson_003.svg',
-    'assets/tracks/lesson_004.svg',
-    'assets/tracks/lesson_005.svg',
-    'assets/tracks/lesson_006.svg',
+const tracksData = [
+    {url: 'assets/tracks/lesson_001.svg'},
+    {url:'assets/tracks/lesson_002.svg'},
+    {url:'assets/tracks/lesson_003a.svg'},
+    {url:'assets/tracks/lesson_003b.svg'},
+    {url:'assets/tracks/lesson_003.svg'},
+    {url:'assets/tracks/lesson_004.svg'},
+    {url:'assets/tracks/lesson_005.svg'},
+    {url:'assets/tracks/lesson_006.svg'},
 ];
-const tracks = await Promise.all(tracksUrls.map(url => SvgTrackLoader.load(url)));
+const tracks = await Promise.all(tracksData.map(t => SvgTrackLoader.load(t.url)));
 
 
 const evolution = new Evolution(app, tracks);
