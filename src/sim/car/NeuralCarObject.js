@@ -27,8 +27,8 @@ import NeuralNet from '../../neuralEvolution/NeuralNet';
  * 16. Slip Ratio
  * 
  * Outputs:
- *  0. Throttle
- *  1. Turn
+ *  0. Turn
+ *  1. Throttle
  */
 
 class NeuralCarObject extends CarObject {
@@ -159,8 +159,8 @@ class NeuralCarObject extends CarObject {
 
       this.debug = inputs[15].toFixed(2)
       
-      const throttleOutput = outputs[0];
-      const turnOutput = outputs[1];
+      const turnOutput = outputs[0];
+      const throttleOutput = outputs[1];
 
       if (throttleOutput > 0) {
         this.throttle(throttleOutput);

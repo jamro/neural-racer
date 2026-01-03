@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-const CANVAS_WIDTH = 210;
+const CANVAS_WIDTH = 300;
 const CANVAS_HEIGHT = 180;
 const NODE_RADIUS = 3;
 const MIN_NODE_OUTLINE_WIDTH = 0;

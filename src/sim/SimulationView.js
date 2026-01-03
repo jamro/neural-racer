@@ -1,8 +1,5 @@
 import * as PIXI from 'pixi.js';
-import CarDetailsView from './CarDetailsView';
-import GenerationDetailsView from './GenerationDetailsView';
 import SimulationDetailsView from './SimulationDetailsView';
-import EvolutionDetailsView from './EvolutionDetailsView';
 import { metersToPixels } from './unitConversion'; // @TODO avoid conversion in view class
 
 class SimulationView extends PIXI.Container {
@@ -12,13 +9,7 @@ class SimulationView extends PIXI.Container {
         this.addChild(this.masterContainer);
 
         this.simulationDetailsView = new SimulationDetailsView();
-        this.carDetailsView = new CarDetailsView();
-        this.generationDetailsView = new GenerationDetailsView();
-        this.evolutionDetailsView = new EvolutionDetailsView();
         this.addChild(this.simulationDetailsView);
-        this.addChild(this.carDetailsView);
-        this.addChild(this.generationDetailsView);
-        this.addChild(this.evolutionDetailsView);
         this.track = null;
         this.cars = [];
         this.viewWidth = 100;
@@ -26,8 +17,8 @@ class SimulationView extends PIXI.Container {
         this.targetCameraPosition = { x: 0, y: 0, scale: 1 };
 
         this.cameraOffset = {
-          x: 248/2,
-          y: 0,
+          x: 0,
+          y: -200/2,
         }
 
         this._graphicsQuality = "low";
@@ -65,13 +56,11 @@ class SimulationView extends PIXI.Container {
     }
 
     updateStats(simulation) {
-      this.simulationDetailsView.update(simulation);
-      this.generationDetailsView.update(simulation);
-      this.carDetailsView.update(simulation.leaderCar);
+      this.simulationDetailsView.update(simulation, simulation.leaderCar);
     }
 
     setEvolutionHistory(evolutionHistory, trackName) {
-      this.evolutionDetailsView.setEvolutionHistory(evolutionHistory, trackName);
+      this.simulationDetailsView.setEvolutionHistory(evolutionHistory, trackName);
     }
 
     renderView(delta) {
@@ -118,14 +107,10 @@ class SimulationView extends PIXI.Container {
     scaleView(width, height) {
       this.viewWidth = width;
       this.viewHeight = height;
+
+      this.simulationDetailsView.scaleView(width, height);
       this.simulationDetailsView.x = - width / 2;
-      this.simulationDetailsView.y = - height / 2;
-      this.generationDetailsView.x = - width / 2;
-      this.generationDetailsView.y = this.simulationDetailsView.y + this.simulationDetailsView.height + 2;
-      this.evolutionDetailsView.x = - width / 2;
-      this.evolutionDetailsView.y = this.generationDetailsView.y + this.generationDetailsView.height + 2;
-      this.carDetailsView.x = - width / 2;
-      this.carDetailsView.y = this.evolutionDetailsView.y + this.evolutionDetailsView.height + 2;
+      this.simulationDetailsView.y = height / 2 - this.simulationDetailsView.height;
     }
 }
 
