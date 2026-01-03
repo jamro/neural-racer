@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import ProgressBar from '../ui/ProgressBar';
-import NetworkPreview from '../ui/NetworkPreview';
+import RichNetworkPreview from '../ui/RichNetworkPreview';
 
 class SimulationDetailsView extends PIXI.Container {
 
@@ -8,11 +8,10 @@ class SimulationDetailsView extends PIXI.Container {
     super();
     this.bg = new PIXI.Graphics();
     this.addChild(this.bg);
-    this.scaleView(500, 250);
 
     this.statusTextField = new PIXI.Text();
     this.statusTextField.style = { 
-      fontFamily: 'Courier New',
+      fontFamily: 'Exo2',
       fontSize: 12, 
       lineHeight: 16,
       fill: 0xffffff 
@@ -23,7 +22,7 @@ class SimulationDetailsView extends PIXI.Container {
 
     this.historyTextField = new PIXI.Text();
     this.historyTextField.style = { 
-      fontFamily: 'Courier New',
+      fontFamily: 'Exo2',
       fontSize: 12, 
       lineHeight: 16,
       fill: 0xffffff 
@@ -43,10 +42,12 @@ class SimulationDetailsView extends PIXI.Container {
     this.statusProgressBar.controlWidth = 230;
     this.statusProgressBar.colors = [0xff0000, 0xffffff, 0x8888ff];
 
-    this.networkPreview = new NetworkPreview();
+    this.networkPreview = new RichNetworkPreview();
     this.networkPreview.x = 600;
-    this.networkPreview.y = 10;
+    this.networkPreview.y = 0;
     this.addChild(this.networkPreview);
+
+    this.scaleView(500, 200);
 
     setInterval(() => {
         this.fps = this.fpsCounter;
@@ -106,12 +107,14 @@ class SimulationDetailsView extends PIXI.Container {
   }
 
   scaleView(width, height) {
+    const barHeight = 190;
     this.bg.clear()
-    this.bg.rect(0, 0, width, 200);
+    this.bg.rect(0, 0, width, barHeight);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
     });
+    this.networkPreview.scaleView(Math.max(100,width - this.networkPreview.x), barHeight);
   }
 
   onTick(delta) {

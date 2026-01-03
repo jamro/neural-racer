@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js';
 
 const CANVAS_WIDTH = 300;
-const CANVAS_HEIGHT = 180;
-const NODE_RADIUS = 3;
+const CANVAS_HEIGHT = 170;
+const NODE_RADIUS = 3.5;
 const MIN_NODE_OUTLINE_WIDTH = 0;
 const MAX_NODE_OUTLINE_WIDTH = 1;
 const MIN_CONNECTION_ALPHA = 0;
@@ -19,6 +19,14 @@ class NetworkPreview extends PIXI.Container {
         this.hiddenLayerColumns = hiddenLayerColumns;
         this.inputNeuronGroups = inputNeuronGroups;
         this.addChild(this.canvas);
+    }
+
+    get canvasWidth() {
+        return CANVAS_WIDTH;
+    }
+
+    get canvasHeight() {
+        return CANVAS_HEIGHT;
     }
 
     renderView(network, genome = null, activations = null) {
@@ -135,7 +143,7 @@ class NetworkPreview extends PIXI.Container {
             layer === numLayers - 1 ? 1 + Math.max(0, numLayers - 2) * this.hiddenLayerColumns :
             1 + (layer - 1) * this.hiddenLayerColumns + Math.floor(node / nodesPerColumn);
         
-        const x = totalNumColumns > 1 ? columnIndex * columnSpacing : CANVAS_WIDTH / 2;
+        let x = totalNumColumns > 1 ? columnIndex * columnSpacing : CANVAS_WIDTH / 2;
         
         let y;
         if (layer === 0) {
@@ -153,6 +161,13 @@ class NetworkPreview extends PIXI.Container {
             const availableHeight = CANVAS_HEIGHT - 2 * NODE_RADIUS;
             const nodeSpacing = nodesInColumn > 1 ? availableHeight / (nodesInColumn - 1) : 0;
             y = nodesInColumn === 1 ? CANVAS_HEIGHT / 2 : NODE_RADIUS + columnNodeIndex * nodeSpacing;
+            
+            // For hidden layers, offset x position based on even/odd node index
+            if (node % 2 === 0) {
+                x -= NODE_RADIUS;
+            } else {
+                x += NODE_RADIUS;
+            }
         }
         
         return { x, y: Math.max(NODE_RADIUS, Math.min(CANVAS_HEIGHT - NODE_RADIUS, y)) };
