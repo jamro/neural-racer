@@ -3,10 +3,15 @@ import {
   CONNECTION_LAYER_NORM_PERCENTILE,
   CONNECTION_KEEP_TOP_K,
   CONNECTION_KEEP_TOP_K_OUT,
-  CONNECTION_KEEP_THRESHOLD_RATIO
+  CONNECTION_KEEP_THRESHOLD_RATIO,
+  CONNECTION_ALPHA_MAX,
+  CONNECTION_WIDTH_MIN,
+  CONNECTION_WIDTH_MAX,
+  ARTIFICIAL_INPUT_ALPHA_MIN,
+  ARTIFICIAL_INPUT_WIDTH_MIN
 } from '../NetworkPreviewConstants.js';
 import { getColorForValue } from '../utils.js';
-import { percentile } from './math.js';
+import { clamp01, percentile } from './math.js';
 import {
   computeDownstreamInfluence,
   computeDownstreamInfluenceVectors,
@@ -180,27 +185,6 @@ export function drawConnections({
 
   // Input -> intermediate (1:1)
   if (inputSize > 0 && visibleCount > 0) {
-    const inputImportances = [];
-    for (let v = 0; v < visibleCount; v++) {
-      const actualIdx = visibleInputIndices ? visibleInputIndices[v] : v;
-      const inputActivation = activations?.[0]?.[actualIdx] ?? 1.0;
-      const down = (influence[0][actualIdx] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[actualIdx]);
-      inputImportances.push(Math.abs(inputActivation) * down);
-    }
-    const inputNorm = percentile(inputImportances, CONNECTION_LAYER_NORM_PERCENTILE);
-    const inputUpper = percentile(inputImportances, 0.995);
-    const inputKeepThreshold = inputNorm * CONNECTION_KEEP_THRESHOLD_RATIO;
-
-    const topSet = new Set();
-    {
-      const ranked = inputImportances
-        .map((importance, v) => ({ v, importance }))
-        .sort((a, b) => b.importance - a.importance);
-      for (let k = 0; k < Math.min(CONNECTION_KEEP_TOP_K_OUT, ranked.length); k++) {
-        if (ranked[k].importance > 0) topSet.add(ranked[k].v);
-      }
-    }
-
     for (let v = 0; v < visibleCount; v++) {
       const actualIdx = visibleInputIndices ? visibleInputIndices[v] : v;
       const inputPos = positionCalculator.getNodePosition(
@@ -210,12 +194,13 @@ export function drawConnections({
         -1, actualIdx, inputSize, numLayers, totalNumColumns, columnSpacing, groupSizes, true
       );
 
-      const signal = activations?.[0]?.[actualIdx] ?? 1.0;
-      const down = (influence[0][actualIdx] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[actualIdx]);
-      const importance = Math.abs(signal) * down;
-
+      // Artificial input connections: light up directly from the raw input signal in [-1, 1].
+      // This is the ONLY place we do this; all other layers keep the existing importance-based logic.
+      const signal = activations?.[0]?.[actualIdx];
       const connectionColor = getColorForValue(signal);
-      const { alpha, width } = connectionStyleFromImportance(importance, inputNorm, inputUpper, topSet.has(v));
+      const t = signal !== undefined ? clamp01(Math.abs(signal)) : null;
+      const alpha = t === null ? null : (ARTIFICIAL_INPUT_ALPHA_MIN + (CONNECTION_ALPHA_MAX - ARTIFICIAL_INPUT_ALPHA_MIN) * t);
+      const width = t === null ? null : (ARTIFICIAL_INPUT_WIDTH_MIN + (CONNECTION_WIDTH_MAX - ARTIFICIAL_INPUT_WIDTH_MIN) * t);
       const { idx: outIdx, dominance } = getDominantOutput(outInfluenceVec[0]?.[actualIdx]);
       const bundleY = getBundleYOffset(outIdx, dominance, outCount);
 
@@ -224,7 +209,54 @@ export function drawConnections({
       const curveOffset = Math.abs(endX - startX) * 0.3;
 
       const key = edgeKeyInputToIntermediate(actualIdx);
-      const isSignificant = importance >= inputKeepThreshold;
+      // If activations aren't provided, fall back to the old decluttered behavior.
+      if (t === null) {
+        const signalFallback = activations?.[0]?.[actualIdx] ?? 1.0;
+        const connectionColorFallback = getColorForValue(signalFallback);
+        const inputImportances = [];
+        for (let vv = 0; vv < visibleCount; vv++) {
+          const aIdx = visibleInputIndices ? visibleInputIndices[vv] : vv;
+          const inputActivation = activations?.[0]?.[aIdx] ?? 1.0;
+          const down = (influence[0][aIdx] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[aIdx]);
+          inputImportances.push(Math.abs(inputActivation) * down);
+        }
+        const inputNorm = percentile(inputImportances, CONNECTION_LAYER_NORM_PERCENTILE);
+        const inputUpper = percentile(inputImportances, 0.995);
+        const inputKeepThreshold = inputNorm * CONNECTION_KEEP_THRESHOLD_RATIO;
+
+        const topSet = new Set();
+        {
+          const ranked = inputImportances
+            .map((importance, vv) => ({ v: vv, importance }))
+            .sort((a, b) => b.importance - a.importance);
+          for (let k = 0; k < Math.min(CONNECTION_KEEP_TOP_K_OUT, ranked.length); k++) {
+            if (ranked[k].importance > 0) topSet.add(ranked[k].v);
+          }
+        }
+
+        const down = (influence[0][actualIdx] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[actualIdx]);
+        const importance = Math.abs(signalFallback) * down;
+        const { alpha: a2, width: w2 } = connectionStyleFromImportance(importance, inputNorm, inputUpper, topSet.has(v));
+        const isSignificant = importance >= inputKeepThreshold;
+        drawWithFade({
+          edgeFadeState,
+          key,
+          isSignificant,
+          strokeStyle: { color: connectionColorFallback, width: w2, alpha: a2 },
+          drawPath: (style) => {
+            canvas.moveTo(startX, inputPos.y);
+            canvas.bezierCurveTo(
+              startX + curveOffset, inputPos.y + bundleY,
+              endX - curveOffset, intermediatePos.y + bundleY,
+              endX, intermediatePos.y
+            );
+            canvas.stroke(style);
+          }
+        });
+        continue;
+      }
+
+      const isSignificant = alpha > 1e-3;
       drawWithFade({
         edgeFadeState,
         key,
@@ -246,33 +278,6 @@ export function drawConnections({
   // Extra artificial edges: from visible artificial sources -> skipped real input neuron.
   // These are purely explanatory edges, not real network weights.
   if (inputSize > 0 && visibleCount > 0 && extraEdges.length) {
-    const extraImportances = [];
-    for (const e of extraEdges) {
-      const fromActual = e?.fromActual;
-      const toActual = e?.toActual;
-      if (!Number.isInteger(fromActual) || !Number.isInteger(toActual)) continue;
-      if (fromActual < 0 || fromActual >= inputSize) continue;
-      if (toActual < 0 || toActual >= inputSize) continue;
-      const signal = activations?.[0]?.[fromActual] ?? 1.0;
-      // Relevancy: how important is the *target* real input (downstream influence),
-      // modulated by the source activation magnitude.
-      const down = (influence[0][toActual] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[toActual]);
-      extraImportances.push(Math.abs(signal) * down);
-    }
-    const extraNorm = percentile(extraImportances, CONNECTION_LAYER_NORM_PERCENTILE);
-    const extraUpper = percentile(extraImportances, 0.995);
-    const extraKeepThreshold = extraNorm * CONNECTION_KEEP_THRESHOLD_RATIO;
-
-    const topSet = new Set();
-    {
-      const ranked = extraImportances
-        .map((importance, idx) => ({ idx, importance }))
-        .sort((a, b) => b.importance - a.importance);
-      for (let k = 0; k < Math.min(CONNECTION_KEEP_TOP_K_OUT, ranked.length); k++) {
-        if (ranked[k].importance > 0) topSet.add(ranked[k].idx);
-      }
-    }
-
     let edgeIdx = -1;
     for (const e of extraEdges) {
       edgeIdx++;
@@ -291,11 +296,12 @@ export function drawConnections({
         -1, toActual, inputSize, numLayers, totalNumColumns, columnSpacing, groupSizes, true
       );
 
-      const signal = activations?.[0]?.[fromActual] ?? 1.0;
+      // Artificial extra edges: light up directly from the raw source input in [-1, 1].
+      const signal = activations?.[0]?.[fromActual];
       const connectionColor = getColorForValue(signal);
-      const down = (influence[0][toActual] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[toActual]);
-      const importance = Math.abs(signal) * down;
-      const { alpha, width } = connectionStyleFromImportance(importance, extraNorm, extraUpper, topSet.has(edgeIdx));
+      const t = signal !== undefined ? clamp01(Math.abs(signal)) : null;
+      const alpha = t === null ? null : (ARTIFICIAL_INPUT_ALPHA_MIN + (CONNECTION_ALPHA_MAX - ARTIFICIAL_INPUT_ALPHA_MIN) * t);
+      const width = t === null ? null : (ARTIFICIAL_INPUT_WIDTH_MIN + (CONNECTION_WIDTH_MAX - ARTIFICIAL_INPUT_WIDTH_MIN) * t);
       const { idx: outIdx, dominance } = getDominantOutput(outInfluenceVec[0]?.[toActual]);
       const bundleY = getBundleYOffset(outIdx, dominance, outCount);
       const startX = inputPos.x + NODE_RADIUS;
@@ -303,7 +309,59 @@ export function drawConnections({
       const curveOffset = Math.abs(endX - startX) * 0.25;
 
       const key = edgeKeyExtra(fromActual, toActual);
-      const isSignificant = importance >= extraKeepThreshold;
+      // If activations aren't provided, fall back to the old decluttered behavior.
+      if (t === null) {
+        const signalFallback = activations?.[0]?.[fromActual] ?? 1.0;
+        const connectionColorFallback = getColorForValue(signalFallback);
+        const extraImportances = [];
+        for (const ee of extraEdges) {
+          const fa = ee?.fromActual;
+          const ta = ee?.toActual;
+          if (!Number.isInteger(fa) || !Number.isInteger(ta)) continue;
+          if (fa < 0 || fa >= inputSize) continue;
+          if (ta < 0 || ta >= inputSize) continue;
+          const sig2 = activations?.[0]?.[fa] ?? 1.0;
+          const down2 = (influence[0][ta] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[ta]);
+          extraImportances.push(Math.abs(sig2) * down2);
+        }
+        const extraNorm = percentile(extraImportances, CONNECTION_LAYER_NORM_PERCENTILE);
+        const extraUpper = percentile(extraImportances, 0.995);
+        const extraKeepThreshold = extraNorm * CONNECTION_KEEP_THRESHOLD_RATIO;
+
+        const topSet = new Set();
+        {
+          const ranked = extraImportances
+            .map((importance, idx) => ({ idx, importance }))
+            .sort((a, b) => b.importance - a.importance);
+          for (let k = 0; k < Math.min(CONNECTION_KEEP_TOP_K_OUT, ranked.length); k++) {
+            if (ranked[k].importance > 0) topSet.add(ranked[k].idx);
+          }
+        }
+
+        const sig2 = signalFallback;
+        const down2 = (influence[0][toActual] || 0) * downstreamImpactFactor(outInfluenceVec[0]?.[toActual]);
+        const importance = Math.abs(sig2) * down2;
+        const { alpha: a2, width: w2 } = connectionStyleFromImportance(importance, extraNorm, extraUpper, topSet.has(edgeIdx));
+        const isSignificant = importance >= extraKeepThreshold;
+        drawWithFade({
+          edgeFadeState,
+          key,
+          isSignificant,
+          strokeStyle: { color: connectionColorFallback, width: w2, alpha: a2 },
+          drawPath: (style) => {
+            canvas.moveTo(startX, inputPos.y);
+            canvas.bezierCurveTo(
+              startX + curveOffset, inputPos.y + bundleY,
+              endX - curveOffset, intermediatePos.y + bundleY,
+              endX, intermediatePos.y
+            );
+            canvas.stroke(style);
+          }
+        });
+        continue;
+      }
+
+      const isSignificant = alpha > 1e-3;
       drawWithFade({
         edgeFadeState,
         key,

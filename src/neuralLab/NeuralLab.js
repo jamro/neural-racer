@@ -3,30 +3,6 @@ import RichNetworkPreview from '../ui/RichNetworkPreview';
 import Slider from '../ui/Slider';
 import RadarBeamSlider from '../ui/RadarBeamSlider';
 
-const INPUT_LABELS = [
-  "Steering Wheel",
-  "Gas Pedal",
-  "Yaw Rate",
-  "Slip Ratio",
-  "Speed",
-]
-
-const INPUT_RANGES = [
-  [-1, 1],
-  [-1, 1],
-  [-4, 4],
-  [-1.5, 1.5],
-  [0, 200],
-]
-
-const INPUT_DEFAULTS = [
-  0,
-  0.2,
-  0,
-  0,
-  60
-]
-
 class NeuralLab extends PIXI.Container {
   constructor(car) {
     super();
@@ -40,39 +16,91 @@ class NeuralLab extends PIXI.Container {
     this.radarBeamSlider.x = 400;
     this.radarBeamSlider.y = 500;
     this.radarBeamSlider.on('change', (value) => {
-      for (let i = 0; i < 9; i++) {
-        this.inputs[i] = value[i];
-      }
       this.runNetwork();
     });
 
-    this.inputs =  Array(INPUT_LABELS.length+9).fill(0)
-    for (let i = 0; i < 9; i++) {
-      const beamValues = this.radarBeamSlider.getValues();
-      this.inputs[i] = beamValues[i];
-    }
-    for(let i = 0; i < INPUT_LABELS.length; i++) {
-      this.inputs[i+9] = INPUT_DEFAULTS[i];
-    }
+    this.speedSlider = new Slider({
+      min: 0,
+      max: 200,
+      value: 60,
+      label: 'Speed',
+      width: 200,
+      height: 20,
+      rightScaleLabel: 'MAX',
+      leftScaleLabel: 'STOP',
+      formatter: (value) => Math.round(value) + ' km/h',
+    });
+    this.addChild(this.speedSlider);
+    this.speedSlider.on('change', (value) => this.runNetwork());
+    this.speedSlider.x = 100;
+    this.speedSlider.y = 320;
+
+    this.throttleSlider = new Slider({
+      min: -1,
+      max: 1,
+      value: 0.5,
+      label: 'Throttle',
+      width: 200,
+      height: 20,
+      rightScaleLabel: 'Gas',
+      leftScaleLabel: 'Break',
+      formatter: (value) => Math.round(value * 100) + '%',
+    });
+    this.addChild(this.throttleSlider);
+    this.throttleSlider.on('change', (value) => this.runNetwork());
+    this.throttleSlider.x = 100;
+    this.throttleSlider.y = 370;
+
+    this.slipRatioSlider = new Slider({
+      min: -0.5,
+      max: 0.5,
+      value: 0,
+      label: 'Slip Ratio',
+      width: 200,
+      height: 20,
+      rightScaleLabel: 'Left',
+      leftScaleLabel: 'Right',
+      formatter: (value) => Math.round(value * 200) + '%',
+    });
+    this.addChild(this.slipRatioSlider);
+    this.slipRatioSlider.on('change', (value) => this.runNetwork());
+    this.slipRatioSlider.x = 100;
+    this.slipRatioSlider.y = 470;
+
+    this.yawRateSlider = new Slider({
+      min: -2,
+      max: 2,
+      value: 0,
+      label: 'Yaw Rate',
+      width: 200,
+      height: 20,
+      rightScaleLabel: 'CCW',
+      leftScaleLabel: 'CW',
+      formatter: (value) => Math.round(value * 180 / Math.PI,) + '°/s',
+    });
+    this.addChild(this.yawRateSlider);
+    this.yawRateSlider.on('change', (value) => this.runNetwork());
+    this.yawRateSlider.x = 100;
+    this.yawRateSlider.y = 580;
+    
+    this.turnSlider = new Slider({
+      min: -1,
+      max: 1,
+      value: 0,
+      label: 'Steering Wheel',
+      width: 200,
+      height: 20,
+      rightScaleLabel: 'Right',
+      leftScaleLabel: 'Left',
+    });
+    this.addChild(this.turnSlider);
+    this.turnSlider.on('change', (value) => this.runNetwork());
+    this.turnSlider.x = 100;
+    this.turnSlider.y = 630;
 
     this.networkPreview = new RichNetworkPreview();
     this.addChild(this.networkPreview);
     this.runNetwork()
-
-    for (let i = 0; i < INPUT_LABELS.length; i++) {
-      const slider = new Slider();
-      this.addChild(slider);
-      slider.x = 700;
-      slider.y = 200 + i * 45;
-      slider.min = INPUT_RANGES[i][0];
-      slider.max = INPUT_RANGES[i][1];
-      slider.value = INPUT_DEFAULTS[i];
-      slider.label = INPUT_LABELS[i];
-      slider.on('change', (value) => {
-        this.inputs[i+9] = value;
-        this.runNetwork();
-      });
-    }
   }
 
   scaleView(width, height) {
@@ -83,13 +111,17 @@ class NeuralLab extends PIXI.Container {
 
   runNetwork() {
     const inputs = this.car.inputsNormalizer.normalize(
-      this.inputs.slice(0, 9),
-      this.inputs[13]/3.6,
-      this.inputs[9],
-      this.inputs[10],
-      this.inputs[11],
-      this.inputs[12]
+      this.radarBeamSlider.getValues(),
+      this.speedSlider.value/3.6,
+      this.turnSlider.value,
+      this.throttleSlider.value,
+      this.yawRateSlider.value,
+      this.slipRatioSlider.value,
+      true
     )
+
+    console.log(inputs.map(input => input.toFixed(2)));
+
     this.car.neuralNet.forward(inputs);
   }
 

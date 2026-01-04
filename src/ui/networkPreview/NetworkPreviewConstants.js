@@ -46,6 +46,13 @@ export const NODE_OUTLINE_ALPHA_MIN = 0.08;
 export const NODE_OUTLINE_ALPHA_MAX = 0.9;
 export const NODE_OUTLINE_ALPHA_EXPONENT = 0.8;
 
+// Artificial input layer (first visual column) alpha floor.
+// This applies only to the artificial input nodes and the two "artificial" connection sections:
+// - artificial input -> intermediate (real input column)
+// - extraEdges (artificial sources -> skipped real input neuron)
+export const ARTIFICIAL_INPUT_ALPHA_MIN = 0.2;
+export const ARTIFICIAL_INPUT_WIDTH_MIN = 0.5;
+
 // Output-focused bundling: bend curves toward their dominant output (e.g. Turn vs Throttle)
 export const CONNECTION_BUNDLING_ENABLED = true;
 export const CONNECTION_BUNDLE_STRENGTH = 15; // px offset applied to bezier control points

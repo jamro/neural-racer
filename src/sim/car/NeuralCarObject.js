@@ -68,8 +68,6 @@ class NeuralCarObject extends CarObject {
         this.model.slipRatio
       )
 
-
-
       const outputs = this.neuralNet.forward(inputs);
       
       const turnOutput = outputs[0];

@@ -9,7 +9,8 @@ import {
   NODE_FILL_ALPHA_EXPONENT,
   NODE_OUTLINE_ALPHA_MIN,
   NODE_OUTLINE_ALPHA_MAX,
-  NODE_OUTLINE_ALPHA_EXPONENT
+  NODE_OUTLINE_ALPHA_EXPONENT,
+  ARTIFICIAL_INPUT_ALPHA_MIN
 } from '../NetworkPreviewConstants.js';
 import { getColorForValue } from '../utils.js';
 import { clamp01, computeLayerNorms, percentile } from './math.js';
@@ -113,14 +114,25 @@ export function drawNodes({
       const weightedSum = isInputLayer ? 0 : layerWeightedSums[actualIdx];
 
       const absSignal = outputSignal !== undefined ? Math.abs(outputSignal) : 0;
+      // IMPORTANT: Artificial input layer (first visual column) should "light up" directly from
+      // the raw input value which is expected to be in [-1, 1]. We map linearly using |x|.
+      // All other layers keep the existing per-layer robust normalization behavior.
       const normalizedOutputBase = outputSignal !== undefined ? clamp01(absSignal / sigNorm) : 0;
-      const normalizedOutput = isOutputLayer ? Math.sqrt(normalizedOutputBase) : normalizedOutputBase;
+      const normalizedOutput = isInputLayer
+        ? clamp01(absSignal) // linear mapping for inputs in [-1, 1]
+        : (isOutputLayer ? Math.sqrt(normalizedOutputBase) : normalizedOutputBase);
       const normalizedInputSum = weightedSum !== undefined && weightedInputSums
         ? clamp01(Math.abs(weightedSum) / sumNorm)
         : 0;
 
       const fillAlpha = outputSignal !== undefined
-        ? NODE_FILL_ALPHA_MIN + (NODE_FILL_ALPHA_MAX - NODE_FILL_ALPHA_MIN) * Math.pow(normalizedOutput, NODE_FILL_ALPHA_EXPONENT)
+        ? (
+          isInputLayer
+            // Linear alpha response for the artificial input layer.
+            ? ARTIFICIAL_INPUT_ALPHA_MIN + (NODE_FILL_ALPHA_MAX - ARTIFICIAL_INPUT_ALPHA_MIN) * normalizedOutput
+            // Preserve existing curve for the rest.
+            : NODE_FILL_ALPHA_MIN + (NODE_FILL_ALPHA_MAX - NODE_FILL_ALPHA_MIN) * Math.pow(normalizedOutput, NODE_FILL_ALPHA_EXPONENT)
+        )
         : 0.2;
       const strokeAlpha = weightedSum !== undefined && weightedInputSums
         ? NODE_OUTLINE_ALPHA_MIN + (NODE_OUTLINE_ALPHA_MAX - NODE_OUTLINE_ALPHA_MIN) * Math.pow(normalizedInputSum, NODE_OUTLINE_ALPHA_EXPONENT)

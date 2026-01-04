@@ -21,6 +21,11 @@ const TRACK_BACKGROUND_ALPHA = 0.2;
 // Bar (filled) color depends on sign of current value
 const TRACK_FILL_COLOR_POSITIVE = 0xFF6600;
 const TRACK_FILL_COLOR_NEGATIVE = 0x6666FF;
+// Scale label (small text under slider)
+const SCALE_LABEL_COLOR = 0x888888;
+const SCALE_LABEL_FONT_SIZE = 8;
+const SCALE_LABEL_LINE_HEIGHT = 12;
+const SCALE_LABEL_PADDING_TOP_PX = -8;
 
 /**
  * Simple PixiJS slider (Pixi v8 friendly).
@@ -35,10 +40,13 @@ class Slider extends PIXI.Container {
    * @param {number} [opts.max=1]
    * @param {number} [opts.value=opts.min]
    * @param {string} [opts.label='']
+   * @param {string} [opts.leftScaleLabel=''] Optional small text rendered under the left side of the slider track.
+   * @param {string} [opts.rightScaleLabel=''] Optional small text rendered under the right side of the slider track.
    * @param {number} [opts.width=200]
    * @param {number} [opts.height=20]
    * @param {number|null} [opts.step=null] If provided, value will snap to increments of step.
-   * @param {(value:number)=>string} [opts.valueFormatter] Format displayed value (defaults to a compact rounding).
+   * @param {(value:number)=>string} [opts.formatter] Format displayed value (defaults to `toFixed(2)`).
+   * @param {(value:number)=>string} [opts.valueFormatter] Backward-compatible alias for `formatter`.
    * @param {object} [opts.textStyle] PIXI.Text style overrides.
    * @param {object} [opts.colors]
    * @param {number} [opts.colors.trackBg]
@@ -58,9 +66,12 @@ class Slider extends PIXI.Container {
       max = 1,
       value = min,
       label = '',
+      leftScaleLabel = '',
+      rightScaleLabel = '',
       width = 200,
       height = 20,
       step = null,
+      formatter = null,
       valueFormatter = null,
       textStyle = {},
       colors = {},
@@ -70,17 +81,22 @@ class Slider extends PIXI.Container {
     this._max = max;
     this._value = value;
     this._label = label;
+    this._leftScaleLabel = leftScaleLabel ?? '';
+    this._rightScaleLabel = rightScaleLabel ?? '';
     this._width = width;
     this._height = height;
     this._step = step;
+    const pickedFormatter =
+      (typeof formatter === 'function' && formatter) ||
+      (typeof valueFormatter === 'function' && valueFormatter) ||
+      null;
     this._valueFormatter =
-      typeof valueFormatter === 'function'
-        ? valueFormatter
-        : (v) => {
-            // Compact display that avoids float noise (esp. when snapping).
-            const rounded = Math.round(v * 1000) / 1000;
-            return String(rounded);
-          };
+      pickedFormatter ||
+      ((v) => {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return '';
+        return n.toFixed(2);
+      });
 
     this._colors = {
       // Defaults match RadarBeamSlider style; can be overridden via opts.colors
@@ -101,6 +117,7 @@ class Slider extends PIXI.Container {
     this._pointerId = null;
 
     this._textLineHeight = 16;
+    this._scaleTextLineHeight = SCALE_LABEL_LINE_HEIGHT;
 
     this.labelTextField = new PIXI.Text();
     this.labelTextField.style = {
@@ -127,11 +144,41 @@ class Slider extends PIXI.Container {
     if (this.valueTextField.anchor?.set) this.valueTextField.anchor.set(1, 0);
     this.addChild(this.valueTextField);
 
-    // Mask to ensure text never renders outside the track width.
+    // Masks to ensure text never renders outside the track width.
     this._textMask = new PIXI.Graphics();
     this.addChild(this._textMask);
     this.labelTextField.mask = this._textMask;
     this.valueTextField.mask = this._textMask;
+
+    this.leftScaleLabelTextField = new PIXI.Text();
+    this.leftScaleLabelTextField.style = {
+      fontFamily: 'Exo2',
+      fontSize: SCALE_LABEL_FONT_SIZE,
+      lineHeight: this._scaleTextLineHeight,
+      fill: SCALE_LABEL_COLOR,
+      ...textStyle,
+    };
+    this.leftScaleLabelTextField.text = this._leftScaleLabel || '';
+    if (this.leftScaleLabelTextField.anchor?.set) this.leftScaleLabelTextField.anchor.set(0, 0);
+    this.addChild(this.leftScaleLabelTextField);
+
+    this.rightScaleLabelTextField = new PIXI.Text();
+    this.rightScaleLabelTextField.style = {
+      fontFamily: 'Exo2',
+      fontSize: SCALE_LABEL_FONT_SIZE,
+      lineHeight: this._scaleTextLineHeight,
+      align: 'right',
+      fill: SCALE_LABEL_COLOR,
+      ...textStyle,
+    };
+    this.rightScaleLabelTextField.text = this._rightScaleLabel || '';
+    if (this.rightScaleLabelTextField.anchor?.set) this.rightScaleLabelTextField.anchor.set(1, 0);
+    this.addChild(this.rightScaleLabelTextField);
+
+    this._scaleTextMask = new PIXI.Graphics();
+    this.addChild(this._scaleTextMask);
+    this.leftScaleLabelTextField.mask = this._scaleTextMask;
+    this.rightScaleLabelTextField.mask = this._scaleTextMask;
 
     this.trackBg = new PIXI.Graphics();
     this.trackFill = new PIXI.Graphics();
@@ -195,6 +242,26 @@ class Slider extends PIXI.Container {
   set label(v) {
     this._label = v ?? '';
     this.labelTextField.text = this._label;
+    this.redraw();
+  }
+
+  get leftScaleLabel() {
+    return this._leftScaleLabel;
+  }
+
+  set leftScaleLabel(v) {
+    this._leftScaleLabel = v ?? '';
+    this.leftScaleLabelTextField.text = this._leftScaleLabel;
+    this.redraw();
+  }
+
+  get rightScaleLabel() {
+    return this._rightScaleLabel;
+  }
+
+  set rightScaleLabel(v) {
+    this._rightScaleLabel = v ?? '';
+    this.rightScaleLabelTextField.text = this._rightScaleLabel;
     this.redraw();
   }
 
@@ -284,8 +351,12 @@ class Slider extends PIXI.Container {
     // Update value display early (affects layout width)
     this.valueTextField.text = this._valueFormatter(this._value);
 
-    const hasText = Boolean(this.labelTextField.text) || Boolean(this.valueTextField.text);
-    const textOffsetY = hasText ? this._textLineHeight : 0;
+    const hasTopText = Boolean(this.labelTextField.text) || Boolean(this.valueTextField.text);
+    const topTextOffsetY = hasTopText ? this._textLineHeight : 0;
+
+    const hasScaleText =
+      Boolean(this.leftScaleLabelTextField.text) || Boolean(this.rightScaleLabelTextField.text);
+    const scaleTextOffsetY = hasScaleText ? this._scaleTextLineHeight + SCALE_LABEL_PADDING_TOP_PX : 0;
 
     const padding = TRACK_PADDING_PX;
     const trackH = TRACK_HEIGHT_PX;
@@ -293,23 +364,23 @@ class Slider extends PIXI.Container {
 
     const trackX = padding;
     const trackW = Math.max(1, w - padding * 2);
-    const trackY = textOffsetY + Math.round(h / 2 - trackH / 2);
+    const trackY = topTextOffsetY + Math.round(h / 2 - trackH / 2);
 
     // Use a hitArea so the whole control is easily clickable (aligned with RadarBeamSlider padding feel).
     this.hitArea = new PIXI.Rectangle(
       -HIT_AREA_PADDING_PX,
       -HIT_AREA_PADDING_PX,
       w + HIT_AREA_PADDING_PX * 2,
-      textOffsetY + h + HIT_AREA_PADDING_PX * 2
+      topTextOffsetY + h + scaleTextOffsetY + HIT_AREA_PADDING_PX * 2
     );
 
     const t = this._valueToT(this._value);
     const t0 = this._valueToT(this._zeroValue());
     const knobX = trackX + trackW * t;
-    const knobY = textOffsetY + Math.round(h / 2);
+    const knobY = topTextOffsetY + Math.round(h / 2);
 
     // Layout text row
-    if (hasText) {
+    if (hasTopText) {
       this.labelTextField.x = trackX;
       this.labelTextField.y = 0;
       this.valueTextField.y = 0;
@@ -322,6 +393,21 @@ class Slider extends PIXI.Container {
     } else {
       // No text → clear mask to avoid stale geometry.
       this._textMask.clear();
+    }
+
+    // Layout scale labels under the slider
+    if (hasScaleText) {
+      const scaleY = topTextOffsetY + h + SCALE_LABEL_PADDING_TOP_PX;
+      this.leftScaleLabelTextField.x = trackX;
+      this.leftScaleLabelTextField.y = scaleY;
+      this.rightScaleLabelTextField.x = trackX + trackW;
+      this.rightScaleLabelTextField.y = scaleY;
+
+      this._scaleTextMask.clear();
+      this._scaleTextMask.rect(trackX, scaleY, trackW, this._scaleTextLineHeight);
+      this._scaleTextMask.fill({ color: 0xffffff, alpha: 1 });
+    } else {
+      this._scaleTextMask.clear();
     }
 
     this.trackBg.clear();
