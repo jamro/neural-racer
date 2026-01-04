@@ -97,6 +97,7 @@ class Evolution {
   }
 
   stopSimulation() {
+    if(!this.simulation) return;
     this.simulation.stop(); // Stop simulation loop
     this.simulation.stopRender(); // Stop render loop
   }
