@@ -100,8 +100,10 @@ class SimulationDetailsView extends PIXI.Container {
   setEvolutionHistory(evolutionHistory, trackName) {
     const history = evolutionHistory.getScoreHistoryForTrack(
       trackName,
-      ['maxScore', 'medianScore', 'completionRate']
+      ['maxScore', 'medianScore', 'completionRate', 'percentile25Score', 'percentile75Score']
     ).slice(-8);
+
+    console.log(history);
 
     this.historyTextField.text = "History:\n" + (history.map(h => h.epoch.toString().padStart(3, ' ') + ": ★ " + ((100*h.maxScore).toFixed(1).padStart(5, ' ')) + ", ≈ " + ((100*h.medianScore).toFixed(1).padStart(5, ' ')) + ", ✓ " + Math.round(100*h.completionRate).toString().padStart(3, ' ') + "%" ).join("\n") || "-")
   }

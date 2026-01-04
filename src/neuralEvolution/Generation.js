@@ -41,6 +41,8 @@ class Generation {
       this.overallScore = {
         averageScore: null,
         medianScore: null,
+        percentile25Score: null,
+        percentile75Score: null,
         minScore: null,
         maxScore: null,
         completionRate: null,
@@ -87,11 +89,15 @@ class Generation {
         }
       }
 
+      const sortedScores = [...this.scores].sort((a, b) => a - b);
+
       this.overallScore = {
         averageScore: this.scores.reduce((a, b) => a + b, 0) / this.cars.length,
-        medianScore: [...this.scores].sort((a, b) => a - b)[Math.floor(this.scores.length / 2)],
-        minScore: Math.min(...this.scores),
-        maxScore: Math.max(...this.scores),
+        medianScore: sortedScores[Math.floor(this.scores.length / 2)],
+        percentile25Score: sortedScores[Math.floor(this.scores.length * 0.25)],
+        percentile75Score: sortedScores[Math.floor(this.scores.length * 0.75)],
+        minScore: sortedScores[0],
+        maxScore: sortedScores[sortedScores.length - 1],
         completionRate: this.finishedCount / this.cars.length,
         averageSpeed: this.stats.reduce((a, b) => a + b.averageSpeed * b.progress, 0) / this.stats.reduce((a, b) => a + b.progress, 0),
       }
@@ -103,6 +109,8 @@ class Generation {
       this.overallScore = {
         averageScore: null,
         medianScore: null,
+        percentile25Score: null,
+        percentile75Score: null,
         minScore: null,
         maxScore: null,
         completionRate: null,
