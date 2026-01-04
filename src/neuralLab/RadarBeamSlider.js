@@ -22,7 +22,7 @@ const BEAM_COLOR = 0xffffff; // Color of the beam main/filled portion (white)
 const BEAM_WIDTH = 2; // Width of the beam lines
 const CLICKABLE_THRESHOLD = 10; // Clickable threshold distance from beam line in pixels (for easier interaction)
 const HIT_AREA_PADDING = 10; // Padding for the overall hit area in pixels
-const HEIGHT_MAX = 310; // Maximum distance beams can extend on y-axis (beams limited to [-HEIGHT_MAX/2, HEIGHT_MAX/2])
+const HEIGHT_MAX = 330; // Maximum distance beams can extend on y-axis (beams limited to [-HEIGHT_MAX/2, HEIGHT_MAX/2])
 const EPSILON = 1e-10; // Threshold for floating point comparison
 // Concentric range rings (background circles)
 const RING_COUNT = 10;
@@ -558,3 +558,4 @@ class RadarBeamSlider extends PIXI.Container {
 }
 
 export default RadarBeamSlider;
+

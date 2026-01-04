@@ -96,6 +96,7 @@ const TEXTURE_REGISTRY = {
     // User Interface textures
     ui_turn_icon: 'assets/img/turn_icon.png',
     ui_throttle_icon: 'assets/img/throttle_icon.png',
+    ui_slip_icon: 'assets/img/slip_icon.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -319,3 +320,5 @@ export async function loadUiTurnIconTexture() { return await loadTexture('ui_tur
 export function getUiTurnIconTexture() { return getTexture('ui_turn_icon'); }
 export async function loadUiThrottleIconTexture() { return await loadTexture('ui_throttle_icon'); }
 export function getUiThrottleIconTexture() { return getTexture('ui_throttle_icon'); }
+export async function loadUiSlipIconTexture() { return await loadTexture('ui_slip_icon'); }
+export function getUiSlipIconTexture() { return getTexture('ui_slip_icon'); }
