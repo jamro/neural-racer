@@ -1,25 +1,42 @@
 import * as PIXI from 'pixi.js';
-
+import { getShadowTexture, getCarTexture } from '../loaders/AssetLoader';
 
 const RADIUS_PIXELS = 250; // Radius of radar beams in pixels
-const MIN_DISTANCE_FROM_ORIGIN = 50; // Minimum distance from origin where sliders start (to prevent knob overlap)
+const MIN_DISTANCE_FROM_ORIGIN = 80; // Minimum distance from origin where sliders start (to prevent knob overlap)
+// Small inner segment drawn from each beam start back toward (0,0)
+const BEAM_INNER_STUB_LEN = MIN_DISTANCE_FROM_ORIGIN * 0.8; // pixels
+const BEAM_INNER_STUB_COLOR = 0xffffff;
+const BEAM_INNER_STUB_ALPHA = 0.2;
+const BEAM_INNER_STUB_WIDTH = 1;
 const KNOB_RADIUS = 5; // Radius of the knob/button in pixels
 const KNOB_COLOR = 0xFF6600; // Color of the knob fill (green)
 const KNOB_STROKE_COLOR = 0xffffff; // Color of the knob stroke
 const KNOB_STROKE_WIDTH = 2; // Width of the knob stroke
+// Knob glow (halo) styling
+const KNOB_GLOW_ALPHA = 0.18; // 0 disables glow
+const KNOB_GLOW_RADIUS_MULT = 2.4; // outer glow radius multiplier (relative to KNOB_RADIUS)
+const KNOB_GLOW_STEPS = 3; // number of layered circles to fake a soft glow
 // Beam colors and styling
 const BEAM_BACKGROUND_COLOR = 0xFF6600; // Color of the beam background (gray)
 const BEAM_COLOR = 0xffffff; // Color of the beam main/filled portion (white)
 const BEAM_WIDTH = 2; // Width of the beam lines
 const CLICKABLE_THRESHOLD = 10; // Clickable threshold distance from beam line in pixels (for easier interaction)
 const HIT_AREA_PADDING = 10; // Padding for the overall hit area in pixels
-const HEIGHT_MAX = 300; // Maximum distance beams can extend on y-axis (beams limited to [-HEIGHT_MAX/2, HEIGHT_MAX/2])
+const HEIGHT_MAX = 310; // Maximum distance beams can extend on y-axis (beams limited to [-HEIGHT_MAX/2, HEIGHT_MAX/2])
 const EPSILON = 1e-10; // Threshold for floating point comparison
 // Concentric range rings (background circles)
 const RING_COUNT = 10;
 const RING_COLOR = 0xffffff;
 const RING_ALPHA = 0.18;
 const RING_WIDTH = 1;
+// Scale labels on arcs (between 2nd and 3rd beam)
+const SCALE_MAJOR_STEP_M = 20; // meters
+const SCALE_LABEL_COLOR = 0x888888;
+const SCALE_LABEL_ALPHA = 0.8;
+const SCALE_LABEL_FONT_SIZE = 8;
+const SCALE_LABEL_OFFSET = 0; // pixels outward from the arc (0 => bottom edge sits on arc)
+// Where to place the scale: between beam N and N+1 (0-based). N=1 => between 2nd and 3rd beam.
+const SCALE_ANCHOR_PAIR_INDEX = 1;
 const TAU = Math.PI * 2;
 
 class RadarBeamSlider extends PIXI.Container {
@@ -65,11 +82,14 @@ class RadarBeamSlider extends PIXI.Container {
     this._draggingBeamIndex = null;
     this._pointerId = null;
 
-    // Create graphics for rings, beams and knobs
+    // Create graphics for rings, labels, beams and knobs
     this.ringsGraphics = new PIXI.Graphics();
+    this.scaleLabels = new PIXI.Container();
+    this._scaleLabelPool = [];
     this.beamsGraphics = new PIXI.Graphics();
     this.knobsGraphics = new PIXI.Graphics();
     this.addChild(this.ringsGraphics);
+    this.addChild(this.scaleLabels);
     this.addChild(this.beamsGraphics);
     this.addChild(this.knobsGraphics);
 
@@ -86,6 +106,7 @@ class RadarBeamSlider extends PIXI.Container {
     this._clipMask.fill({ color: 0xffffff, alpha: 1 });
     // Mask affects only rendering; it doesn't block pointer events (hitArea handles that).
     this.ringsGraphics.mask = this._clipMask;
+    this.scaleLabels.mask = this._clipMask;
     this.addChild(this._clipMask);
 
     // Set up hit area to cover the entire radar area (use max effective radius)
@@ -100,6 +121,17 @@ class RadarBeamSlider extends PIXI.Container {
     this.on('pointermove', this._onPointerMove, this);
     this.on('pointerup', this._onPointerUp, this);
     this.on('pointerupoutside', this._onPointerUp, this);
+
+
+    // add car graphic
+    this.carShadow = new PIXI.Sprite(getShadowTexture());
+    this.carShadow.anchor.set(0.5, 0.5);
+    this.addChild(this.carShadow);
+    this.car = new PIXI.Sprite(getCarTexture());
+    this.car.anchor.set(0.5, 0.5);
+    this.car.x = 0
+    this.carShadow.x = this.car.x;
+    this.addChild(this.car);
 
     this.redraw();
   }
@@ -300,6 +332,55 @@ class RadarBeamSlider extends PIXI.Container {
     });
   }
 
+  _metersToRingRadius(meters, maxEffectiveRadius) {
+    const denom = maxEffectiveRadius - MIN_DISTANCE_FROM_ORIGIN;
+    if (denom <= EPSILON) return MIN_DISTANCE_FROM_ORIGIN;
+    const t = Math.max(0, Math.min(1, meters / this.maxValue));
+    return MIN_DISTANCE_FROM_ORIGIN + t * denom;
+  }
+
+  _formatMetersLabel(meters) {
+    const rounded = Math.round(meters * 10) / 10;
+    return `${rounded}m`;
+  }
+
+  _getScaleLabel(idx) {
+    while (this._scaleLabelPool.length <= idx) {
+      const t = new PIXI.Text();
+      t.style = {
+        fontFamily: 'Exo2',
+        fontSize: SCALE_LABEL_FONT_SIZE,
+        fill: SCALE_LABEL_COLOR,
+      };
+      t.alpha = SCALE_LABEL_ALPHA;
+      // bottom-center anchor so the bottom edge lies on the arc at (x,y)
+      if (t.anchor?.set) t.anchor.set(0.5, 1);
+      this._scaleLabelPool.push(t);
+      this.scaleLabels.addChild(t);
+    }
+    const label = this._scaleLabelPool[idx];
+    label.visible = true;
+    return label;
+  }
+
+  _scaleAnchorAngleRad() {
+    // Default: between beam #2 and #3 (pair index 1).
+    const i = SCALE_ANCHOR_PAIR_INDEX;
+    if (!Array.isArray(this.radarBeamAngles) || this.radarBeamAngles.length < 2) return null;
+    if (i < 0 || i >= this.radarBeamAngles.length - 1) return null;
+
+    const a0 = this.radarBeamAngles[i];
+    const a1 = this.radarBeamAngles[i + 1];
+
+    // Midpoint along the shorter direction (unwrap a1 near a0)
+    const aa0 = this._normalizeAngleRad(a0);
+    let aa1 = this._normalizeAngleRad(a1);
+    let d = aa1 - aa0;
+    if (d > Math.PI) d -= TAU;
+    if (d < -Math.PI) d += TAU;
+    return aa0 + d * 0.5;
+  }
+
   /**
    * Get the closest beam index and distance to a point
    * @param {number} x - X coordinate in local space
@@ -338,6 +419,10 @@ class RadarBeamSlider extends PIXI.Container {
     this.ringsGraphics.clear();
     this.beamsGraphics.clear();
     this.knobsGraphics.clear();
+    // Hide pooled scale labels; will re-enable as needed
+    if (this._scaleLabelPool) {
+      for (const t of this._scaleLabelPool) t.visible = false;
+    }
 
     // Draw concentric rings (background)
     const maxEffectiveRadius = this.beamEffectiveRadii.length > 0
@@ -359,6 +444,26 @@ class RadarBeamSlider extends PIXI.Container {
       this._drawArc(MIN_DISTANCE_FROM_ORIGIN, arcStart, arcSpan);
     }
 
+    // Draw scale labels on arcs between 2nd and 3rd beam (rotated tangentially)
+    if (this._ringArc && this._ringArc.span > 0 && maxEffectiveRadius > MIN_DISTANCE_FROM_ORIGIN + EPSILON) {
+      const anchorAngle = this._scaleAnchorAngleRad();
+      const a = anchorAngle ?? (this._ringArc.start + this._ringArc.span); // fallback to arc end
+      const dirX = Math.cos(a);
+      const dirY = Math.sin(a);
+      const tangentRot = a + Math.PI / 2;
+
+      const majorStep = Math.max(1, Math.round(SCALE_MAJOR_STEP_M));
+      let labelIdx = 0;
+      for (let m = 0; m <= this.maxValue + EPSILON; m += majorStep) {
+        const r = this._metersToRingRadius(m, maxEffectiveRadius) + SCALE_LABEL_OFFSET;
+        const label = this._getScaleLabel(labelIdx++);
+        label.text = this._formatMetersLabel(m);
+        label.x = dirX * r;
+        label.y = dirY * r;
+        label.rotation = tangentRot;
+      }
+    }
+
       // Draw beams
     for (let i = 0; i < this.radarBeamAngles.length; i++) {
       const angle = this.radarBeamAngles[i];
@@ -368,6 +473,17 @@ class RadarBeamSlider extends PIXI.Container {
       // Calculate start and end points
       const start = this._getBeamStartPoint(i);
       const end = this._getBeamEndPoint(i);
+
+      // Draw short inner segment from beam start toward origin
+      const stubX = start.x - Math.cos(angle) * BEAM_INNER_STUB_LEN;
+      const stubY = start.y - Math.sin(angle) * BEAM_INNER_STUB_LEN;
+      this.beamsGraphics.moveTo(start.x, start.y);
+      this.beamsGraphics.lineTo(stubX, stubY);
+      this.beamsGraphics.stroke({
+        color: BEAM_INNER_STUB_COLOR,
+        width: BEAM_INNER_STUB_WIDTH,
+        alpha: BEAM_INNER_STUB_ALPHA,
+      });
 
       // Draw beam line (gray background)
       this.beamsGraphics.moveTo(start.x, start.y);
@@ -386,7 +502,19 @@ class RadarBeamSlider extends PIXI.Container {
       // Draw knob at current value position
       const knobX = Math.cos(angle) * pixelDistance;
       const knobY = Math.sin(angle) * pixelDistance;
-      
+
+      // Glow (soft halo behind knob)
+      const glowSteps = Math.max(0, Math.floor(KNOB_GLOW_STEPS));
+      if (KNOB_GLOW_ALPHA > 0 && glowSteps > 0 && KNOB_GLOW_RADIUS_MULT > 1) {
+        for (let s = glowSteps; s >= 1; s--) {
+          const t = s / glowSteps; // 1..(1/steps)
+          const r = KNOB_RADIUS * (1 + (KNOB_GLOW_RADIUS_MULT - 1) * t);
+          const alpha = KNOB_GLOW_ALPHA * t * t; // softer falloff
+          this.knobsGraphics.circle(knobX, knobY, r);
+          this.knobsGraphics.fill({ color: KNOB_COLOR, alpha });
+        }
+      }
+
       this.knobsGraphics.circle(knobX, knobY, KNOB_RADIUS);
       this.knobsGraphics.fill({ color: KNOB_COLOR });
       this.knobsGraphics.stroke({ color: KNOB_STROKE_COLOR, width: KNOB_STROKE_WIDTH });

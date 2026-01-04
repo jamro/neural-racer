@@ -37,7 +37,7 @@ class NeuralLab extends PIXI.Container {
 
     this.radarBeamSlider = new RadarBeamSlider(this.car.radarBeamAngles);
     this.addChild(this.radarBeamSlider);
-    this.radarBeamSlider.x = 200;
+    this.radarBeamSlider.x = 400;
     this.radarBeamSlider.y = 500;
     this.radarBeamSlider.on('change', (value) => {
       for (let i = 0; i < 9; i++) {
@@ -63,7 +63,7 @@ class NeuralLab extends PIXI.Container {
       const slider = new Slider();
       this.addChild(slider);
       slider.x = 700;
-      slider.y = 200 + i * 35;
+      slider.y = 200 + i * 45;
       slider.min = INPUT_RANGES[i][0];
       slider.max = INPUT_RANGES[i][1];
       slider.value = INPUT_DEFAULTS[i];
@@ -84,11 +84,11 @@ class NeuralLab extends PIXI.Container {
   runNetwork() {
     const inputs = this.car.inputsNormalizer.normalize(
       this.inputs.slice(0, 9),
-      this.inputs[13],
+      this.inputs[13]/3.6,
       this.inputs[9],
       this.inputs[10],
       this.inputs[11],
-      this.inputs[12]/3.6
+      this.inputs[12]
     )
     this.car.neuralNet.forward(inputs);
   }

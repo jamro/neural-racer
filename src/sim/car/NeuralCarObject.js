@@ -1,8 +1,6 @@
 import CarObject from './CarObject';
 import NeuralNet from '../../neuralEvolution/NeuralNet';
 import { NeuralNormalizer } from './neuralNormalizer';
-let debugMax = 0
-let debugMin = 0
 /**
  * Neural Network Architecture:
  * 
@@ -69,6 +67,8 @@ class NeuralCarObject extends CarObject {
         this.model.yawRate, 
         this.model.slipRatio
       )
+
+
 
       const outputs = this.neuralNet.forward(inputs);
       

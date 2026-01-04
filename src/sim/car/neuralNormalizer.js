@@ -97,7 +97,7 @@ export function normalizeSafeDirection(safeDirection, radarBeamAngles) {
 }
 
 export function normalizeYawRate(yawRate, yawRateMax) {
-  return Math.tanh(2 * yawRate / yawRateMax);
+  return Math.tanh(2 * yawRate / (0.5 * yawRateMax)); // use half of the yaw rate max to saturate the output better
 }
 
 export function normalizeSlipRatio(slipRatio, slipScale) {
