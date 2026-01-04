@@ -5,14 +5,14 @@ import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
 import { loadTextures, getTextureKeys } from './loaders/AssetLoader';
 import waitForFonts from './loaders/waitForFonts';
-import NeuralLab from '../neuralLab/NeuralLab';
+import NeuralLab from './neuralLab/NeuralLab';
 
 let app = null;
 let evolution = null;
 let neuralLab = null;
 let resizeHandler = null;
 
-const MODE = 'neuralLab'; // 'evolution' or 'neuralLab'
+const MODE = 'evolution'; // 'evolution' or 'neuralLab'
 
 /**
  * Initialize the application

@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
-import RichNetworkPreview from '../src/ui/RichNetworkPreview';
-import Slider from '../src/ui/Slider';
+import RichNetworkPreview from '../ui/RichNetworkPreview';
+import Slider from '../ui/Slider';
 
 const INPUT_LABELS = [
   "Beam #1",
@@ -17,9 +17,10 @@ const INPUT_LABELS = [
   "Left Right Balance",
   "Safe Direction",
   "Steering Wheel",
-  "Speed",
+  "Gas Pedal",
   "Yaw Rate",
   "Slip Ratio",
+  "Speed",
 ]
 
 const INPUT_RANGES = [
@@ -40,6 +41,7 @@ const INPUT_RANGES = [
   [0, 1],
   [-1, 1],
   [-1, 1],
+  [0, 1],
 ]
 
 class NeuralLab extends PIXI.Container {
@@ -50,12 +52,12 @@ class NeuralLab extends PIXI.Container {
     this.background = new PIXI.Graphics();
     this.addChild(this.background);
 
-    this.inputs =  Array(17).fill(0)
+    this.inputs =  Array(INPUT_LABELS.length).fill(0)
     this.networkPreview = new RichNetworkPreview();
     this.addChild(this.networkPreview);
     this.runNetwork()
 
-    for (let i = 0; i < 17; i++) {
+    for (let i = 0; i < INPUT_LABELS.length; i++) {
       const slider = new Slider();
       this.addChild(slider);
       slider.x = i % 2 === 0 ? 100 : 400;

@@ -62,13 +62,15 @@ export class NodePositionCalculator {
         // New mode: segment config (supports skipping + grouping).
         const segments = Array.isArray(cfg) ? cfg : [];
         const visibleInputIndices = [];
+        // `groupSizes` is an array of run lengths that sum to `visibleInputIndices.length`.
+        // IMPORTANT: each `seg` with `group:true` becomes its own run (even if consecutive),
+        // so separate grouped segments don't "glue" together after skipped indices are removed.
         const groupSizes = [];
         const skippedSources = new Map(); // skippedActualIdx -> Array<number> of source actual indices
 
-        const addIndex = (idx, inGroupedSegment) => {
+        const addIndex = (idx) => {
             if (idx < 0 || idx >= inputSize) return;
             visibleInputIndices.push(idx);
-            groupSizes.push(inGroupedSegment ? -1 : 1); // -1 => "belongs to current group run"
         };
 
         for (const seg of segments) {
@@ -90,7 +92,8 @@ export class NodePositionCalculator {
                 if (skip) {
                     if (sources && sources.length) skippedSources.set(seg.index, sources.slice());
                 } else {
-                    addIndex(seg.index, group);
+                    addIndex(seg.index);
+                    groupSizes.push(1);
                 }
                 continue;
             }
@@ -104,7 +107,15 @@ export class NodePositionCalculator {
                     }
                     continue;
                 }
-                for (let i = start; i <= end; i++) addIndex(i, group);
+                const count = Math.max(0, end - start + 1);
+                for (let i = start; i <= end; i++) addIndex(i);
+                // Grouped ranges become a single run (outline drawn when run > 1).
+                // Non-grouped ranges become individual runs (keeps previous behavior).
+                if (group) {
+                    groupSizes.push(count);
+                } else {
+                    for (let i = 0; i < count; i++) groupSizes.push(1);
+                }
                 continue;
             }
         }
@@ -113,25 +124,6 @@ export class NodePositionCalculator {
         if (visibleInputIndices.length === 0) {
             for (let i = 0; i < inputSize; i++) visibleInputIndices.push(i);
             for (let i = 0; i < inputSize; i++) groupSizes.push(1);
-        } else {
-            // Convert groupSizes markers (-1s) into actual group runs:
-            // - grouped runs become a single entry with run length (>=2)
-            // - individual entries remain size=1
-            const sizes = [];
-            let run = 0;
-            for (let i = 0; i < groupSizes.length; i++) {
-                const isGrouped = groupSizes[i] === -1;
-                if (isGrouped) {
-                    run++;
-                } else {
-                    if (run > 0) sizes.push(run);
-                    run = 0;
-                    sizes.push(1);
-                }
-            }
-            if (run > 0) sizes.push(run);
-            groupSizes.length = 0;
-            groupSizes.push(...sizes);
         }
 
         const actualToVisible = new Array(inputSize).fill(-1);

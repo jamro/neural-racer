@@ -18,13 +18,14 @@ import NeuralNet from '../../neuralEvolution/NeuralNet';
  *  9. Long Range Time To Collision (derived from Radar #4-#6 + Speed)
  * 10. Short Range Time To Collision (derived from Radar #4-#6 + Speed)
  * 11. Left Right Balance (derived from Radar, #1-#3 and #7-#9)
- * --- TURN GROUP ----
  * 12. Safe Direction (derived from Radar)
+ * --- STEERING GROUP ----
  * 13. Previous Turn Control
- * --- TRACTION GROUP ----
- * 14. Speed
+ * 14. Previous Throttle Control
  * 15. Yaw Rate
  * 16. Slip Ratio
+ * --- SPEED GROUP ----
+ * 17. Speed
  * 
  * Outputs:
  *  0. Turn
@@ -36,13 +37,14 @@ class NeuralCarObject extends CarObject {
         super();
 
         this.neuralNet = new NeuralNet(
-          [17, 32, 24, 2],
+          [18, 32, 24, 2],
           ["leaky_relu", "leaky_relu", "tanh"],
           genome
         );
         this.genome = this.neuralNet.genome;
 
         this.prevTurnControl = 0
+        this.prevThrottleControl = 0
     }
 
     calculateLeftRightBalance() {
@@ -142,10 +144,9 @@ class NeuralCarObject extends CarObject {
 
       // use previous turn control as input (index 13) 
       inputs.push(this.prevTurnControl);
-
-      // use speed as input (index 14)
-      const v01 = Math.min(Math.abs(this.speed) / this.maxSpeed, 1)
-      inputs.push(Math.sqrt(v01)) // sqrt to make small values more visible and give better control
+      
+      // use previous turn control as input (index 14) 
+      inputs.push(this.prevThrottleControl);
 
       // use yaw rate as input (index 15)
       const yawIn = Math.tanh(2 * this.model.yawRate / this.model.yawRateMax);
@@ -154,6 +155,11 @@ class NeuralCarObject extends CarObject {
       // use slip ratio as input (index 16)
       const slipScale = 0.5
       inputs.push(Math.max(-1, Math.min(1, this.model.slipRatio / slipScale)));
+
+      // use speed as input (index 17)
+      const v01 = Math.min(Math.abs(this.speed) / this.maxSpeed, 1)
+      inputs.push(Math.sqrt(v01)) // sqrt to make small values more visible and give better control
+
 
       const outputs = this.neuralNet.forward(inputs);
 
@@ -169,6 +175,7 @@ class NeuralCarObject extends CarObject {
       }
       this.turn(turnOutput);
       this.prevTurnControl = turnOutput;
+      this.prevThrottleControl = throttleOutput;
     }
 }
 

@@ -4,18 +4,16 @@ import { getUiTurnIconTexture, getUiThrottleIconTexture } from '../loaders/Asset
 import { COLOR_POSITIVE, COLOR_NEGATIVE } from './networkPreview/NetworkPreviewConstants';
 import CarSensorPreview from './CarSensorPreview';
 
-const LEFT_PADDING = 300;
+const LEFT_PADDING = 250;
 const RIGHT_PADDING = 80;
 const TOP_PADDING = 10;
 const BOTTOM_PADDING = 10;
 
 const LABELS_POS = [
-  0.18,
-  0.465,
-  0.605,
-  0.767,
+  0.2,
+  0.552,
+  0.762,
 ]
-
 
 class RichNetworkPreview extends PIXI.Container {
   constructor() {
@@ -31,9 +29,8 @@ class RichNetworkPreview extends PIXI.Container {
       { index: 10, artificialSources: [3, 5] },
       { index: 11, artificialSources: [0,1,2,6,7,8] },
       { index: 12, artificialSources: [0,1,2,3,4,5,6,7,8] },
-      { index: 13 },
-      { index: 14 },
-      { range: [15, 16], group: true }
+      { range: [13, 16], group: true },
+      { index: 17 },
     ]);
     this.masterContainer.addChild(this.netDiagram);
 
@@ -51,14 +48,12 @@ class RichNetworkPreview extends PIXI.Container {
     this.masterContainer.addChild(this.throttleIcon);
 
     // Create labels
-    this.radarLabel = this.addLabel("Radar Beams");
-    this.radarLabel.anchor.set(1, 0.5);
-    this.turnHistoryLabel = this.addLabel("Steering Wheel");
-    this.turnHistoryLabel.anchor.set(1, 0.5);
+    this.radarLabel = this.addLabel("Radar");
+    this.radarLabel.anchor.set(0.5, 0.5);
+    this.turnHistoryLabel = this.addLabel("Steering");
+    this.turnHistoryLabel.anchor.set(0.5, 0.5);
     this.speedLabel = this.addLabel("Speed");
-    this.speedLabel.anchor.set(1, 0.5);
-    this.tractionLabel = this.addLabel("Traction");
-    this.tractionLabel.anchor.set(1, 0.5);
+    this.speedLabel.anchor.set(0.5, 0.5);
 
     // Position all elements
     this.netDiagram.x = LEFT_PADDING;
@@ -74,21 +69,17 @@ class RichNetworkPreview extends PIXI.Container {
     this.throttleIcon.anchor.set(0.5, 0.5);
     this.throttleIcon.scale.set(0.45);
 
-    this.radarLabel.x = this.netDiagram.x - 25;
+    this.radarLabel.x = this.netDiagram.x - 55;
     this.radarLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[0] - 7;
     this.radarLabel.scale.set(1, 1);
 
-    this.turnHistoryLabel.x = this.netDiagram.x - 25;
+    this.turnHistoryLabel.x = this.netDiagram.x - 55;
     this.turnHistoryLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[1] - 7;
     this.turnHistoryLabel.scale.set(1, 1);
 
-    this.speedLabel.x = this.netDiagram.x - 25;
+    this.speedLabel.x = this.netDiagram.x - 55;
     this.speedLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[2] - 7;
     this.speedLabel.scale.set(1, 1);
-
-    this.tractionLabel.x = this.netDiagram.x - 25;
-    this.tractionLabel.y = this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[3] - 7;
-    this.tractionLabel.scale.set(1, 1);
 
     const labelCirclePos = 23
     this.canvas.circle(
@@ -128,17 +119,17 @@ class RichNetworkPreview extends PIXI.Container {
 
     this.carSensorPreview = new CarSensorPreview();
     this.carSensorPreview.scale.set(0.7);
-    this.carSensorPreview.x = this.netDiagram.x - 200
+    this.carSensorPreview.x = this.netDiagram.x - 150
     this.carSensorPreview.y = this.netDiagram.y + this.netDiagram.canvasHeight * 0.5;
     this.masterContainer.addChild(this.carSensorPreview);
 
-    const bendX1 = this.carSensorPreview.x + 150 * this.carSensorPreview.scale.x;
-    const bendX2 = this.carSensorPreview.x + 30 * this.carSensorPreview.scale.x;
+    const bendX1 = this.carSensorPreview.x + 110 * this.carSensorPreview.scale.x;
+    const bendX2 = this.carSensorPreview.x + 10 * this.carSensorPreview.scale.x;
     this.drawConnection(
       this.netDiagram.x - 3,
       this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[0],
-      this.carSensorPreview.x + 5 * this.carSensorPreview.scale.x,
-      this.carSensorPreview.y - 90 * this.carSensorPreview.scale.y,
+      this.carSensorPreview.x - 24 * this.carSensorPreview.scale.x,
+      this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[0],
       bendX1, bendX2, 9
     );
 
@@ -147,23 +138,15 @@ class RichNetworkPreview extends PIXI.Container {
       this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[1],
       this.carSensorPreview.x - 10 * this.carSensorPreview.scale.x,
       this.carSensorPreview.y - 15 * this.carSensorPreview.scale.y,
-      bendX1, bendX2
+      bendX1, bendX2, 4
     )
 
     this.drawConnection(
       this.netDiagram.x - 3,
       this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[2],
-      this.carSensorPreview.x + 38 * this.carSensorPreview.scale.x,
+      this.carSensorPreview.x + 30 * this.carSensorPreview.scale.x,
       this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[2],
       bendX1, bendX2
-    );
-
-    this.drawConnection(
-      this.netDiagram.x - 3,
-      this.netDiagram.y + this.netDiagram.canvasHeight * LABELS_POS[3],
-      this.carSensorPreview.x + 10 * this.carSensorPreview.scale.x,
-      this.carSensorPreview.y + 70 * this.carSensorPreview.scale.y,
-      bendX1, bendX2, 2
     );
 
     this.masterContainer.addChild(this.canvas);
@@ -202,7 +185,7 @@ class RichNetworkPreview extends PIXI.Container {
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 10,
-      fill: 0xffffff,
+      fill: 0xdedede,
       fontStyle: 'normal',
       ...props
     };
