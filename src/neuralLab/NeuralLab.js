@@ -3,19 +3,15 @@ import RichNetworkPreview from '../ui/RichNetworkPreview';
 import Slider from '../ui/Slider';
 
 const INPUT_LABELS = [
-  "Beam #1",
-  "Beam #2",
-  "Beam #3",
-  "Beam #4",
-  "Beam #5",
-  "Beam #6",
-  "Beam #7",
-  "Beam #8",
-  "Beam #9",
-  "TTC Long",
-  "TTC Short",
-  "Left Right Balance",
-  "Safe Direction",
+  "Beam #1 [m]",
+  "Beam #2 [m]",
+  "Beam #3 [m]",
+  "Beam #4 [m]",
+  "Beam #5 [m]",
+  "Beam #6 [m]",
+  "Beam #7 [m]",
+  "Beam #8 [m]",
+  "Beam #9 [m]",
   "Steering Wheel",
   "Gas Pedal",
   "Yaw Rate",
@@ -24,30 +20,43 @@ const INPUT_LABELS = [
 ]
 
 const INPUT_RANGES = [
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
-  [0, 1],
+  [0, 100],
+  [0, 100],
+  [0, 100],
+  [0, 100],
+  [0, 100],
+  [0, 100],
+  [0, 100],
+  [0, 100],
+  [0, 100],
   [-1, 1],
   [-1, 1],
-  [-1, 1],
-  [0, 1],
-  [-1, 1],
-  [-1, 1],
-  [0, 1],
+  [-4, 4],
+  [-1.5, 1.5],
+  [0, 200],
+]
+
+const INPUT_DEFAULTS = [
+  100, 
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  100,
+  0,
+  0.2,
+  0,
+  0,
+  60
 ]
 
 class NeuralLab extends PIXI.Container {
-  constructor(neuralNet) {
+  constructor(car) {
     super();
-    this.neuralNet = neuralNet;
+    this.car = car;
 
     this.background = new PIXI.Graphics();
     this.addChild(this.background);
@@ -64,7 +73,7 @@ class NeuralLab extends PIXI.Container {
       slider.y = 300 + Math.floor(i/2) * 40;
       slider.min = INPUT_RANGES[i][0];
       slider.max = INPUT_RANGES[i][1];
-      slider.value = 0;
+      slider.value = INPUT_DEFAULTS[i];
       slider.label = INPUT_LABELS[i];
       slider.on('change', (value) => {
         this.inputs[i] = value;
@@ -80,11 +89,23 @@ class NeuralLab extends PIXI.Container {
   }
 
   runNetwork() {
-    this.neuralNet.forward(this.inputs);
+    const inputs = this.car.inputsNormalizer.normalize(
+      this.inputs.slice(0, 9),
+      this.inputs[13],
+      this.inputs[9],
+      this.inputs[10],
+      this.inputs[11],
+      this.inputs[12]/3.6
+    )
+    this.car.neuralNet.forward(inputs);
   }
 
   redrawNetworkPreview() {
-    this.networkPreview.renderView(this.neuralNet, this.neuralNet.genome, this.neuralNet.getLastActivations());
+    this.networkPreview.renderView(
+      this.car.neuralNet, 
+      this.car.neuralNet.genome, 
+      this.car.neuralNet.getLastActivations()
+    );
   }
 
   startRenderLoop() {

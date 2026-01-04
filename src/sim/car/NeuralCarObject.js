@@ -1,7 +1,8 @@
 import CarObject from './CarObject';
 import NeuralNet from '../../neuralEvolution/NeuralNet';
 import { NeuralNormalizer } from './neuralNormalizer';
-
+let debugMax = 0
+let debugMin = 0
 /**
  * Neural Network Architecture:
  * 
@@ -70,8 +71,6 @@ class NeuralCarObject extends CarObject {
       )
 
       const outputs = this.neuralNet.forward(inputs);
-
-      this.debug = inputs[15].toFixed(2)
       
       const turnOutput = outputs[0];
       const throttleOutput = outputs[1];

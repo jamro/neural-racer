@@ -12,7 +12,7 @@ let evolution = null;
 let neuralLab = null;
 let resizeHandler = null;
 
-const MODE = 'evolution'; // 'evolution' or 'neuralLab'
+const MODE = 'neuralLab'; // 'evolution' or 'neuralLab'
 
 /**
  * Initialize the application
@@ -69,7 +69,7 @@ async function initApp() {
 
     if(MODE === 'neuralLab') {
       // test Neural Lab
-      neuralLab = new NeuralLab(evolution.generation.cars[0].neuralNet);
+      neuralLab = new NeuralLab(evolution.generation.cars[0]);
       app.stage.addChild(neuralLab);
       neuralLab.scaleView(app.screen.width, app.screen.height);
       neuralLab.startRenderLoop();
