@@ -43,7 +43,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.statusProgressBar.colors = [0xff0000, 0xffffff, 0x8888ff];
 
     this.networkPreview = new RichNetworkPreview();
-    this.networkPreview.x = 600;
+    this.networkPreview.x = 500;
     this.networkPreview.y = 0;
     this.addChild(this.networkPreview);
 

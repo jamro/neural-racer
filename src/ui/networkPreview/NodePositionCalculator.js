@@ -1,4 +1,10 @@
-import { CANVAS_WIDTH, CANVAS_HEIGHT, NODE_RADIUS } from './NetworkPreviewConstants.js';
+import {
+    CANVAS_WIDTH,
+    CANVAS_HEIGHT,
+    NODE_RADIUS,
+    ARTIFICIAL_INPUT_PADDING_TOP,
+    ARTIFICIAL_INPUT_PADDING_BOTTOM
+} from './NetworkPreviewConstants.js';
 
 /**
  * Calculates node positions for neural network visualization
@@ -167,6 +173,7 @@ export class NodePositionCalculator {
         const groupHeights = groups.map(size => size > 1 ? (size - 1) * nodeSpacing : 0);
         const totalHeightNeeded = groupHeights.reduce((sum, h) => sum + h, 0);
         const availableHeight = CANVAS_HEIGHT - 2 * NODE_RADIUS;
+        const numGroups = groups.length;
         
         // Find which group this node belongs to
         let nodeIndex = 0;
@@ -184,29 +191,54 @@ export class NodePositionCalculator {
         
         // Calculate Y position
         let currentY = NODE_RADIUS;
-        const numGroups = groups.length;
+        let effectiveSpacingWithinGroup = nodeSpacing;
         
-        if (numGroups === 1) {
-            currentY = (CANVAS_HEIGHT - groupHeights[0]) / 2;
-        } else if (totalHeightNeeded <= availableHeight) {
-            // We want symmetric padding above the first group and below the last group.
-            // Requirement: top and bottom padding must equal half of the spacing between groups.
-            // If spacingBetweenGroups = S, then total slack = (numGroups - 1) * S + 2 * (S/2) = numGroups * S.
-            // So we compute S over numGroups (not numGroups - 1).
-            const spacingBetweenGroups = (availableHeight - totalHeightNeeded) / numGroups;
-            const padding = spacingBetweenGroups / 2;
-            currentY = NODE_RADIUS + padding;
+        // If everything fits, distribute slack into:
+        // - top padding
+        // - bottom padding
+        // - spacing between groups
+        //
+        // Defaults preserve the old behavior by applying adjustments on top of the previously
+        // derived symmetric padding (slack / (2 * numGroups)).
+        if (totalHeightNeeded <= availableHeight) {
+            const slack = availableHeight - totalHeightNeeded;
+
+            // Old "base" symmetric padding that was effectively used previously.
+            const basePadding = numGroups > 0 ? slack / (2 * numGroups) : 0;
+
+            let topPadding = Math.max(0, basePadding + ARTIFICIAL_INPUT_PADDING_TOP);
+            let bottomPadding = Math.max(0, basePadding + ARTIFICIAL_INPUT_PADDING_BOTTOM);
+
+            // If pads consume more than the slack, shrink them proportionally and use no gaps.
+            const padsSum = topPadding + bottomPadding;
+            if (padsSum > slack && padsSum > 0) {
+                const shrink = slack / padsSum;
+                topPadding *= shrink;
+                bottomPadding *= shrink;
+            }
+
+            const remainingSlack = Math.max(0, slack - topPadding - bottomPadding);
+            const spacingBetweenGroups = numGroups > 1 ? remainingSlack / (numGroups - 1) : 0;
+
+            currentY = NODE_RADIUS + topPadding;
             for (let g = 0; g < groupIndex; g++) {
                 currentY += groupHeights[g] + spacingBetweenGroups;
             }
         } else {
-            const scale = availableHeight / totalHeightNeeded;
+            // Not enough space: compress groups (and intra-group spacing) to fit.
+            const topPadding = Math.max(0, ARTIFICIAL_INPUT_PADDING_TOP);
+            const bottomPadding = Math.max(0, ARTIFICIAL_INPUT_PADDING_BOTTOM);
+            const availableForGroups = Math.max(0, availableHeight - topPadding - bottomPadding);
+            const scale = totalHeightNeeded > 0 ? (availableForGroups / totalHeightNeeded) : 1;
+
+            currentY = NODE_RADIUS + topPadding;
             for (let g = 0; g < groupIndex; g++) {
                 currentY += groupHeights[g] * scale;
             }
+            effectiveSpacingWithinGroup = nodeSpacing * scale;
         }
         
-        return currentY + positionInGroup * (groups[groupIndex] > 1 ? nodeSpacing : 0);
+        return currentY + positionInGroup * (groups[groupIndex] > 1 ? effectiveSpacingWithinGroup : 0);
     }
 
     /**

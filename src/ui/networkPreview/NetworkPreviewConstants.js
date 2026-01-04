@@ -2,6 +2,12 @@
 export const CANVAS_WIDTH = 400;
 export const CANVAS_HEIGHT = 170;
 export const NODE_RADIUS = 3;
+
+// Artificial input layer (first visual column) padding controls.
+// These are *additive adjustments* (in px) applied on top of the default symmetric padding
+// computed from available vertical slack, so setting both to 0 preserves current behavior.
+export const ARTIFICIAL_INPUT_PADDING_TOP = -10;
+export const ARTIFICIAL_INPUT_PADDING_BOTTOM = 20;
 export const MIN_NODE_OUTLINE_WIDTH = 0;
 export const MAX_NODE_OUTLINE_WIDTH = 1;
 export const MIN_CONNECTION_ALPHA = 0;
