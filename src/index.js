@@ -12,7 +12,7 @@ let evolution = null;
 let neuralLab = null;
 let resizeHandler = null;
 
-const MODE = 'neuralLab'; // 'evolution' or 'neuralLab'
+const MODE = 'evolution'; // 'evolution' or 'neuralLab'
 
 /**
  * Initialize the application

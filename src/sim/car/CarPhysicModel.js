@@ -182,9 +182,6 @@ class CarPhysicModel {
     // no reverse (keep your old behavior) but avoid hard energy spikes
     if (this.vx < 0) {
       this.vx = 0;
-      // when stopped, rapidly damp lateral motion
-      this.vy *= 0.5;
-      this.yawRate *= 0.5;
     }
 
     // clamp forward speed
@@ -192,6 +189,21 @@ class CarPhysicModel {
 
     // clamp yawRate (stability)
     this.yawRate = Math.max(Math.min(this.yawRate, this.yawRateMax), -this.yawRateMax);
+
+    // --- 9) Extra damping near standstill to avoid endless micro-sliding
+    // When fully stopped, aggressively zero out lateral motion
+    if (this.vx < 0.1) {
+      // When fully stopped, completely stop lateral motion
+      this.vy = 0;
+      this.yawRate = 0;
+    } else if (this.vx < 1.0) {
+      const k = this.vx / 1.0; // 0.1..1.0
+      // more damping when slower
+      const dampVy = 0.5 + 0.5 * k;      // 0.5..1.0 multiplier (more aggressive)
+      const dampR  = 0.5 + 0.5 * k;
+      this.vy *= dampVy;
+      this.yawRate *= dampR;
+    }
 
     // integrate yaw
     this.direction += this.yawRate * delta;
@@ -204,16 +216,6 @@ class CarPhysicModel {
 
     // expose compatibility speed
     this.speed = this.vx;
-
-    // --- 9) Extra damping near standstill to avoid endless micro-sliding
-    if (this.vx < 1.0) {
-      const k = this.vx / 1.0; // 0..1
-      // more damping when slower
-      const dampVy = 0.6 + 0.4 * k;      // 0.6..1.0 multiplier
-      const dampR  = 0.6 + 0.4 * k;
-      this.vy *= dampVy;
-      this.yawRate *= dampR;
-    }
   }
 
   _applyFrictionCircle(Fx, Fy, Fmax) {
