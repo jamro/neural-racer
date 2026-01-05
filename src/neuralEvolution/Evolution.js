@@ -84,7 +84,7 @@ class Evolution {
   }
 
   startSimulation() {
-    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low" } = this.config;
+    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low", scoreWeights = { trackDistance: 1 } } = this.config;
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
@@ -92,7 +92,7 @@ class Evolution {
     this.simulation.setTrack(this.currentTrack);
     this.simulation.addGeneration(this.generation);
     this.simulation.view.setEvolutionHistory(this.history, this.currentTrack.name);
-    this.simulation.start(this.generation.epoch, simulationStep, simulationSpeed, graphicsQuality); // Start simulation loop
+    this.simulation.start(this.generation.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
     this.simulation.startRender(); // Start render loop
   }
 

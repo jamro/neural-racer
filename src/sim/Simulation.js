@@ -76,9 +76,10 @@ class Simulation {
       }
     }
 
-    start(epoch, simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low") {
+    start(epoch, simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low", scoreWeights = { trackDistance: 1 }) {
         if (this.running) return;
         this.epoch = epoch;
+        this.scoreWeights = scoreWeights;
         this.simulationStep = simulationStep;
         this.simulationSpeed = simulationSpeed;
         this.graphicsQuality = graphicsQuality;
@@ -119,7 +120,8 @@ class Simulation {
             car.renderView(deltaSeconds);
         }
         this.view.renderView(deltaSeconds);
-        this.view.updateStats(this);
+
+        this.view.updateStats(this, this.scoreWeights);
 
         // follow leader
         if(this.leaderCar && this.leaderCar.isCrashed && this.activeCars > 0) {
@@ -206,9 +208,10 @@ class Simulation {
     }
 
     scaleView(width, height) {
-        this.view.x = width / 2;
-        this.view.y = height / 2;
-        this.view.scaleView(width, height);
+      if(!this.view) return;
+      this.view.x = width / 2;
+      this.view.y = height / 2;
+      this.view.scaleView(width, height);
     }
 
     removeAndDispose() {
@@ -225,6 +228,8 @@ class Simulation {
         this.track = null;
         this.frameCount = 0;
         this.activeCars = 0;
+        this.view.destroy({children: true, texture: false, baseTexture: false});
+        this.view = null;
     }
 }
 

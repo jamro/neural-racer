@@ -1,6 +1,11 @@
 import * as PIXI from 'pixi.js';
-import ProgressBar from '../ui/ProgressBar';
 import RichNetworkPreview from '../ui/RichNetworkPreview';
+import PercentileChart from '../ui/PercentileChart';
+import { calculateScore } from '../neuralEvolution/fitness';
+import { getUiHorizontalIconTexture } from '../loaders/AssetLoader';
+
+const TITLES_HEIGHT = 30;
+const WIDGET_HEIGHT = 210;
 
 class SimulationDetailsView extends PIXI.Container {
 
@@ -9,53 +14,52 @@ class SimulationDetailsView extends PIXI.Container {
     this.bg = new PIXI.Graphics();
     this.addChild(this.bg);
 
-    this.statusTextField = new PIXI.Text();
-    this.statusTextField.style = { 
-      fontFamily: 'Exo2',
-      fontSize: 12, 
-      lineHeight: 16,
-      fill: 0xffffff 
-    };
-    this.statusTextField.x = 10;
-    this.statusTextField.y = 8;
-    this.addChild(this.statusTextField);
+    this.topHr = new PIXI.Sprite(getUiHorizontalIconTexture());
+    this.addChild(this.topHr);
 
-    this.historyTextField = new PIXI.Text();
-    this.historyTextField.style = { 
-      fontFamily: 'Exo2',
-      fontSize: 12, 
-      lineHeight: 16,
-      fill: 0xffffff 
-    };
-    this.historyTextField.x = 300;
-    this.historyTextField.y = 8;
-    this.addChild(this.historyTextField);
+    this.bottomHr = new PIXI.Sprite(getUiHorizontalIconTexture());
+    this.addChild(this.bottomHr);
+
+    this.historyChart = new PercentileChart(500, 120);
+    this.addChild(this.historyChart);
 
     PIXI.Ticker.shared.add(this.onTick, this);
     this.fpsCounter = 0;
     this.fps = 0;
 
-    this.statusProgressBar = new ProgressBar();
-    this.addChild(this.statusProgressBar);
-    this.statusProgressBar.x = 10;
-    this.statusProgressBar.y = 108;
-    this.statusProgressBar.controlWidth = 230;
-    this.statusProgressBar.colors = [0xff0000, 0xffffff, 0x8888ff];
-
     this.networkPreview = new RichNetworkPreview();
-    this.networkPreview.x = 500;
-    this.networkPreview.y = 0;
     this.addChild(this.networkPreview);
 
-    this.scaleView(500, 200);
+    this.sortedScores = null
 
+    this.scoresTitle = new PIXI.Text();
+    this.scoresTitle.style = {
+      fontFamily: 'Exo2',
+      fontSize: 16,
+      fill: 0xdedede,
+    };
+    this.scoresTitle.text = 'Population Evolution';
+    this.scoresTitle.anchor.set(0.5, 0.5);
+    this.addChild(this.scoresTitle);
+
+    this.neuralTitle = new PIXI.Text();
+    this.neuralTitle.style = {
+      fontFamily: 'Exo2',
+      fontSize: 16,
+      fill: 0xdedede,
+    };
+    this.neuralTitle.text = 'Neural Network';
+    this.neuralTitle.anchor.set(0.5, 0.5);
+    this.addChild(this.neuralTitle);
+
+    this.scaleView(500, 200);
     setInterval(() => {
         this.fps = this.fpsCounter;
         this.fpsCounter = 0;
     }, 1000);
   }
 
-  update(simulation, leaderCar) {
+  update(simulation, leaderCar, scoreWeights) {
     // be sure that memory is supported
     let usedJSHeapSize = 0;
     let jsHeapSizeLimit = 0;
@@ -64,64 +68,90 @@ class SimulationDetailsView extends PIXI.Container {
       jsHeapSizeLimit = performance.memory.jsHeapSizeLimit;
     }
 
-    let totalCars = 0
-    let crashedCars = 0
-    let finishedCars = 0
-    for (const car of simulation.cars) {
-      totalCars++;
-      if(car.isCrashed) crashedCars++;
-      if(car.isFinished) finishedCars++;
+    //"FPS: " + (this.fps || '???') + "\n" + 
+    //"Memory: " + ((usedJSHeapSize / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB / " + (jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB") + "\n\n" +
+    //"Epoch: " + simulation.epoch + "\n" +
+    //"Track: " + simulation.track.name + "\n" +
+    //"Size: ✕ " + crashedCars + ", ▶ " + (totalCars - crashedCars - finishedCars) + ", ✓ " + finishedCars + " (" + totalCars + ")" + "\n\n\n"
+
+    if(simulation.cars.length > 0) {
+      if(this.sortedScores === null) {
+        this.sortedScores = [];
+        for(let car of simulation.cars) {
+          this.sortedScores.push({
+            car: car,
+            score: null
+          });
+        }
+      }
+      for(let carRecord of this.sortedScores) {
+        carRecord.score = calculateScore(carRecord.car, scoreWeights);
+      }
+      this.sortedScores.sort((a, b) => a.score - b.score);
+      const maxScore = this.sortedScores[this.sortedScores.length - 1].score;
+      const p75Score = this.sortedScores[Math.floor(this.sortedScores.length * 0.75)].score;
+      this.historyChart.updateCurrentPopulation(p75Score, maxScore);
     }
-
-    this.statusProgressBar.max = totalCars;
-    this.statusProgressBar.values = [
-      crashedCars, 
-      totalCars - crashedCars - finishedCars, 
-      finishedCars
-    ];
-
-    this.statusTextField.text = "FPS: " + (this.fps || '???') + "\n" + 
-    "Memory: " + ((usedJSHeapSize / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB / " + (jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB") + "\n\n" +
-    "Epoch: " + simulation.epoch + "\n" +
-    "Track: " + simulation.track.name + "\n" +
-    "Size: ✕ " + crashedCars + ", ▶ " + (totalCars - crashedCars - finishedCars) + ", ✓ " + finishedCars + " (" + totalCars + ")" + "\n\n\n"
-
+    
     if(leaderCar) {
-      this.statusTextField.text += "Leader: \n" + 
-      " - Distance: " + (100*leaderCar.checkpointsProgress).toFixed(1) + "%\n" + 
-      " - Speed: " + (leaderCar.model.speed*3.6).toFixed(1) + " km/h"
-
       const activations = leaderCar.neuralNet ? leaderCar.neuralNet.getLastActivations() : null;
       this.networkPreview.renderView(leaderCar.neuralNet, leaderCar.genome, activations);
     }
   }
 
-
   setEvolutionHistory(evolutionHistory, trackName) {
     const history = evolutionHistory.getScoreHistoryForTrack(
       trackName,
-      ['maxScore', 'medianScore', 'completionRate', 'percentile25Score', 'percentile75Score']
-    ).slice(-8);
+      ['minScore', 'percentile25Score', 'medianScore', 'percentile75Score', 'maxScore']
+    )
+    .slice(-50)
+    .map(h => [h.minScore, h.percentile25Score, h.medianScore, h.percentile75Score, h.maxScore]);
 
-    console.log(history);
-
-    this.historyTextField.text = "History:\n" + (history.map(h => h.epoch.toString().padStart(3, ' ') + ": ★ " + ((100*h.maxScore).toFixed(1).padStart(5, ' ')) + ", ≈ " + ((100*h.medianScore).toFixed(1).padStart(5, ' ')) + ", ✓ " + Math.round(100*h.completionRate).toString().padStart(3, ' ') + "%" ).join("\n") || "-")
+    this.historyChart.updateHistory(history);
   }
 
   scaleView(width, height) {
-    const barHeight = 190;
     this.bg.clear()
-    this.bg.rect(0, 0, width, barHeight);
+    this.bg.rect(0, 0, width, WIDGET_HEIGHT);
     this.bg.fill({
       color: 0x000000,
       alpha: 0.8
     });
+    this.bg.rect(0, 0, width, TITLES_HEIGHT);
+    this.bg.fill({
+      color: 0x000000,
+      alpha: 0.5
+    });
 
-    this.networkPreview.scaleView(Math.max(100,width - this.networkPreview.x), barHeight);
+    this.networkPreview.x = width/2
+    this.networkPreview.y = TITLES_HEIGHT
+    this.historyChart.y = TITLES_HEIGHT
+    this.networkPreview.scaleView(width/2, WIDGET_HEIGHT-TITLES_HEIGHT);
+    this.historyChart.scaleView(width/2, WIDGET_HEIGHT-TITLES_HEIGHT);
+
+    this.scoresTitle.x = width*0.25
+    this.scoresTitle.y = TITLES_HEIGHT*0.5-2
+    this.neuralTitle.x = width*0.75
+    this.neuralTitle.y = TITLES_HEIGHT*0.5-2
+
+    this.topHr.x = 0
+    this.topHr.y = -this.topHr.height
+    this.topHr.width = width
+
+    this.bottomHr.x = 0
+    this.bottomHr.y = WIDGET_HEIGHT + this.bottomHr.height
+    this.bottomHr.scale.y = -1
+    this.bottomHr.width = width
   }
 
   onTick(delta) {
     this.fpsCounter += 1;
+  }
+
+  destroy() {
+    PIXI.Ticker.shared.remove(this.onTick, this);
+    console.log('SimulationDetailsView destroyed');
+    super.destroy();
   }
 
 }

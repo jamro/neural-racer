@@ -18,7 +18,7 @@ class SimulationView extends PIXI.Container {
 
         this.cameraOffset = {
           x: 0,
-          y: -200/2,
+          y: -220/2,
         }
 
         this._graphicsQuality = "low";
@@ -55,8 +55,8 @@ class SimulationView extends PIXI.Container {
         this.track.view.carsContainer.addChild(car.view);
     }
 
-    updateStats(simulation) {
-      this.simulationDetailsView.update(simulation, simulation.leaderCar);
+    updateStats(simulation, scoreWeights) {
+      this.simulationDetailsView.update(simulation, simulation.leaderCar, scoreWeights);
     }
 
     setEvolutionHistory(evolutionHistory, trackName) {
@@ -110,7 +110,7 @@ class SimulationView extends PIXI.Container {
 
       this.simulationDetailsView.scaleView(width, height);
       this.simulationDetailsView.x = - width / 2;
-      this.simulationDetailsView.y = height / 2 - 200;
+      this.simulationDetailsView.y = height / 2 - 220;
     }
 }
 
