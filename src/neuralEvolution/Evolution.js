@@ -91,8 +91,10 @@ class Evolution {
       for(const hofEntry of loadedData.hallOfFame) {
         const hofGenome = deserializeGenome(hofEntry.genome);
         const hofScore = hofEntry.scoreOnBestTrack;
+        const hofTrackName = hofEntry.bestTrackName;
         const car = new NeuralCarObject(hofGenome);
-        this.hallOfFame.addCar(car, hofScore, hofEntry.bestTrackName);
+        car.isFinished = true; // Important: set isFinished to true to be considered for hall of fame
+        this.hallOfFame.addCar(car, hofScore, hofTrackName);
       }
 
     } else {
