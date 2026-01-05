@@ -97,7 +97,8 @@ const TEXTURE_REGISTRY = {
     ui_turn_icon: 'assets/img/turn_icon.png',
     ui_throttle_icon: 'assets/img/throttle_icon.png',
     ui_slip_icon: 'assets/img/slip_icon.png',
-    ui_horizontal_icon: 'assets/img/hr.png',
+    ui_frame_horizontal_line: 'assets/img/hr.png',
+    ui_frame_corner: 'assets/img/hr_corner.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -323,5 +324,7 @@ export async function loadUiThrottleIconTexture() { return await loadTexture('ui
 export function getUiThrottleIconTexture() { return getTexture('ui_throttle_icon'); }
 export async function loadUiSlipIconTexture() { return await loadTexture('ui_slip_icon'); }
 export function getUiSlipIconTexture() { return getTexture('ui_slip_icon'); }
-export async function loadUiHorizontalIconTexture() { return await loadTexture('ui_horizontal_icon'); }
-export function getUiHorizontalIconTexture() { return getTexture('ui_horizontal_icon'); }
+export async function loadUiFrameHorizontalLineTexture() { return await loadTexture('ui_frame_horizontal_line'); }
+export function getUiFrameHorizontalLineTexture() { return getTexture('ui_frame_horizontal_line'); }
+export async function loadUiFrameCornerTexture() { return await loadTexture('ui_frame_corner'); }
+export function getUiFrameCornerTexture() { return getTexture('ui_frame_corner'); }

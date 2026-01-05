@@ -2,33 +2,39 @@ import * as PIXI from 'pixi.js';
 import RichNetworkPreview from '../ui/RichNetworkPreview';
 import PercentileChart from '../ui/PercentileChart';
 import { calculateScore } from '../neuralEvolution/fitness';
-import { getUiHorizontalIconTexture } from '../loaders/AssetLoader';
+import { getUiFrameHorizontalLineTexture } from '../loaders/AssetLoader';
+import Frame from '../ui/Frame';
 
 const TITLES_HEIGHT = 30;
 const WIDGET_HEIGHT = 210;
+const WIDGET_BOTTOM_PADDING = 10;
 
 class SimulationDetailsView extends PIXI.Container {
 
   constructor() {
     super();
+
+    this.bottomContainer = new PIXI.Container();
+    this.addChild(this.bottomContainer);
+
     this.bg = new PIXI.Graphics();
-    this.addChild(this.bg);
+    this.bottomContainer.addChild(this.bg);
 
-    this.topHr = new PIXI.Sprite(getUiHorizontalIconTexture());
-    this.addChild(this.topHr);
+    this.topHr = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.bottomContainer.addChild(this.topHr);
 
-    this.bottomHr = new PIXI.Sprite(getUiHorizontalIconTexture());
-    this.addChild(this.bottomHr);
+    this.bottomHr = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.bottomContainer.addChild(this.bottomHr);
 
     this.historyChart = new PercentileChart(500, 120);
-    this.addChild(this.historyChart);
+    this.bottomContainer.addChild(this.historyChart);
 
     PIXI.Ticker.shared.add(this.onTick, this);
     this.fpsCounter = 0;
     this.fps = 0;
 
     this.networkPreview = new RichNetworkPreview();
-    this.addChild(this.networkPreview);
+    this.bottomContainer.addChild(this.networkPreview);
 
     this.sortedScores = null
 
@@ -40,7 +46,7 @@ class SimulationDetailsView extends PIXI.Container {
     };
     this.scoresTitle.text = 'Population Evolution';
     this.scoresTitle.anchor.set(0.5, 0.5);
-    this.addChild(this.scoresTitle);
+    this.bottomContainer.addChild(this.scoresTitle);
 
     this.neuralTitle = new PIXI.Text();
     this.neuralTitle.style = {
@@ -50,7 +56,32 @@ class SimulationDetailsView extends PIXI.Container {
     };
     this.neuralTitle.text = 'Neural Network';
     this.neuralTitle.anchor.set(0.5, 0.5);
-    this.addChild(this.neuralTitle);
+    this.bottomContainer.addChild(this.neuralTitle);
+
+    this.topContainer = new Frame(180, 55);
+    this.addChild(this.topContainer);
+
+    this.trackLabel = new PIXI.Text();
+    this.trackLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 14,
+      fill: 0xdedede,
+    };
+    this.trackLabel.text = 'Track: ???';
+    this.topContainer.addChild(this.trackLabel);
+    this.trackLabel.x = 7;
+    this.trackLabel.y = 10;
+
+    this.epochLabel = new PIXI.Text();
+    this.epochLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 12,
+      fill: 0xdedede,
+    };
+    this.epochLabel.text = 'Epoch: ???';
+    this.topContainer.addChild(this.epochLabel);
+    this.epochLabel.x = 7;
+    this.epochLabel.y = 33;
 
     this.scaleView(500, 200);
     setInterval(() => {
@@ -73,6 +104,10 @@ class SimulationDetailsView extends PIXI.Container {
     //"Epoch: " + simulation.epoch + "\n" +
     //"Track: " + simulation.track.name + "\n" +
     //"Size: ✕ " + crashedCars + ", ▶ " + (totalCars - crashedCars - finishedCars) + ", ✓ " + finishedCars + " (" + totalCars + ")" + "\n\n\n"
+
+
+    this.trackLabel.text = 'Track: ' + simulation.track.name;
+    this.epochLabel.text = 'Epoch: ' + simulation.epoch;
 
     if(simulation.cars.length > 0) {
       if(this.sortedScores === null) {
@@ -111,6 +146,7 @@ class SimulationDetailsView extends PIXI.Container {
   }
 
   scaleView(width, height) {
+    this.bottomContainer.y = height - WIDGET_HEIGHT - WIDGET_BOTTOM_PADDING;
     this.bg.clear()
     this.bg.rect(0, 0, width, WIDGET_HEIGHT);
     this.bg.fill({

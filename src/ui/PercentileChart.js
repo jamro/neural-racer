@@ -21,7 +21,7 @@ export default class PercentileChart extends PIXI.Container {
     this.masterContainer.x = LEFT_PADDING;
     this.masterContainer.y = height + CHART_AREA_PADDING + TOP_PADDING;
 
-    this.chartColor = 0x6666ff;
+    this.chartColor = 0x7777ff;
     this.areaWidth = width;
     this.areaHeight = height;
     this.scaleShape = new PIXI.Graphics();
@@ -40,7 +40,6 @@ export default class PercentileChart extends PIXI.Container {
     };
     this.top25Label.text = 'TOP\n25%';
     this.top25Label.anchor.set(0.5, 0);
-
 
     this.timeLabel = new PIXI.Text()
     this.timeLabel.style = {
@@ -139,7 +138,7 @@ export default class PercentileChart extends PIXI.Container {
     this.scaleOverlay.rect(0, t(1)-1, this.areaWidth + CURRENT_POPULATION_BAR_WIDTH + 1, - t(1)+1);
     this.scaleOverlay.fill({
       color: 0x000000,
-      alpha: 0.35,
+      alpha: 0.25,
     });
     const barMin = -CHART_AREA_PADDING*0.5
     const barMax = this.areaWidth + CURRENT_POPULATION_BAR_WIDTH + CHART_AREA_PADDING*0.5;
