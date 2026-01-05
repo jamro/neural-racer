@@ -59,6 +59,16 @@ export default class PercentileChart extends PIXI.Container {
     };
     this.passLabel.text = 'PASS\nZONE';
     this.passLabel.anchor.set(1, 0.5);
+
+    this.scoreLabel = new PIXI.Text()
+    this.scoreLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 9,
+      fill: 0xdedede,
+    };
+    this.scoreLabel.text = 'SCORE';
+    this.scoreLabel.anchor.set(0.5, 0);
+    this.scoreLabel.rotation = -Math.PI/2;
     
     this.masterContainer.addChild(this.currentPopulationBar);
     this.masterContainer.addChild(this.canvas);
@@ -67,6 +77,7 @@ export default class PercentileChart extends PIXI.Container {
     this.masterContainer.addChild(this.top25Label);
     this.masterContainer.addChild(this.timeLabel);
     this.masterContainer.addChild(this.passLabel);
+    this.masterContainer.addChild(this.scoreLabel);
 
     this.scaleView(width, height);
   }
@@ -194,6 +205,9 @@ export default class PercentileChart extends PIXI.Container {
   }
   
   scaleView(width, height) {
+    const range = this.vScaleMax - this.vScaleMin;
+    const t = (y) => - this.areaHeight * (y - this.vScaleMin) / range;
+
     this.areaWidth = width - (CHART_AREA_PADDING + CURRENT_POPULATION_BAR_WIDTH + LEFT_PADDING + RIGHT_PADDING)
     this.areaHeight = height - (CHART_AREA_PADDING + TOP_PADDING + BOTTOM_PADDING)
     
@@ -216,7 +230,10 @@ export default class PercentileChart extends PIXI.Container {
     this.timeLabel.x = this.areaWidth/2
     this.timeLabel.y = 7;
     this.passLabel.x = -2
-    this.passLabel.y = - this.areaHeight * (((this.vScaleMax + 1) / 2) - this.vScaleMin) / (this.vScaleMax - this.vScaleMin);    
+    this.passLabel.y = - this.areaHeight * (((this.vScaleMax + 1) / 2) - this.vScaleMin) / (this.vScaleMax - this.vScaleMin); 
+    
+    this.scoreLabel.y = t(1)/2
+    this.scoreLabel.x = this.passLabel.x - 15
     
     this.updateCurrentPopulation(this.currentPopulationP70, this.currentPopulationMax);
     this.updateHistory(this.data);
