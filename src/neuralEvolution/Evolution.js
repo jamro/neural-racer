@@ -3,7 +3,9 @@ import { Generation, serializeGeneration, deserializeGeneration } from './Genera
 import Database from '../loaders/Database';
 import GenerationHistory from './GenerationHistory';
 import { deserializeGenome } from './Genome';
+import HallOfFame from './HallOfFame';
 import { v4 as uuidv4 } from 'uuid';
+import NeuralCarObject from '../sim/car/NeuralCarObject';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -21,6 +23,8 @@ class Evolution {
 
     this.database = new Database(CURRENT_EVOLUTION_FILENAME);
 
+    this.hallOfFame = new HallOfFame();
+
     this.config = {};
   }
 
@@ -30,7 +34,8 @@ class Evolution {
       evolutionId: this.evolutionId,
       completedTracks: this.completedTracks,
       currentTrack: this.currentTrack.name,
-      generation: serializeGeneration(this.generation, this.currentTrack.name)
+      generation: serializeGeneration(this.generation, this.currentTrack.name),
+      hallOfFame: this.hallOfFame.serialize()
     }
     this.database.storeEvolution(data);
   }
@@ -39,6 +44,12 @@ class Evolution {
     this.config = config
     const { populationSize = 100 } = this.config;
     this.config.evolve = this.config.evolve || {};
+    this.config.hallOfFame = this.config.hallOfFame || {};
+    this.config.scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
+
+    const { perTrackSize = 30, minFitnessDistance = 0.001 } = this.config.hallOfFame;
+    this.hallOfFame.perTrackSize = perTrackSize;
+    this.hallOfFame.minFitnessDistance = minFitnessDistance;
 
     let loadedData = await this.database.loadEvolution();
 
@@ -74,6 +85,14 @@ class Evolution {
             stats: car.stats,
           })) : null
         )
+      }
+
+      // hall of fame
+      for(const hofEntry of loadedData.hallOfFame) {
+        const hofGenome = deserializeGenome(hofEntry.genome);
+        const hofScore = hofEntry.scoreOnBestTrack;
+        const car = new NeuralCarObject(hofGenome);
+        this.hallOfFame.addCar(car, hofScore, hofEntry.bestTrackName);
       }
 
     } else {
@@ -135,6 +154,8 @@ class Evolution {
 
   async onEpochComplete() {
     const { trackPassThreshold = 0.25, populationHistorySize = 10 } = this.config;
+    const hallOfFameConfig = this.config.hallOfFame || {};
+    const { candidatesPerGeneration = 6 } = hallOfFameConfig;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = this.generation.finishedCount / this.generation.totalCount;
@@ -146,8 +167,16 @@ class Evolution {
     const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
     this.generation.calculateScores(scoreWeights);
     this.history.addGenerationInstance(this.generation, this.currentTrack.name);
+    const [leaders, leadersScores] = this.generation.getLeaders(candidatesPerGeneration);
+    for(let i = 0; i < leaders.length; i++) {
+      this.hallOfFame.addCar(
+        leaders[i], 
+        leadersScores[i], 
+        this.currentTrack.name
+      );
+    }
     await this.store();
-    this.generation = this.generation.evolve(this.config.evolve);
+    this.generation = this.generation.evolve(this.hallOfFame, this.config.evolve);
     this.currentTrack = this.getNextTrack();
 
     // remove current track from simulation

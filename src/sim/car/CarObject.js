@@ -170,7 +170,6 @@ class CarObject {
       // check for collisions
       if (!this._isFinished && track.isBoxCollidingWithWall(this.model.x, this.model.y, this.model.length, this.model.width, this.model.direction) !== false) {
         if (this.model.speed > 0) {
-          console.log('Collision detected, stopping car');
           this._isCrashed = true;
         }
         this.model.speed = 0;

@@ -3,7 +3,7 @@ class Config {
     this.graphicsQuality = "high"; // "high" or "low"
     this.frameRate = 30; // frame rate in frames per second
     this.populationSize = 200; // number of cars in the population
-    this.populationHistorySize = 20; // number of generations to keep in the population history
+    this.populationHistorySize = 10; // number of full generations (with genomes) to keep in the population history
     this.simulationStep = 0.060; // time step in seconds
     this.simulationSpeed = 0.5; // number of sim steps per frame
     this.replayInterval = 6; // every how many epochs to run evolution on random, completed track
@@ -13,12 +13,18 @@ class Config {
       trackDistance: 1, // weight for the distance traveled on the track
       avgSpeed: 0.05, // weight for the average speed of the car.
     };
-
     this.evolve = {
-      crossover: {},
+      crossover: {
+        hallOfFameSelectionProbability: 0.10, // probability of selecting a parent from the hall of fame for crossover
+      },
       mutation: {
         clamp: 5.0, // clamp values to a range
       },
+    };
+    this.hallOfFame = {
+      perTrackSize: 30,          // max genomes stored per track
+      candidatesPerGeneration: 6, // how many top genomes to consider per generation
+      minFitnessDistance: 0.001, // minimal fitness distance to be considered for hall of fame
     }
 
     this.setStandardMode();

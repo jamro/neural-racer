@@ -50,6 +50,21 @@ class Generation {
       }
     }
 
+    getLeaders(k=1) {
+      // Return consistent format even when empty
+      if (this.cars.length === 0 || k <= 0) return [[], []];
+      
+      // Check if any scores have been calculated
+      const hasScores = this.scores.some(score => score !== null);
+      if (!hasScores) return [[], []];
+      
+      const rankedCars = this.sortRankCars();
+      const topK = rankedCars.slice(0, Math.min(k, rankedCars.length));
+      const leaders = topK.map(item => item.car);
+      const leadersScores = topK.map(item => item.score);
+      return [leaders, leadersScores];
+    }
+
     createRandomPopulation(populationSize=100) {
       this.cars = [];
       for (let i = 0; i < populationSize; i++) {
@@ -153,8 +168,12 @@ class Generation {
       return indexedCars;
     }
 
-    riseOffsprings(count, crossoverConfig, mutationConfig) {
-      const { blendRatio = 0.7, selectionTournamentSize = 5 } = crossoverConfig;
+    riseOffsprings(count, crossoverConfig, mutationConfig, hallOfFame) {
+      const { 
+        blendRatio = 0.7, 
+        selectionTournamentSize = 5,
+        hallOfFameSelectionProbability = 0.10
+      } = crossoverConfig;
       const { 
         hiddenRate = 0.03, 
         hiddenSigma = 0.12,
@@ -164,9 +183,18 @@ class Generation {
       } = mutationConfig;
       const offsprings = [];
       for (let i = 0; i < count; i++) {
+        let parent1 = null;
+        let parent2 = null;
+
+        if(Math.random() < hallOfFameSelectionProbability) {
+          parent1 = hallOfFame.pickRandom();
+        }
+
         // Select two different parents using tournament selection
-        let parent1 = this.tournamentSelection(selectionTournamentSize);
-        let parent2 = this.tournamentSelection(selectionTournamentSize);
+        if(parent1 === null) {
+          parent1 = this.tournamentSelection(selectionTournamentSize);
+        }
+        parent2 = this.tournamentSelection(selectionTournamentSize);
         
         // Ensure parents are different (avoid self-crossover)
         let attempts = 0;
@@ -223,7 +251,7 @@ class Generation {
       return randomGenomes;
     }
 
-    evolve(config = {}) {
+    evolve(hallOfFame, config = {}, ) {
       const { 
         eliteRatio = 0.02, 
         eliminationEpochs = 5, 
@@ -253,7 +281,7 @@ class Generation {
         remainingCount -= Math.ceil(remainingCount * eliminationRate);
       }
       
-      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig);
+      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig, hallOfFame);
       newGenomes.push(...offsprings);
 
       // Fill the rest of the population with random genomes

@@ -72,6 +72,7 @@ class Database {
       completedTracks: data.completedTracks,
       lastGenerationId: data.generation.generationId,
       currentTrack: data.currentTrack,
+      hallOfFame: data.hallOfFame,
     };
 
     await Promise.all([
