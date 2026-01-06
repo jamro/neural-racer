@@ -105,7 +105,12 @@ class Evolution {
   }
 
   startSimulation() {
-    const { simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low", scoreWeights = { trackDistance: 1 } } = this.config;
+    const { 
+      simulationStep = 0.05, 
+      simulationSpeed = 1, 
+      graphicsQuality = "low", 
+      scoreWeights = { trackDistance: 1 } 
+    } = this.config;
     this.simulation = new Simulation(this.pixiApp);
     this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(this.simulation.view);
@@ -155,9 +160,14 @@ class Evolution {
   }
 
   async onEpochComplete() {
-    const { trackPassThreshold = 0.25, populationHistorySize = 10 } = this.config;
+    const { 
+      trackPassThreshold = 0.25, 
+      populationHistorySize = 10 
+    } = this.config;
     const hallOfFameConfig = this.config.hallOfFame || {};
-    const { candidatesPerGeneration = 6 } = hallOfFameConfig;
+    const { 
+      candidatesPerGeneration = 6
+    } = hallOfFameConfig;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = this.generation.finishedCount / this.generation.totalCount;

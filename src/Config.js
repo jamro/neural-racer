@@ -30,6 +30,7 @@ class Config {
 
   setStandardMode() {
     this.evolve.eliteRatio = 0.02; // percentage of top performing genomes to carry over to next generation
+    this.evolve.hallOfFameEliteRatio = 0.01; // percentage of genomes from the hall of fame to carry over to next generation
     this.evolve.eliminationEpochs = 12; // how often eliminate the weakest genomes and replace with random ones
     this.evolve.eliminationRate = 0.05; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
     this.evolve.crossover.selectionTournamentSize = 4; // size of tournament selection group of genomes to select the best one for crossover

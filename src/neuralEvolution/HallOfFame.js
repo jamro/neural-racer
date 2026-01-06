@@ -135,7 +135,7 @@ export default class HallOfFame {
     }
   }
 
-  pickRandom() {
+  pickRandom(k=1) {
     const allEntries = [];
     const tracks = Object.keys(this.hallOfFame);
     for(const track of tracks) {
@@ -145,8 +145,23 @@ export default class HallOfFame {
       }
     }
     if(allEntries.length === 0) {
-      return null;
+      return [];
     }
-    return allEntries[Math.floor(Math.random() * allEntries.length)].car;
+    
+    // If requesting more cars than available, return all available
+    const count = Math.min(k, allEntries.length);
+    
+    // Create a copy of the array to avoid modifying the original
+    const availableEntries = [...allEntries];
+    const selectedCars = [];
+    
+    // Randomly select k different cars
+    for(let i = 0; i < count; i++) {
+      const randomIndex = Math.floor(Math.random() * availableEntries.length);
+      const selectedEntry = availableEntries.splice(randomIndex, 1)[0];
+      selectedCars.push(selectedEntry.car);
+    }
+    
+    return selectedCars;
   }
 }

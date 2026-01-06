@@ -182,12 +182,16 @@ class Generation {
         clamp = null
       } = mutationConfig;
       const offsprings = [];
+      let hofCandidates
       for (let i = 0; i < count; i++) {
         let parent1 = null;
         let parent2 = null;
 
         if(Math.random() < hallOfFameSelectionProbability) {
-          parent1 = hallOfFame.pickRandom();
+          hofCandidates = hallOfFame.pickRandom(1);
+          if(hofCandidates.length > 0) {
+            parent1 = hofCandidates[0];
+          }
         }
 
         // Select two different parents using tournament selection
@@ -255,13 +259,15 @@ class Generation {
       const { 
         eliteRatio = 0.02, 
         eliminationEpochs = 5, 
-        eliminationRate = 0.10 
+        eliminationRate = 0.10,
+        hallOfFameEliteRatio = 0.01
       } = config;
       const crossoverConfig = config.crossover || {};
       const mutationConfig = config.mutation || {};
       
       const populationSize = this.cars.length;
       const eliteCount = Math.ceil(populationSize * eliteRatio);
+      const hofEliteCount = Math.ceil(populationSize * hallOfFameEliteRatio);
       
       // Get elite genomes (top performers)
       const indexedCars = this.sortRankCars();
@@ -271,10 +277,14 @@ class Generation {
       for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
         eliteGenomes.push(indexedCars[i].genome.clone());
       }
+
+      // Get elite genomes from hall of fame
+      const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
+      eliteGenomes.push(...hofEliteGenomes);
       
       // Fill the rest of the population with crossover offspring
       const newGenomes = [...eliteGenomes];
-      let remainingCount = populationSize - eliteGenomes.length;
+      let remainingCount = populationSize - eliteGenomes.length - hofEliteGenomes.length;
 
       if (this.epoch > 0 && this.epoch % eliminationEpochs === 0) {
         console.log(`Eliminating ${(100*eliminationRate).toFixed(2)}% of genomes`);

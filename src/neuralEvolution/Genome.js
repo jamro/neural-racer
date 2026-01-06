@@ -84,8 +84,12 @@ class Genome {
     this.genes = genes ?? new Float32Array(length);
   }
 
-  clone() {
-    return new Genome(this.genes.length, new Float32Array(this.genes));
+  clone(preserveId = false) {
+    const result = new Genome(this.genes.length, new Float32Array(this.genes));
+    if(preserveId) {
+      result.genomeId = this.genomeId;
+    }
+    return result;
   }
 
   randomize(scale = 0.5, rng = Math.random) {
