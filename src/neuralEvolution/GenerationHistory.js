@@ -1,9 +1,29 @@
+import { deserializeGenome } from './Genome';
 
 
 class GenerationHistory {
   constructor() {
-    this.tracks = {
+    this.tracks = {}
+  }
 
+  deserialize(data) {
+    this.tracks = {}
+    for(const historyEntry of data) {
+      if(historyEntry.overallScore.averageScore === null) {
+        continue;
+      }
+      this.addGenerationData(
+        historyEntry.trackName, 
+        historyEntry.generationId, 
+        historyEntry.overallScore, 
+        historyEntry.epoch, 
+        historyEntry.populationSize, 
+        historyEntry.cars ? historyEntry.cars.map(car => ({
+          genome: deserializeGenome(car.genome),
+          score: car.score,
+          stats: car.stats,
+        })) : null
+      )
     }
   }
 

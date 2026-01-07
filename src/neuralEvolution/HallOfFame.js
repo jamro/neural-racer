@@ -1,5 +1,6 @@
 import { serializeGenome } from './Genome';
-
+import NeuralCarObject from '../sim/car/NeuralCarObject';
+import { deserializeGenome } from './Genome';
 
 class HallOfFameEntry {
   constructor(car, score, trackName) {
@@ -132,6 +133,29 @@ export default class HallOfFame {
       }
     }
     return data;
+  }
+
+  deserialize(data) {
+    const debug = [];
+    for(const hofEntry of data) {
+      const hofGenome = deserializeGenome(hofEntry.genome);
+      const hofScore = hofEntry.scoreOnBestTrack;
+      const hofTrackName = hofEntry.bestTrackName;
+      const car = new NeuralCarObject(hofGenome);
+      car.isFinished = true; // Important: set isFinished to true to be considered for hall of fame
+      const added = this.addCar(car, hofScore, hofTrackName);
+      if(!added) {
+        continue;
+      }
+      const allTracksEvaluation = hofEntry.allTracksEvaluation
+      for(const trackEvaluation of allTracksEvaluation) {
+        this.updateCar(car, trackEvaluation.bestScore, trackEvaluation.trackName);
+      }
+      debug.push({globalScore: hofEntry.globalScore, count: hofEntry.allTracksEvaluation.length, hofEntry});
+    }
+    debug.sort((a, b) => b.globalScore - a.globalScore);
+    console.log(debug);
+    console.log(this.getTrackSaturation());
   }
 
   _addEntry(entry) {
@@ -280,5 +304,24 @@ export default class HallOfFame {
       }
     }
     return allEntries;
+  }
+
+  /**
+   * Each car in Hall of Fame is tested on multiple tracks. 
+   * This function calculates the saturation of the hall of fame by counting the number of tracks each car is tested on vs the total number of tracks.
+   */
+  getTrackSaturation() {
+    const trackEntries = Object.values(this.trackData).flat();
+    let maxTracksPerCar = 0;
+    let allTracks = 0;
+    for (const entry of trackEntries) {
+      if (entry.allTracksEvaluation.length > maxTracksPerCar) {
+        maxTracksPerCar = entry.allTracksEvaluation.length;
+      }
+      allTracks += entry.allTracksEvaluation.length;
+    }
+    const maxTracks = trackEntries.length * maxTracksPerCar;
+    return allTracks / maxTracks;
+
   }
 }

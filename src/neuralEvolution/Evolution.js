@@ -2,10 +2,9 @@ import Simulation from '../sim/Simulation';
 import { Generation, serializeGeneration, deserializeGeneration } from './Generation';
 import Database from '../loaders/Database';
 import GenerationHistory from './GenerationHistory';
-import { deserializeGenome } from './Genome';
 import HallOfFame from './HallOfFame';
 import { v4 as uuidv4 } from 'uuid';
-import NeuralCarObject from '../sim/car/NeuralCarObject';
+import EvolutionEpochRunner from './epochRunner/EvolutionEpochRunner';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -15,16 +14,16 @@ class Evolution {
 
     this.pixiApp = pixiApp;
     this.tracks = tracks;
-    this.currentTrack = null;
     this.completedTracks = [];
     this.generation = null;
-    this.simulation = null;
     this.history = new GenerationHistory();
 
     this.database = new Database(CURRENT_EVOLUTION_FILENAME);
-
     this.hallOfFame = new HallOfFame();
+    this.evolutionEpochRunner = new EvolutionEpochRunner(this, tracks);
+    this.currentEpochRunner = this.evolutionEpochRunner;
 
+    this.isRunning = false;
     this.config = {};
   }
 
@@ -33,9 +32,12 @@ class Evolution {
     const data = {
       evolutionId: this.evolutionId,
       completedTracks: this.completedTracks,
-      currentTrack: this.currentTrack.name,
-      generation: serializeGeneration(this.generation, this.currentTrack.name),
-      hallOfFame: this.hallOfFame.serialize()
+      currentTrack: this.evolutionEpochRunner.currentTrack.name,
+      generation: serializeGeneration(this.generation, this.evolutionEpochRunner.currentTrack.name),
+      hallOfFame: this.hallOfFame.serialize(),
+      epochRunners: {
+        evolution: this.evolutionEpochRunner.serialize(),
+      }
     }
     this.database.storeEvolution(data);
   }
@@ -56,11 +58,6 @@ class Evolution {
     if(loadedData) {
       this.evolutionId = loadedData.evolutionId;
       this.completedTracks = loadedData.completedTracks;
-      this.currentTrack = this.tracks.find(track => track.name === loadedData.currentTrack);
-      if(!this.currentTrack) {
-        console.warn(`Current track ${loadedData.currentTrack} not found, using first track`);
-        this.currentTrack = this.tracks[0];
-      }
       let generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
       if(!generationData) {
         console.warn(`Generation data (${loadedData.lastGenerationId}) not found for evolution ${this.evolutionId}, loading latest generation`);
@@ -69,153 +66,50 @@ class Evolution {
       this.generation = deserializeGeneration(generationData);
 
       const historyData = await this.database.loadGenerationsByEvolutionId(this.evolutionId);
-      for(const historyEntry of historyData) {
-        if(historyEntry.overallScore.averageScore === null) {
-          continue;
-        }
-        this.history.addGenerationData(
-          historyEntry.trackName, 
-          historyEntry.generationId, 
-          historyEntry.overallScore, 
-          historyEntry.epoch, 
-          historyEntry.populationSize, 
-          historyEntry.cars ? historyEntry.cars.map(car => ({
-            genome: deserializeGenome(car.genome),
-            score: car.score,
-            stats: car.stats,
-          })) : null
-        )
+      this.history.deserialize(historyData);
+
+      if(loadedData.epochRunners && loadedData.epochRunners.evolution) {
+        this.evolutionEpochRunner.deserialize(loadedData.epochRunners.evolution);
       }
 
       // hall of fame
-      const debug = []
-      for(const hofEntry of loadedData.hallOfFame) {
-        const hofGenome = deserializeGenome(hofEntry.genome);
-        const hofScore = hofEntry.scoreOnBestTrack;
-        const hofTrackName = hofEntry.bestTrackName;
-        const car = new NeuralCarObject(hofGenome);
-        car.isFinished = true; // Important: set isFinished to true to be considered for hall of fame
-        const added = this.hallOfFame.addCar(car, hofScore, hofTrackName);
-        if(!added) {
-          continue;
-        }
-        const allTracksEvaluation = hofEntry.allTracksEvaluation
-        for(const trackEvaluation of allTracksEvaluation) {
-          this.hallOfFame.updateCar(car, trackEvaluation.bestScore, trackEvaluation.trackName);
-        }
-        debug.push({globalScore: hofEntry.globalScore, count: hofEntry.allTracksEvaluation.length, hofEntry});
-      }
-      debug.sort((a, b) => b.globalScore - a.globalScore);
-      console.log(debug);
+      this.hallOfFame.deserialize(loadedData.hallOfFame);
 
     } else {
       this.generation = new Generation();
-      this.currentTrack = this.tracks[0]
       this.generation.createRandomPopulation(populationSize);
     }
   }
 
-  startSimulation() {
-    const { 
-      simulationStep = 0.05, 
-      simulationSpeed = 1, 
-      graphicsQuality = "low", 
-      scoreWeights = { trackDistance: 1 } 
-    } = this.config;
-    this.simulation = new Simulation(this.pixiApp);
-    this.simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
-    this.pixiApp.stage.addChild(this.simulation.view);
-    this.simulation.onComplete = () => this.onEpochComplete();
-    this.simulation.setTrack(this.currentTrack);
-    this.simulation.addGeneration(this.generation);
-    this.simulation.view.setEvolutionHistory(this.history, this.currentTrack.name);
-    this.simulation.start(this.generation.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
-    this.simulation.startRender(); // Start render loop
+  createSimulation() {
+    const simulation = new Simulation(this.pixiApp);
+    simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
+    this.pixiApp.stage.addChild(simulation.view);
+
+    return simulation;
+  }
+
+  async runInLoop() {
+    this.isRunning = true;
+    while(this.isRunning) {
+      await this.evolutionEpochRunner.run(this.createSimulation());
+    }
+    this.isRunning = false;
   }
 
   stopSimulation() {
-    if(!this.simulation) return;
-    this.simulation.stop(); // Stop simulation loop
-    this.simulation.stopRender(); // Stop render loop
+    this.isRunning = false;
+    if(this.currentEpochRunner) {
+      this.currentEpochRunner.stop();
+    }
   }
   
   scaleView(width, height) {
-    if(this.simulation) {
-      this.simulation.scaleView(width, height);
+    if(this.currentEpochRunner) {
+      this.currentEpochRunner.scaleView(width, height);
     }
   }
 
-  getViewWidth() {
-    return this.simulation.view.width;
-  }
-
-  getViewHeight() {
-    return this.simulation.view.height;
-  }
-
-  getNextTrack() {
-    const { replayInterval = 6 } = this.config;
-    let newTrack = null
-    if (this.generation.epoch % replayInterval === 0 && this.completedTracks.length >= 2) {
-      const randomTrackName = this.completedTracks[Math.floor(Math.random() * this.completedTracks.length)];
-      newTrack = this.tracks.find(track => track.name === randomTrackName);
-    } else {
-      const nextIncompleteTrack = this.tracks.find(track => !this.completedTracks.includes(track.name));
-      newTrack = nextIncompleteTrack;
-    }
-    if(!newTrack) {
-      this.completedTracks = [];
-      return this.tracks[0];
-    }
-    return newTrack;
-  }
-
-  async onEpochComplete() {
-    const { 
-      trackPassThreshold = 0.25, 
-      populationHistorySize = 10 
-    } = this.config;
-    const hallOfFameConfig = this.config.hallOfFame || {};
-    const { 
-      candidatesPerGeneration = 6
-    } = hallOfFameConfig;
-    // complete simulation and calculate scores
-    console.log('== Epoch completed =============');
-    const passRate = this.generation.finishedCount / this.generation.totalCount;
-    if(passRate >= trackPassThreshold && !this.completedTracks.includes(this.simulation.track.name)) {
-      this.completedTracks.push(this.simulation.track.name); // mark as completed
-    }
-
-    // evolve generation
-    const scoreWeights = this.config.scoreWeights || { trackDistance: 1 };
-    this.generation.calculateScores(scoreWeights);
-    this.history.addGenerationInstance(this.generation, this.currentTrack.name);
-    const [leaders, leadersScores] = this.generation.getLeaders(candidatesPerGeneration);
-    for(let i = 0; i < leaders.length; i++) {
-      this.hallOfFame.addCar(
-        leaders[i], 
-        leadersScores[i], 
-        this.currentTrack.name
-      );
-    }
-    const hallOfFameResults = this.generation.getHallOfFameCarsAndScores(this.hallOfFame);
-    for(const result of hallOfFameResults) {
-      this.hallOfFame.updateCar(result.car, result.score, this.currentTrack.name);
-    }
-    await this.store();
-    this.generation = this.generation.evolve(this.hallOfFame, this.config.evolve);
-    this.currentTrack = this.getNextTrack();
-
-    // remove current track from simulation
-    this.simulation.removeAndDispose();
-
-    // run new simulation 
-    this.generation.resetScores();
-    await this.store();
-    await this.database.trimGenerationHistory(this.evolutionId, populationHistorySize);
-
-    this.startSimulation();
-  }
 }
 
 export default Evolution;

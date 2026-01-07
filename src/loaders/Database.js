@@ -73,6 +73,7 @@ class Database {
       lastGenerationId: data.generation.generationId,
       currentTrack: data.currentTrack,
       hallOfFame: data.hallOfFame,
+      epochRunners: data.epochRunners,
     };
 
     await Promise.all([

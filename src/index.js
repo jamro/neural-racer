@@ -67,6 +67,18 @@ async function initApp() {
 
     console.log('PixiJS application initialized with fonts loaded!');
 
+    // Handle window resize
+    resizeHandler = () => {
+      if(app && app.resize) {
+        app.resize(window.innerWidth, window.innerHeight);
+        evolution.scaleView(window.innerWidth, window.innerHeight);
+        if(neuralLab) {
+          neuralLab.scaleView(window.innerWidth, window.innerHeight);
+        }
+      }
+    };
+    window.addEventListener('resize', resizeHandler);
+
     if(MODE === 'neuralLab') {
       // test Neural Lab
       neuralLab = new NeuralLab(evolution.generation.cars[0]);
@@ -74,20 +86,8 @@ async function initApp() {
       neuralLab.scaleView(app.screen.width, app.screen.height);
       neuralLab.startRenderLoop();
     } else if(MODE === 'evolution') {
-        evolution.startSimulation();
+      await evolution.runInLoop();
     }
-
-    // Handle window resize
-    resizeHandler = () => {
-        if(app && app.resize) {
-            app.resize(window.innerWidth, window.innerHeight);
-            evolution.scaleView(window.innerWidth, window.innerHeight);
-            if(neuralLab) {
-                neuralLab.scaleView(window.innerWidth, window.innerHeight);
-            }
-        }
-    };
-    window.addEventListener('resize', resizeHandler);
 }
 
 /**
