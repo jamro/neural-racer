@@ -15,7 +15,7 @@ class Evolution {
     this.pixiApp = pixiApp;
     this.tracks = tracks;
     this.completedTracks = [];
-    this.generation = null;
+    this.latestGeneration = null;
     this.history = new GenerationHistory();
 
     this.database = new Database(CURRENT_EVOLUTION_FILENAME);
@@ -27,13 +27,21 @@ class Evolution {
     this.config = {};
   }
 
+  get generation() {
+    return this.latestGeneration;
+  }
+
+  set generation(generation) {
+    this.latestGeneration = generation;
+  }
+
   // store in local storage
   async store() {
     const data = {
       evolutionId: this.evolutionId,
       completedTracks: this.completedTracks,
       currentTrack: this.evolutionEpochRunner.currentTrack.name,
-      generation: serializeGeneration(this.generation, this.evolutionEpochRunner.currentTrack.name),
+      generation: serializeGeneration(this.latestGeneration, this.evolutionEpochRunner.currentTrack.name),
       hallOfFame: this.hallOfFame.serialize(),
       epochRunners: {
         evolution: this.evolutionEpochRunner.serialize(),
@@ -63,7 +71,7 @@ class Evolution {
         console.warn(`Generation data (${loadedData.lastGenerationId}) not found for evolution ${this.evolutionId}, loading latest generation`);
         generationData = await this.database.findLatestGenerationByEvolutionId(this.evolutionId);
       }
-      this.generation = deserializeGeneration(generationData);
+      this.latestGeneration = deserializeGeneration(generationData);
 
       const historyData = await this.database.loadGenerationsByEvolutionId(this.evolutionId);
       this.history.deserialize(historyData);
@@ -76,8 +84,8 @@ class Evolution {
       this.hallOfFame.deserialize(loadedData.hallOfFame);
 
     } else {
-      this.generation = new Generation();
-      this.generation.createRandomPopulation(populationSize);
+      this.latestGeneration = new Generation();
+      this.latestGeneration.createRandomPopulation(populationSize);
     }
   }
 
@@ -91,8 +99,10 @@ class Evolution {
 
   async runInLoop() {
     this.isRunning = true;
+    let generation = this.latestGeneration;
     while(this.isRunning) {
-      await this.evolutionEpochRunner.run(this.createSimulation());
+      generation = await this.currentEpochRunner.run(generation, this.createSimulation());
+      this.latestGeneration = generation;
     }
     this.isRunning = false;
   }

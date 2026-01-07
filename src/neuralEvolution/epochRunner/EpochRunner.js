@@ -6,8 +6,8 @@ export default class EpochRunner {
     this.evolution = evolution;
   }
 
-  async run(simulation) {
-
+  async run(generation, simulation) {
+    throw new Error('Not implemented! must return generation');
   }
 
 

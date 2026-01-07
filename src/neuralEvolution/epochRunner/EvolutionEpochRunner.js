@@ -22,26 +22,29 @@ export default class EvolutionEpochRunner extends EpochRunner {
     }
   }
 
-  async run(simulation) {
+  async run(latestGeneration, simulation) {
     const { 
       simulationStep = 0.05, 
       simulationSpeed = 1, 
       graphicsQuality = "low", 
-      scoreWeights = { trackDistance: 1 } 
-    } = this.evolution.config;
-    const { 
+      scoreWeights = { trackDistance: 1 },
       trackPassThreshold = 0.25, 
-      populationHistorySize = 10 
+      populationHistorySize = 10,
+      replayInterval = 6
     } = this.evolution.config;
+    const hallOfFameConfig = this.evolution.config.hallOfFame || {};
+    const { 
+      candidatesPerGeneration = 6
+    } = hallOfFameConfig;
 
-    this.evolution.generation.resetScores();
+    latestGeneration.resetScores();
 
     // run new simulation 
     this.simulation = simulation;
     this.simulation.setTrack(this.currentTrack);
-    this.simulation.addGeneration(this.evolution.generation);
+    this.simulation.addGeneration(latestGeneration);
     this.simulation.view.setEvolutionHistory(this.evolution.history, this.currentTrack.name);
-    this.simulation.start(this.evolution.generation.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
+    this.simulation.start(latestGeneration.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
     this.simulation.startRender(); // Start render loop
 
     // wait for simulation to complete
@@ -49,21 +52,17 @@ export default class EvolutionEpochRunner extends EpochRunner {
       this.simulation.onComplete = resolve;
     });
 
-    const hallOfFameConfig = this.evolution.config.hallOfFame || {};
-    const { 
-      candidatesPerGeneration = 6
-    } = hallOfFameConfig;
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
-    const passRate = this.evolution.generation.finishedCount / this.evolution.generation.totalCount;
+    const passRate = latestGeneration.finishedCount / latestGeneration.totalCount;
     if(passRate >= trackPassThreshold && !this.evolution.completedTracks.includes(this.simulation.track.name)) {
       this.evolution.completedTracks.push(this.simulation.track.name); // mark as completed
     }
 
     // evolve generation
-    this.evolution.generation.calculateScores(scoreWeights);
-    this.evolution.history.addGenerationInstance(this.evolution.generation, this.currentTrack.name);
-    const [leaders, leadersScores] = this.evolution.generation.getLeaders(candidatesPerGeneration);
+    latestGeneration.calculateScores(scoreWeights);
+    this.evolution.history.addGenerationInstance(latestGeneration, this.currentTrack.name);
+    const [leaders, leadersScores] = latestGeneration.getLeaders(candidatesPerGeneration);
     for(let i = 0; i < leaders.length; i++) {
       this.evolution.hallOfFame.addCar(
         leaders[i], 
@@ -71,7 +70,7 @@ export default class EvolutionEpochRunner extends EpochRunner {
         this.currentTrack.name
       );
     }
-    const hallOfFameResults = this.evolution.generation.getHallOfFameCarsAndScores(this.evolution.hallOfFame);
+    const hallOfFameResults = latestGeneration.getHallOfFameCarsAndScores(this.evolution.hallOfFame);
     for(const result of hallOfFameResults) {
       this.evolution.hallOfFame.updateCar(result.car, result.score, this.currentTrack.name);
     }
@@ -80,17 +79,19 @@ export default class EvolutionEpochRunner extends EpochRunner {
     await this.evolution.database.trimGenerationHistory(this.evolution.evolutionId, populationHistorySize);
     await this.evolution.store(); // store before evolution to keep scoring for history
 
-    this.evolution.generation = this.evolution.generation.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
-    this.currentTrack = this.getNextTrack();
+    const newGeneration = latestGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
+    this.currentTrack = this.getNextTrack(newGeneration.epoch, replayInterval);
 
     await this.evolution.store();
 
     // remove current track from simulation
-    this.evolution.generation.resetScores();
+    newGeneration.resetScores();
     if(this.simulation) {
       this.simulation.removeAndDispose();
     }
     this.simulation = null
+
+    return newGeneration;
   }
 
   stop() {
@@ -100,15 +101,13 @@ export default class EvolutionEpochRunner extends EpochRunner {
   }
 
   scaleView(width, height) {
-    if(this.simulation) {
-      this.simulation.scaleView(width, height);
-    }
+    if(!this.simulation) return;
+    this.simulation.scaleView(width, height);
   }
 
-  getNextTrack() {
-    const { replayInterval = 6 } = this.evolution.config;
+  getNextTrack(epoch, replayInterval) {
     let newTrack = null
-    if (this.evolution.generation.epoch % replayInterval === 0 && this.evolution.completedTracks.length >= 2) {
+    if (epoch % replayInterval === 0 && this.evolution.completedTracks.length >= 2) {
       const randomTrackName = this.evolution.completedTracks[Math.floor(Math.random() * this.evolution.completedTracks.length)];
       newTrack = this.allTracks.find(track => track.name === randomTrackName);
     } else {
