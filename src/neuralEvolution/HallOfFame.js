@@ -64,6 +64,7 @@ export default class HallOfFame {
     this.genomeMap = new Map();
     this._perTrackSize = 30;
     this._minFitnessDistance = 0.001;
+    this._trackEvaluationCount = {}
   }
 
   set minFitnessDistance(distance) {
@@ -151,11 +152,10 @@ export default class HallOfFame {
       for(const trackEvaluation of allTracksEvaluation) {
         this.updateCar(car, trackEvaluation.bestScore, trackEvaluation.trackName);
       }
-      debug.push({globalScore: hofEntry.globalScore, count: hofEntry.allTracksEvaluation.length, hofEntry});
+      debug.push({globalScore: hofEntry.globalScore, count: hofEntry.allTracksEvaluation.length, ...hofEntry});
     }
     debug.sort((a, b) => b.globalScore - a.globalScore);
     console.log(debug);
-    console.log(this.getTrackSaturation());
   }
 
   _addEntry(entry) {
@@ -232,6 +232,10 @@ export default class HallOfFame {
       return;
     }
     entry.update(car, score, trackName);
+    if(!this._trackEvaluationCount[trackName]) {
+      this._trackEvaluationCount[trackName] = 0;
+    }
+    this._trackEvaluationCount[trackName]++;
   }
 
   pickRandom(k=1) {
@@ -306,22 +310,42 @@ export default class HallOfFame {
     return allEntries;
   }
 
-  /**
-   * Each car in Hall of Fame is tested on multiple tracks. 
-   * This function calculates the saturation of the hall of fame by counting the number of tracks each car is tested on vs the total number of tracks.
-   */
   getTrackSaturation() {
-    const trackEntries = Object.values(this.trackData).flat();
-    let maxTracksPerCar = 0;
-    let allTracks = 0;
-    for (const entry of trackEntries) {
-      if (entry.allTracksEvaluation.length > maxTracksPerCar) {
-        maxTracksPerCar = entry.allTracksEvaluation.length;
-      }
-      allTracks += entry.allTracksEvaluation.length;
-    }
-    const maxTracks = trackEntries.length * maxTracksPerCar;
-    return allTracks / maxTracks;
+    const tracks = Object.keys(this._trackEvaluationCount);
+    const saturationMap = {}
 
+    for(const track of tracks) {
+      saturationMap[track] = this._trackEvaluationCount[track] / Object.values(this.trackData).flat().length
+    }
+    return saturationMap;
+  }
+
+  getEvaluationCandidates(populationMin=20, populationMax=100) {
+    const saturationMap = this.getTrackSaturation();
+    const saturationRows = Object.keys(saturationMap)
+      .map(track => ({track, saturation: saturationMap[track]}))
+      .sort((a, b) => a.saturation - b.saturation);
+
+    if(saturationRows.length === 0) {
+      return null;
+    }
+
+    const leastSaturatedTrack = saturationRows[0].track;
+    const allTrackEntries = Object.values(this.trackData)
+      .flat()
+      .filter(entry => {
+        const entryTracks = entry.allTracksEvaluation.map(evaluation => evaluation.trackName);
+        return !entryTracks.includes(leastSaturatedTrack);
+      })
+
+
+    if(allTrackEntries.length < populationMin) {
+      return null;
+    }
+    
+    return {
+      trackName: leastSaturatedTrack,
+      candidates: allTrackEntries.slice(0, populationMax).map(entry => entry.car.genome)
+    }
   }
 }

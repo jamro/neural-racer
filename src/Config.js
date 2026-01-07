@@ -3,7 +3,7 @@ class Config {
     this.graphicsQuality = "high"; // "high" or "low"
     this.frameRate = 30; // frame rate in frames per second
     this.populationSize = 200; // number of cars in the population
-    this.populationHistorySize = 10; // number of full generations (with genomes) to keep in the population history
+    this.populationHistorySize = 30; // number of full generations (with genomes) to keep in the population history
     this.simulationStep = 0.060; // time step in seconds
     this.simulationSpeed = 0.5; // number of sim steps per frame
     this.replayInterval = 8; // every how many epochs to run evolution on random, completed track
@@ -20,7 +20,7 @@ class Config {
       },
     };
     this.hallOfFame = {
-      perTrackSize: 10,          // max genomes stored per track
+      perTrackSize: 30,          // max genomes stored per track
       candidatesPerGeneration: 6, // how many top genomes to consider per generation
       minFitnessDistance: 0.001, // minimal fitness distance to be considered for hall of fame
     }

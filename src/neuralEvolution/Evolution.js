@@ -5,6 +5,7 @@ import GenerationHistory from './GenerationHistory';
 import HallOfFame from './HallOfFame';
 import { v4 as uuidv4 } from 'uuid';
 import EvolutionEpochRunner from './epochRunner/EvolutionEpochRunner';
+import HallOfFameEpochRunner from './epochRunner/HallOfFameEpochRunner';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -21,6 +22,7 @@ class Evolution {
     this.database = new Database(CURRENT_EVOLUTION_FILENAME);
     this.hallOfFame = new HallOfFame();
     this.evolutionEpochRunner = new EvolutionEpochRunner(this, tracks);
+    this.hallOfFameEpochRunner = new HallOfFameEpochRunner(this, tracks);
     this.currentEpochRunner = this.evolutionEpochRunner;
 
     this.isRunning = false;
@@ -98,11 +100,28 @@ class Evolution {
   }
 
   async runInLoop() {
+    const {
+      populationSize = 100,
+    } = this.config;
+    const hallOfFameConfig = this.config.hallOfFame || {};
+    const { 
+      perTrackSize = 10,
+    } = hallOfFameConfig;
+
     this.isRunning = true;
     let generation = this.latestGeneration;
+    let simulation
     while(this.isRunning) {
-      generation = await this.currentEpochRunner.run(generation, this.createSimulation());
+      const evaluationCandidates = this.hallOfFame.getEvaluationCandidates(perTrackSize, populationSize);
+      if(evaluationCandidates) {
+        console.log('Evaluating hall of fame');
+      }
+      this.currentEpochRunner = evaluationCandidates ? this.hallOfFameEpochRunner : this.evolutionEpochRunner;
+
+      simulation = this.createSimulation();
+      generation = await this.currentEpochRunner.run(generation, simulation);
       this.latestGeneration = generation;
+      simulation.removeAndDispose();
     }
     this.isRunning = false;
   }

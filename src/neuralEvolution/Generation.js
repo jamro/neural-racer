@@ -3,10 +3,10 @@ import { Genome, serializeGenome, deserializeGenome } from './Genome';
 import { calculateScore } from './fitness';
 import { v4 as uuidv4 } from 'uuid';
 
-function serializeGeneration(generation, trackName) {
+function serializeGeneration(generation) {
   return {
     generationId: generation.generationId,
-    trackName: trackName, // keep track to restore generation history
+    trackName: generation.trackName, // keep track to restore generation history
     cars: generation.cars.map((car, index) => ({
       score: generation.scores[index],
       stats: generation.stats[index],
@@ -20,6 +20,7 @@ function serializeGeneration(generation, trackName) {
 function deserializeGeneration(data) {
   const generation = new Generation();
   generation.generationId = data.generationId;
+  generation.trackName = data.trackName;
   generation.setPopulation(data.cars.map(car => deserializeGenome(car.genome)));
   for (let i = 0; i < data.cars.length; i++) {
     generation.scores[i] = data.cars[i].score;
@@ -35,6 +36,7 @@ class Generation {
       this.generationId = uuidv4();
       this.cars = [];
       this.epoch = 1
+      this.trackName = null;
       this.scores = Array(this.cars.length).fill(null);
       this.stats = Array(this.cars.length).fill(null);
 
@@ -297,7 +299,6 @@ class Generation {
       // Get elite genomes from hall of fame
       const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
       eliteGenomes.push(...hofEliteGenomes);
-      console.log(`Injecting Hall of Fame elite genomes: ${hofEliteGenomes.map(genome => genome.genomeId).join(', ')}`);
       
       // Fill the rest of the population with crossover offspring
       const newGenomes = [...eliteGenomes];

@@ -217,18 +217,22 @@ class Simulation {
     removeAndDispose() {
         this.stop();
         this.stopRender();
-        if (this.view.parent) {
+        if (this.view && this.view.parent) {
             this.view.parent.removeChild(this.view);
         }
         this.cars = [];
-        this.track.view.reset();
-        if(this.track.view.parent) {
+        if(this.track) {
+          this.track.view.reset();
+        }
+        if(this.track && this.track.view && this.track.view.parent) {
             this.track.view.parent.removeChild(this.track.view);
         }
         this.track = null;
         this.frameCount = 0;
         this.activeCars = 0;
-        this.view.destroy({children: true, texture: false, baseTexture: false});
+        if(this.view) {
+          this.view.destroy({children: true, texture: false, baseTexture: false});
+        }
         this.view = null;
     }
 }

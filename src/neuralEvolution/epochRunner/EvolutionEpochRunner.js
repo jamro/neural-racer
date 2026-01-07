@@ -2,9 +2,8 @@ import EpochRunner from './EpochRunner';
 
 export default class EvolutionEpochRunner extends EpochRunner {
   constructor(evolution, allTracks) {
-    super(evolution);
+    super(evolution, allTracks);
     this.currentTrack = allTracks[0];
-    this.allTracks = allTracks;
     this.simulation = null;
   }
 
@@ -77,19 +76,21 @@ export default class EvolutionEpochRunner extends EpochRunner {
 
     // store and trim generation history
     await this.evolution.database.trimGenerationHistory(this.evolution.evolutionId, populationHistorySize);
+    latestGeneration.trackName = this.currentTrack.name;
     await this.evolution.store(); // store before evolution to keep scoring for history
 
     const newGeneration = latestGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
+    newGeneration.resetScores();
     this.currentTrack = this.getNextTrack(newGeneration.epoch, replayInterval);
-
-    await this.evolution.store();
+    newGeneration.trackName = this.currentTrack.name;
 
     // remove current track from simulation
-    newGeneration.resetScores();
     if(this.simulation) {
       this.simulation.removeAndDispose();
     }
     this.simulation = null
+
+    await this.evolution.store();
 
     return newGeneration;
   }
