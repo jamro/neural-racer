@@ -118,6 +118,22 @@ class Generation {
       }
     }
 
+    getHallOfFameCarsAndScores(hallOfFame) {
+      const hallOfFameGenomeIds = hallOfFame.getAllGenomeIds();
+      const hallOfFameGenomeIdMap = new Map(hallOfFameGenomeIds.map(id => [id, true]));
+      const result = [];
+      for(let i = 0; i < this.cars.length; i++) {
+        const car = this.cars[i]; 
+        if(hallOfFameGenomeIdMap.has(car.genome.genomeId)) {
+          result.push({
+            car: car,
+            score: this.scores[i],
+          });
+        }
+      }
+      return result;
+    }
+
     resetScores() {
       this.scores = Array(this.cars.length).fill(null);
       this.stats = Array(this.cars.length).fill(null);
@@ -281,6 +297,7 @@ class Generation {
       // Get elite genomes from hall of fame
       const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
       eliteGenomes.push(...hofEliteGenomes);
+      console.log(`Injecting Hall of Fame elite genomes: ${hofEliteGenomes.map(genome => genome.genomeId).join(', ')}`);
       
       // Fill the rest of the population with crossover offspring
       const newGenomes = [...eliteGenomes];

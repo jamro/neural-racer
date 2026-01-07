@@ -1,8 +1,66 @@
 import { serializeGenome } from './Genome';
 
+
+class HallOfFameEntry {
+  constructor(car, score, trackName) {
+    this.genomeId = car.genome.genomeId;
+    this.car = car;
+    this.score = score;
+    this.trackName = trackName;
+    this.allTracksEvaluation = [
+      { trackName: trackName, bestScore: score }
+    ]
+    this.globalScore = 0
+    this._updateGlobalScore();
+  }
+
+  _updateGlobalScore() {
+    this.globalScore = this.allTracksEvaluation.reduce((sum, { bestScore }) => {
+      let result = 0
+      if(bestScore < 1.0) {
+        return sum + (-1 + 2 * bestScore);
+      } else {
+        return sum + bestScore;
+      }
+    }, 0);
+    return this.globalScore;
+  }
+
+  serialize() {
+    return {
+      genome: serializeGenome(this.car.genome),
+      globalScore: this.globalScore,
+      bestTrackName: this.trackName,
+      scoreOnBestTrack: this.score,
+      allTracksEvaluation: this.allTracksEvaluation.map(entry => (
+        { 
+          trackName: entry.trackName, 
+          bestScore: entry.bestScore 
+        }
+      ))
+    }
+  }
+
+  update(car, score, trackName) {
+    if(trackName === this.trackName && score > this.score) {
+      this.score = score;
+    }
+
+    // replace existing entry fo this track if score is higher
+    const existingEntry = this.allTracksEvaluation.find(entry => entry.trackName === trackName);
+    if(existingEntry && score > existingEntry.bestScore) {
+      existingEntry.bestScore = score;
+    } else if(!existingEntry) {
+      this.allTracksEvaluation.push({ trackName: trackName, bestScore: score });
+    }
+    this._updateGlobalScore();
+  }
+}
+
 export default class HallOfFame {
   constructor() {
-    this.hallOfFame = {}
+    this.trackData = {}
+    this.genomeMap = new Map();
     this._perTrackSize = 30;
     this._minFitnessDistance = 0.001;
   }
@@ -11,9 +69,9 @@ export default class HallOfFame {
     this._minFitnessDistance = distance;
     
     // Remove entries that are too similar, keeping the better-scoring ones
-    const tracks = Object.keys(this.hallOfFame);
+    const tracks = Object.keys(this.trackData);
     for(const track of tracks) {
-      const trackEntries = this.hallOfFame[track];
+      const trackEntries = this.trackData[track];
       if(trackEntries.length === 0) {
         continue;
       }
@@ -35,7 +93,7 @@ export default class HallOfFame {
         // If not sufficiently different, skip it (we keep the better-scoring one that's already in keptEntries)
       }
       
-      this.hallOfFame[track] = keptEntries;
+      this.trackData[track] = keptEntries;
     }
   }
 
@@ -47,14 +105,14 @@ export default class HallOfFame {
     this._perTrackSize = size;
     
     // Trim existing entries to ensure they don't exceed the new limit
-    const tracks = Object.keys(this.hallOfFame);
+    const tracks = Object.keys(this.trackData);
     for(const track of tracks) {
-      const trackEntries = this.hallOfFame[track];
+      const trackEntries = this.trackData[track];
       if(trackEntries.length > size) {
         // Sort by score descending (highest first) to ensure correct order
-        trackEntries.sort((a, b) => b.score - a.score);
+        trackEntries.sort((a, b) => b.globalScore - a.globalScore);
         // Keep only the top 'size' entries, removing the lowest-scoring ones
-        this.hallOfFame[track] = trackEntries.slice(0, size);
+        this.trackData[track] = trackEntries.slice(0, size);
       }
     }
   }
@@ -64,37 +122,38 @@ export default class HallOfFame {
   }
 
   serialize() {
-    const tracks = Object.keys(this.hallOfFame);
+    const tracks = Object.keys(this.trackData);
     const data = []
     for(const track of tracks) {
-      const trackEntries = this.hallOfFame[track];
+      const trackEntries = this.trackData[track];
       // Serialize all entries for this track
       for(const entry of trackEntries) {
-        data.push({
-          genome: serializeGenome(entry.car.genome),
-          bestTrackName: track,
-          scoreOnBestTrack: entry.score
-        })
+        data.push(entry.serialize());
       }
     }
     return data;
   }
 
+  _addEntry(entry) {
+    this.trackData[entry.trackName].push(entry);
+    this.genomeMap.set(entry.genomeId, entry);
+  }
+
   addCar(car, score, trackName) {
     if(!car || !score || !trackName) {
-      return;
+      return false;
     }
 
     if(!car.isFinished) { // Only add cars that have finished the track
-      return;
+      return false;
     }
 
     // Initialize the track array if it doesn't exist
-    if(!this.hallOfFame[trackName]) {
-      this.hallOfFame[trackName] = [];
+    if(!this.trackData[trackName]) {
+      this.trackData[trackName] = [];
     }
 
-    const trackEntries = this.hallOfFame[trackName];
+    const trackEntries = this.trackData[trackName];
 
     // Check if the new car is sufficiently different from all existing entries
     const isSufficientlyDifferent = trackEntries.every(entry => {
@@ -102,24 +161,26 @@ export default class HallOfFame {
     });
 
     if(!isSufficientlyDifferent) {
-      return; // Not sufficiently different, don't add
+      return false; // Not sufficiently different, don't add
     }
 
     // If below perTrackSize, add the car
     if(trackEntries.length < this._perTrackSize) {
-      trackEntries.push({ car, score });
+      this._addEntry(new HallOfFameEntry(car, score, trackName));
       // Sort by score descending (highest first) for easier management
-      trackEntries.sort((a, b) => b.score - a.score);
-      return;
+      trackEntries.sort((a, b) => b.globalScore - a.globalScore);
+      // add to list of all tracks too
+      this.updateCar(car, score, trackName);
+      return true;
     }
 
     // If at perTrackSize, only add if score is higher than the lowest
     // Find the lowest score entry
-    let lowestScore = trackEntries[0].score;
+    let lowestScore = trackEntries[0].globalScore;
     let lowestIndex = 0;
     for(let i = 1; i < trackEntries.length; i++) {
-      if(trackEntries[i].score < lowestScore) {
-        lowestScore = trackEntries[i].score;
+      if(trackEntries[i].globalScore < lowestScore) {
+        lowestScore = trackEntries[i].globalScore;
         lowestIndex = i;
       }
     }
@@ -129,17 +190,31 @@ export default class HallOfFame {
       // Remove the lowest-scoring entry
       trackEntries.splice(lowestIndex, 1);
       // Add the new entry
-      trackEntries.push({ car, score });
+      this._addEntry(new HallOfFameEntry(car, score, trackName));
       // Sort by score descending
-      trackEntries.sort((a, b) => b.score - a.score);
+      trackEntries.sort((a, b) => b.globalScore - a.globalScore);
+      // add to list of all tracks too
+      this.updateCar(car, score, trackName);
+      return true;
     }
+    return false;
+  }
+
+  updateCar(car, score, trackName) {
+    const genomeId = car.genome.genomeId;
+    const entry = this.genomeMap.get(genomeId);
+    if(!entry) {
+      console.warn(`Car with genomeId ${genomeId} not found in hall of fame`);
+      return;
+    }
+    entry.update(car, score, trackName);
   }
 
   pickRandom(k=1) {
     const allEntries = [];
-    const tracks = Object.keys(this.hallOfFame);
+    const tracks = Object.keys(this.trackData);
     for(const track of tracks) {
-      const trackEntries = this.hallOfFame[track];
+      const trackEntries = this.trackData[track];
       for(const entry of trackEntries) {
         allEntries.push(entry);
       }
@@ -151,17 +226,59 @@ export default class HallOfFame {
     // If requesting more cars than available, return all available
     const count = Math.min(k, allEntries.length);
     
-    // Create a copy of the array to avoid modifying the original
-    const availableEntries = [...allEntries];
-    const selectedCars = [];
+    // Sort entries by globalScore descending (best first)
+    const sortedEntries = [...allEntries].sort((a, b) => b.globalScore - a.globalScore);
     
-    // Randomly select k different cars
+    // Rank-based sampling without replacement
+    const selectedCars = [];
+    const availableEntries = [...sortedEntries];
+    
     for(let i = 0; i < count; i++) {
-      const randomIndex = Math.floor(Math.random() * availableEntries.length);
-      const selectedEntry = availableEntries.splice(randomIndex, 1)[0];
+      // Calculate rank-based probabilities based on current available entries
+      // Rank 1 (best) has highest probability, rank N (worst) has lowest
+      // Using linear rank-based: probability proportional to 1/rank
+      const weights = availableEntries.map((_, index) => {
+        const rank = index + 1; // rank starts at 1 (best entry has rank 1)
+        return 1 / rank; // Higher rank (lower number) = higher weight
+      });
+      
+      // Normalize weights to probabilities
+      const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+      const probabilities = weights.map(w => w / totalWeight);
+      
+      // Sample based on probabilities
+      const random = Math.random();
+      let cumulativeProbability = 0;
+      let selectedIndex = 0;
+      
+      for(let j = 0; j < probabilities.length; j++) {
+        cumulativeProbability += probabilities[j];
+        if(random <= cumulativeProbability) {
+          selectedIndex = j;
+          break;
+        }
+      }
+      
+      // Get the selected entry
+      const selectedEntry = availableEntries[selectedIndex];
       selectedCars.push(selectedEntry.car);
+      
+      // Remove the selected entry from available entries (without replacement)
+      availableEntries.splice(selectedIndex, 1);
     }
     
     return selectedCars;
+  }
+
+  getAllGenomeIds() {
+    const allEntries = [];
+    const tracks = Object.keys(this.trackData);
+    for(const track of tracks) {
+      const trackEntries = this.trackData[track];
+      for(const entry of trackEntries) {
+        allEntries.push(entry.car.genome.genomeId);
+      }
+    }
+    return allEntries;
   }
 }

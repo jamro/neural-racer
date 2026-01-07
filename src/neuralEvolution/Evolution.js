@@ -88,14 +88,25 @@ class Evolution {
       }
 
       // hall of fame
+      const debug = []
       for(const hofEntry of loadedData.hallOfFame) {
         const hofGenome = deserializeGenome(hofEntry.genome);
         const hofScore = hofEntry.scoreOnBestTrack;
         const hofTrackName = hofEntry.bestTrackName;
         const car = new NeuralCarObject(hofGenome);
         car.isFinished = true; // Important: set isFinished to true to be considered for hall of fame
-        this.hallOfFame.addCar(car, hofScore, hofTrackName);
+        const added = this.hallOfFame.addCar(car, hofScore, hofTrackName);
+        if(!added) {
+          continue;
+        }
+        const allTracksEvaluation = hofEntry.allTracksEvaluation
+        for(const trackEvaluation of allTracksEvaluation) {
+          this.hallOfFame.updateCar(car, trackEvaluation.bestScore, trackEvaluation.trackName);
+        }
+        debug.push({globalScore: hofEntry.globalScore, count: hofEntry.allTracksEvaluation.length, hofEntry});
       }
+      debug.sort((a, b) => b.globalScore - a.globalScore);
+      console.log(debug);
 
     } else {
       this.generation = new Generation();
@@ -186,6 +197,10 @@ class Evolution {
         leadersScores[i], 
         this.currentTrack.name
       );
+    }
+    const hallOfFameResults = this.generation.getHallOfFameCarsAndScores(this.hallOfFame);
+    for(const result of hallOfFameResults) {
+      this.hallOfFame.updateCar(result.car, result.score, this.currentTrack.name);
     }
     await this.store();
     this.generation = this.generation.evolve(this.hallOfFame, this.config.evolve);

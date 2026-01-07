@@ -6,7 +6,7 @@ class Config {
     this.populationHistorySize = 10; // number of full generations (with genomes) to keep in the population history
     this.simulationStep = 0.060; // time step in seconds
     this.simulationSpeed = 0.5; // number of sim steps per frame
-    this.replayInterval = 6; // every how many epochs to run evolution on random, completed track
+    this.replayInterval = 8; // every how many epochs to run evolution on random, completed track
     this.trackPassThreshold = 0.25; // threshold for the pass rate to promote to the next track
     this.scoreWeights = {
       avgSpeedAtFinishLine: 2, // weight for the average speed at the finish line. If the car is not at the finish line, this weight is 0.
@@ -20,7 +20,7 @@ class Config {
       },
     };
     this.hallOfFame = {
-      perTrackSize: 30,          // max genomes stored per track
+      perTrackSize: 10,          // max genomes stored per track
       candidatesPerGeneration: 6, // how many top genomes to consider per generation
       minFitnessDistance: 0.001, // minimal fitness distance to be considered for hall of fame
     }
@@ -29,11 +29,11 @@ class Config {
   }
 
   setStandardMode() {
-    this.evolve.eliteRatio = 0.02; // percentage of top performing genomes to carry over to next generation
+    this.evolve.eliteRatio = 0.03; // percentage of top performing genomes to carry over to next generation
     this.evolve.hallOfFameEliteRatio = 0.01; // percentage of genomes from the hall of fame to carry over to next generation
-    this.evolve.eliminationEpochs = 12; // how often eliminate the weakest genomes and replace with random ones
-    this.evolve.eliminationRate = 0.05; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
-    this.evolve.crossover.selectionTournamentSize = 4; // size of tournament selection group of genomes to select the best one for crossover
+    this.evolve.eliminationEpochs = 10; // how often eliminate the weakest genomes and replace with random ones
+    this.evolve.eliminationRate = 0.08; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
+    this.evolve.crossover.selectionTournamentSize = 5; // size of tournament selection group of genomes to select the best one for crossover
     this.evolve.crossover.blendRatio = 0.65; // percentage blend crossovers, the remaining percentage is uniform crossover
     this.evolve.crossover.hallOfFameSelectionProbability = 0.15; // probability of selecting a parent from the hall of fame for crossover
     this.evolve.mutation.hiddenRate = 0.03; // probability of mutating a gene (applied to hidden layers of NN)
