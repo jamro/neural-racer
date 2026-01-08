@@ -1,0 +1,134 @@
+import EpochRunner from './EpochRunner';
+import {Generation} from '../Generation';
+
+const ALL_TRACKS_NAME = 'All Tracks';
+
+export default class AllTracksEpochRunner extends EpochRunner {
+
+  constructor(evolution, allTracks) {
+    super(evolution, allTracks);
+    this.isRunning = false;
+  }
+
+  serialize() {
+    return {};
+  }
+
+  deserialize(data) {
+    // nothing to do
+  }
+
+  async run(initialGeneration, simulation) {
+    const { 
+      simulationStep = 0.05, 
+      simulationSpeed = 1, 
+      graphicsQuality = "low", 
+      scoreWeights = { trackDistance: 1 },
+      trackPassThreshold = 0.25, 
+      populationHistorySize = 10,
+      replayInterval = 6
+    } = this.evolution.config;
+    const hallOfFameConfig = this.evolution.config.hallOfFame || {};
+    const { 
+      candidatesPerGeneration = 6
+    } = hallOfFameConfig;
+
+
+    let latestGeneration = initialGeneration;
+    this.isRunning = true;
+    this.simulation = simulation
+    const allScores = [];
+    const allStats = [];
+    for(let i = 0; i < this.allTracks.length && this.isRunning; i++) {
+      const track = this.allTracks[i];
+      console.log(`[AllTracksEpochRunner] Running for ${track.name} (${i + 1}/${this.allTracks.length})`);
+      latestGeneration.resetScores();
+
+      // run new simulation 
+      if(!this.simulation) {
+        this.simulation = this.evolution.createSimulation();
+      }
+      this.simulation.setTrack(track);
+      this.simulation.addGeneration(latestGeneration);
+      this.simulation.view.setEvolutionHistory(this.evolution.history, ALL_TRACKS_NAME);
+      this.simulation.start(latestGeneration.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
+      this.simulation.startRender(); // Start render loop
+
+      // wait for simulation to complete
+      await new Promise(resolve => {
+        this.simulation.onComplete = resolve;
+      });
+
+      latestGeneration.calculateScores(scoreWeights);
+      allScores.push(latestGeneration.scores);
+      allStats.push(latestGeneration.stats);
+
+      // remove current track from simulation
+      if(this.simulation) {
+        this.simulation.removeAndDispose();
+      }
+      this.simulation = null
+
+      // recreate generation
+      const refreshedGeneration = new Generation()
+      refreshedGeneration.epoch = latestGeneration.epoch;
+      refreshedGeneration.setPopulation(latestGeneration.cars.map(car => car.genome));
+      latestGeneration = refreshedGeneration;
+
+    }
+    this.isRunning = false;
+
+    // calculate consolidated scores and stats
+    const consolidatedStats = []
+    for (let i = 0; i < allStats[0].length; i++) {
+      consolidatedStats.push({
+        progress: allStats.reduce((acc, stats) => acc + stats[i].progress, 0) / allStats.length,
+        averageSpeed: allStats.reduce((acc, stats) => acc + stats[i].averageSpeed, 0) / allStats.length,
+      })
+    }
+    const consolidatedScores = []
+    for (let i = 0; i < allScores[0].length; i++) {
+      consolidatedScores.push(
+        allScores.reduce((acc, scores) => {
+          if(consolidatedStats[i].progress < 1.0) {
+            return acc + Math.min(scores[i], 1.0)
+          } else {
+            return acc + scores[i]
+          }
+        }, 0) / allScores.length
+      );
+      if(consolidatedScores[i] >= 1.0) {
+        initialGeneration.cars[i].isFinished = true;
+      }
+    }
+
+    initialGeneration.scores = consolidatedScores;
+    initialGeneration.stats = consolidatedStats;
+    initialGeneration.calculateOverallScore();
+
+    // update history and hall of fame
+    this.evolution.history.addGenerationInstance(initialGeneration, ALL_TRACKS_NAME);
+    
+
+    // store and trim generation history
+    await this.evolution.database.trimGenerationHistory(this.evolution.evolutionId, populationHistorySize);
+    initialGeneration.trackName = ALL_TRACKS_NAME;
+    await this.evolution.store(); // store before evolution to keep scoring for history
+
+    const newGeneration = initialGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
+    newGeneration.resetScores();
+    newGeneration.trackName = ALL_TRACKS_NAME;
+
+    await this.evolution.store();
+
+    return newGeneration;
+  }
+
+  stop() {
+    this.isRunning = false;
+  }
+
+  scaleView(width, height) {
+
+  }
+}

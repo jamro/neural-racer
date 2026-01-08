@@ -6,6 +6,7 @@ import HallOfFame from './HallOfFame';
 import { v4 as uuidv4 } from 'uuid';
 import EvolutionEpochRunner from './epochRunner/EvolutionEpochRunner';
 import HallOfFameEpochRunner from './epochRunner/HallOfFameEpochRunner';
+import AllTracksEpochRunner from './epochRunner/AllTracksEpochRunner';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -22,6 +23,7 @@ class Evolution {
     this.hallOfFame = new HallOfFame();
     this.evolutionEpochRunner = new EvolutionEpochRunner(this, tracks);
     this.hallOfFameEpochRunner = new HallOfFameEpochRunner(this, tracks);
+    this.allTracksEpochRunner = new AllTracksEpochRunner(this, tracks);
     this.currentEpochRunner = this.evolutionEpochRunner;
 
     this.isRunning = false;
@@ -45,6 +47,7 @@ class Evolution {
       epochRunners: {
         evolution: this.evolutionEpochRunner.serialize(),
         hallOfFame: this.hallOfFameEpochRunner.serialize(),
+        allTracks: this.allTracksEpochRunner.serialize(),
       }
     }
     this.database.storeEvolution(data);
@@ -78,9 +81,11 @@ class Evolution {
       if(loadedData.epochRunners && loadedData.epochRunners.evolution) {
         this.evolutionEpochRunner.deserialize(loadedData.epochRunners.evolution);
       }
-
       if(loadedData.epochRunners && loadedData.epochRunners.hallOfFame) {
         this.hallOfFameEpochRunner.deserialize(loadedData.epochRunners.hallOfFame);
+      }
+      if(loadedData.epochRunners && loadedData.epochRunners.allTracks) {
+        this.allTracksEpochRunner.deserialize(loadedData.epochRunners.allTracks);
       }
 
       // hall of fame
@@ -113,16 +118,25 @@ class Evolution {
     let generation = this.latestGeneration;
     let simulation
     while(this.isRunning) {
-      const evaluationCandidates = this.hallOfFame.getEvaluationCandidates(perTrackSize, populationSize);
-      if(evaluationCandidates) {
-        console.log('Evaluating hall of fame');
-      }
-      this.currentEpochRunner = evaluationCandidates ? this.hallOfFameEpochRunner : this.evolutionEpochRunner;
+      if(!this.evolutionEpochRunner.allTracksCompleted) { // standard mode, run track after track to learn step by step
+        const evaluationCandidates = this.hallOfFame.getEvaluationCandidates(perTrackSize, populationSize);
+        if(evaluationCandidates) {
+          console.log('Evaluating hall of fame');
+        }
+        this.currentEpochRunner = evaluationCandidates ? this.hallOfFameEpochRunner : this.evolutionEpochRunner;
 
-      simulation = this.createSimulation();
-      generation = await this.currentEpochRunner.run(generation, simulation);
-      this.latestGeneration = generation;
-      simulation.removeAndDispose();
+        simulation = this.createSimulation();
+        generation = await this.currentEpochRunner.run(generation, simulation);
+        this.latestGeneration = generation;
+        simulation.removeAndDispose();
+      } else { // all tracks completed, run all tracks at once to find generalists
+        this.currentEpochRunner = this.allTracksEpochRunner;
+
+        simulation = this.createSimulation();
+        generation = await this.currentEpochRunner.run(generation, simulation);
+        this.latestGeneration = generation;
+        simulation.removeAndDispose();
+      }
     }
     this.isRunning = false;
   }

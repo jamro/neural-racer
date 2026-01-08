@@ -6,17 +6,20 @@ export default class EvolutionEpochRunner extends EpochRunner {
     this.currentTrack = allTracks[0];
     this.simulation = null;
     this.completedTracks = [];
+    this.allTracksCompleted = false;
   }
 
   serialize() {
     return {
       currentTrack: this.currentTrack.name,
       completedTracks: this.completedTracks,
+      allTracksCompleted: this.allTracksCompleted,
     };
   }
   deserialize(data) {
     this.currentTrack = this.allTracks.find(track => track.name === data.currentTrack);
     this.completedTracks = data.completedTracks;
+    this.allTracksCompleted = data.allTracksCompleted;
     if(!this.currentTrack) {
       console.warn(`Current track ${data.currentTrack} not found, using first track`);
       this.currentTrack = this.tracks[0];
@@ -119,6 +122,7 @@ export default class EvolutionEpochRunner extends EpochRunner {
       newTrack = nextIncompleteTrack;
     }
     if(!newTrack) {
+      this.allTracksCompleted = true;
       this.completedTracks = [];
       return this.allTracks[0];
     }

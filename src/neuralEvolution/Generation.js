@@ -106,6 +106,16 @@ class Generation {
         }
       }
 
+      this.calculateOverallScore();
+    }
+
+    calculateOverallScore() {
+      if(!this.scores.every(score => score !== null)) {
+        throw new Error('Scores are not calculated yet');
+      }
+      if(!this.stats.every(stat => stat !== null)) {
+        throw new Error('Stats are not calculated yet');
+      }
       const sortedScores = [...this.scores].sort((a, b) => a - b);
 
       this.overallScore = {

@@ -23,13 +23,9 @@ export default class HallOfFameEpochRunner extends EpochRunner {
       simulationSpeed = 1, 
       graphicsQuality = "low", 
       scoreWeights = { trackDistance: 1 },
-      trackPassThreshold = 0.25, 
-      populationHistorySize = 10,
-      replayInterval = 6
     } = this.evolution.config;
     const hallOfFameConfig = this.evolution.config.hallOfFame || {};
     const { 
-      candidatesPerGeneration = 6,
       perTrackSize = 10,
     } = hallOfFameConfig;
 
