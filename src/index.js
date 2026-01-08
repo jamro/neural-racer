@@ -46,10 +46,8 @@ async function initApp() {
 
     // Load assets
     const tracksData = [
-        {url: 'assets/tracks/lesson_001.svg'},
+        {url:'assets/tracks/lesson_001.svg'},
         {url:'assets/tracks/lesson_002.svg'},
-        {url:'assets/tracks/lesson_003a.svg'},
-        {url:'assets/tracks/lesson_003b.svg'},
         {url:'assets/tracks/lesson_003.svg'},
         {url:'assets/tracks/lesson_004.svg'},
         {url:'assets/tracks/lesson_005.svg'},
