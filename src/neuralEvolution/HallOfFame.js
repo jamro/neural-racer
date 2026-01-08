@@ -250,7 +250,7 @@ export default class HallOfFame {
     this._trackEvaluationCount[trackName]++;
   }
 
-  pickRandom(k=1) {
+  pickRandom(k=1, options = {}) {
     const allEntries = [];
     const tracks = Object.keys(this.trackData);
     for(const track of tracks) {
@@ -268,46 +268,66 @@ export default class HallOfFame {
     
     // Sort entries by globalScore descending (best first)
     const sortedEntries = [...allEntries].sort((a, b) => b.globalScore - a.globalScore);
-    
-    // Rank-based sampling without replacement
-    const selectedCars = [];
-    const availableEntries = [...sortedEntries];
-    
-    for(let i = 0; i < count; i++) {
-      // Calculate rank-based probabilities based on current available entries
-      // Rank 1 (best) has highest probability, rank N (worst) has lowest
-      // Using linear rank-based: probability proportional to 1/rank
-      const weights = availableEntries.map((_, index) => {
-        const rank = index + 1; // rank starts at 1 (best entry has rank 1)
-        return 1 / rank; // Higher rank (lower number) = higher weight
-      });
-      
-      // Normalize weights to probabilities
-      const totalWeight = weights.reduce((sum, w) => sum + w, 0);
-      const probabilities = weights.map(w => w / totalWeight);
-      
-      // Sample based on probabilities
-      const random = Math.random();
-      let cumulativeProbability = 0;
-      let selectedIndex = 0;
-      
-      for(let j = 0; j < probabilities.length; j++) {
-        cumulativeProbability += probabilities[j];
-        if(random <= cumulativeProbability) {
-          selectedIndex = j;
-          break;
-        }
-      }
-      
-      // Get the selected entry
-      const selectedEntry = availableEntries[selectedIndex];
-      selectedCars.push(selectedEntry.car);
-      
-      // Remove the selected entry from available entries (without replacement)
-      availableEntries.splice(selectedIndex, 1);
+
+    // By default: if we pick 2+ entries and generalists exist, always include at least 1 generalist.
+    // Callers can override via options.minGeneralists.
+    const {
+      minGeneralists = (count >= 2 ? 1 : 0),
+    } = options || {};
+
+    // Precompute weights based on the global rank in sortedEntries (stable across any subset sampling).
+    const weightByGenomeId = new Map();
+    for (let i = 0; i < sortedEntries.length; i++) {
+      // rank starts at 1 (best entry has rank 1)
+      weightByGenomeId.set(sortedEntries[i].genomeId, 1 / (i + 1));
     }
-    
-    return selectedCars;
+
+    const sampleWeightedWithoutReplacement = (entries, n) => {
+      const picked = [];
+      const available = [...entries];
+      const targetCount = Math.min(n, available.length);
+
+      for (let i = 0; i < targetCount; i++) {
+        const weights = available.map(e => weightByGenomeId.get(e.genomeId) ?? 0);
+        const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+        // Fallback: if weights are degenerate (shouldn't happen), pick uniformly.
+        if (totalWeight <= 0) {
+          const uniformIndex = Math.floor(Math.random() * available.length);
+          picked.push(available[uniformIndex]);
+          available.splice(uniformIndex, 1);
+          continue;
+        }
+
+        const random = Math.random() * totalWeight;
+        let cumulative = 0;
+        let selectedIndex = 0;
+        for (let j = 0; j < weights.length; j++) {
+          cumulative += weights[j];
+          if (random <= cumulative) {
+            selectedIndex = j;
+            break;
+          }
+        }
+
+        picked.push(available[selectedIndex]);
+        available.splice(selectedIndex, 1);
+      }
+
+      return picked;
+    };
+
+    const generalists = sortedEntries.filter(e => e.isGeneralist);
+    const specialists = sortedEntries.filter(e => !e.isGeneralist);
+
+    const targetGeneralists = Math.max(0, Math.min(minGeneralists, count, generalists.length));
+    const pickedGeneralists = sampleWeightedWithoutReplacement(generalists, targetGeneralists);
+
+    const pickedGenomeIds = new Set(pickedGeneralists.map(e => e.genomeId));
+    const remainingPool = [...specialists, ...generalists].filter(e => !pickedGenomeIds.has(e.genomeId));
+    const pickedRemainder = sampleWeightedWithoutReplacement(remainingPool, count - pickedGeneralists.length);
+
+    return [...pickedGeneralists, ...pickedRemainder].map(entry => entry.car);
   }
 
   getAllGenomeIds() {
