@@ -69,9 +69,7 @@ class Database {
 
     const evolutionData = {
       evolutionId: data.evolutionId,
-      completedTracks: data.completedTracks,
       lastGenerationId: data.generation.generationId,
-      currentTrack: data.currentTrack,
       hallOfFame: data.hallOfFame,
       epochRunners: data.epochRunners,
     };

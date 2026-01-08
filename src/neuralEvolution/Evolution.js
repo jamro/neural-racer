@@ -15,7 +15,6 @@ class Evolution {
 
     this.pixiApp = pixiApp;
     this.tracks = tracks;
-    this.completedTracks = [];
     this.latestGeneration = null;
     this.history = new GenerationHistory();
 
@@ -41,12 +40,11 @@ class Evolution {
   async store() {
     const data = {
       evolutionId: this.evolutionId,
-      completedTracks: this.completedTracks,
-      currentTrack: this.evolutionEpochRunner.currentTrack.name,
       generation: serializeGeneration(this.latestGeneration, this.evolutionEpochRunner.currentTrack.name),
       hallOfFame: this.hallOfFame.serialize(),
       epochRunners: {
         evolution: this.evolutionEpochRunner.serialize(),
+        hallOfFame: this.hallOfFameEpochRunner.serialize(),
       }
     }
     this.database.storeEvolution(data);
@@ -67,7 +65,6 @@ class Evolution {
 
     if(loadedData) {
       this.evolutionId = loadedData.evolutionId;
-      this.completedTracks = loadedData.completedTracks;
       let generationData = await this.database.loadGeneration(loadedData.lastGenerationId);
       if(!generationData) {
         console.warn(`Generation data (${loadedData.lastGenerationId}) not found for evolution ${this.evolutionId}, loading latest generation`);
@@ -80,6 +77,10 @@ class Evolution {
 
       if(loadedData.epochRunners && loadedData.epochRunners.evolution) {
         this.evolutionEpochRunner.deserialize(loadedData.epochRunners.evolution);
+      }
+
+      if(loadedData.epochRunners && loadedData.epochRunners.hallOfFame) {
+        this.hallOfFameEpochRunner.deserialize(loadedData.epochRunners.hallOfFame);
       }
 
       // hall of fame

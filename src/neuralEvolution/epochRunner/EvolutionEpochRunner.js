@@ -5,16 +5,18 @@ export default class EvolutionEpochRunner extends EpochRunner {
     super(evolution, allTracks);
     this.currentTrack = allTracks[0];
     this.simulation = null;
+    this.completedTracks = [];
   }
 
   serialize() {
     return {
       currentTrack: this.currentTrack.name,
+      completedTracks: this.completedTracks,
     };
   }
   deserialize(data) {
     this.currentTrack = this.allTracks.find(track => track.name === data.currentTrack);
-
+    this.completedTracks = data.completedTracks;
     if(!this.currentTrack) {
       console.warn(`Current track ${data.currentTrack} not found, using first track`);
       this.currentTrack = this.tracks[0];
@@ -54,8 +56,9 @@ export default class EvolutionEpochRunner extends EpochRunner {
     // complete simulation and calculate scores
     console.log('== Epoch completed =============');
     const passRate = latestGeneration.finishedCount / latestGeneration.totalCount;
-    if(passRate >= trackPassThreshold && !this.evolution.completedTracks.includes(this.simulation.track.name)) {
-      this.evolution.completedTracks.push(this.simulation.track.name); // mark as completed
+    if(passRate >= trackPassThreshold && !this.completedTracks.includes(this.simulation.track.name)) {
+      this.completedTracks.push(this.simulation.track.name); // mark as completed
+      console.log(`Track completed: ${this.simulation.track.name} at epoch ${latestGeneration.epoch}`);
     }
 
     // evolve generation
@@ -108,15 +111,15 @@ export default class EvolutionEpochRunner extends EpochRunner {
 
   getNextTrack(epoch, replayInterval) {
     let newTrack = null
-    if (epoch % replayInterval === 0 && this.evolution.completedTracks.length >= 2) {
-      const randomTrackName = this.evolution.completedTracks[Math.floor(Math.random() * this.evolution.completedTracks.length)];
+    if (epoch % replayInterval === 0 && this.completedTracks.length >= 2) {
+      const randomTrackName = this.completedTracks[Math.floor(Math.random() * this.completedTracks.length)];
       newTrack = this.allTracks.find(track => track.name === randomTrackName);
     } else {
-      const nextIncompleteTrack = this.allTracks.find(track => !this.evolution.completedTracks.includes(track.name));
+      const nextIncompleteTrack = this.allTracks.find(track => !this.completedTracks.includes(track.name));
       newTrack = nextIncompleteTrack;
     }
     if(!newTrack) {
-      this.evolution.completedTracks = [];
+      this.completedTracks = [];
       return this.allTracks[0];
     }
     return newTrack;

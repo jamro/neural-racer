@@ -8,6 +8,7 @@ class HallOfFameEntry {
     this.car = car;
     this.score = score;
     this.trackName = trackName;
+    this.isGeneralist = false;
     this.allTracksEvaluation = [
       { trackName: trackName, bestScore: score }
     ]
@@ -24,11 +25,22 @@ class HallOfFameEntry {
         return sum + bestScore;
       }
     }, 0);
+
+    this.globalScore *= this.allTracksEvaluation.length / (this.allTracksEvaluation.length + 3.5);
+
+    // if all tracks are above 1.0, set isGeneralist to true
+    if(this.allTracksEvaluation.every(entry => entry.bestScore > 1.0) && this.allTracksEvaluation.length > 2) {
+      this.isGeneralist = true;
+    } else {
+      this.isGeneralist = false;
+    }
+
     return this.globalScore;
   }
 
   serialize() {
     return {
+      isGeneralist: this.isGeneralist,
       genome: serializeGenome(this.car.genome),
       globalScore: this.globalScore,
       bestTrackName: this.trackName,

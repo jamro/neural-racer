@@ -20,7 +20,7 @@ class Config {
       },
     };
     this.hallOfFame = {
-      perTrackSize: 30,          // max genomes stored per track
+      perTrackSize: 20,          // max genomes stored per track
       candidatesPerGeneration: 6, // how many top genomes to consider per generation
       minFitnessDistance: 0.001, // minimal fitness distance to be considered for hall of fame
     }
