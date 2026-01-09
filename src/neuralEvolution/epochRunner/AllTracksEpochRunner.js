@@ -3,6 +3,26 @@ import {Generation} from '../Generation';
 
 const ALL_TRACKS_NAME = 'All Tracks';
 
+
+function consolidateScores(carScores, consolidatedStats, k=0.3) {
+  const meanScore = carScores.reduce((acc, score) => acc + score, 0) / carScores.length;
+  const worstThreshold = Math.ceil(carScores.length * k);
+
+  const sortedScores = carScores.sort((a, b) => a - b);
+  const worstScores = sortedScores.slice(0, worstThreshold);
+  const worstScore = worstScores.reduce((acc, score) => acc + score, 0) / worstScores.length;
+
+  const score = (0.9 * worstScore + 0.1 * meanScore)
+
+  if(consolidatedStats.progress < 1.0) {
+    // penalize for not completing the track
+    return Math.min(score, 1.0) * consolidatedStats.progress
+  } else {
+    return score;
+  }
+
+}
+
 export default class AllTracksEpochRunner extends EpochRunner {
 
   constructor(evolution, allTracks) {
@@ -88,18 +108,9 @@ export default class AllTracksEpochRunner extends EpochRunner {
     }
     const consolidatedScores = []
     for (let i = 0; i < allScores[0].length; i++) {
-      consolidatedScores.push(
-        allScores.reduce((acc, scores) => {
-          if(consolidatedStats[i].progress < 1.0) {
-            return acc + Math.min(scores[i], 1.0)
-          } else {
-            return acc + scores[i]
-          }
-        }, 0) / allScores.length
-      );
-      if(consolidatedScores[i] >= 1.0) {
-        initialGeneration.cars[i].isFinished = true;
-      }
+      const carScores = allScores.map(scores => scores[i]);
+      consolidatedScores.push(consolidateScores(carScores, consolidatedStats[i]));
+      initialGeneration.cars[i].isFinished = (consolidatedStats[i].progress >= 1.0);
     }
 
     initialGeneration.scores = consolidatedScores;
