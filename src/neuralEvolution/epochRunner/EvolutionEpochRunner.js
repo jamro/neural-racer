@@ -112,11 +112,11 @@ export default class EvolutionEpochRunner extends EpochRunner {
 
     // remove current track from simulation
     if(this.simulation) {
-      this.simulation.removeAndDispose();
+      this.evolution.destroySimulation(this.simulation);
     }
     this.simulation = null
 
-    const newGeneration = latestGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
+    const newGeneration = await this.evolution.evolve(latestGeneration);
     newGeneration.resetScores();
     this.currentTrack = this.getNextTrack(newGeneration.epoch, replayInterval);
     newGeneration.trackName = this.currentTrack.name;

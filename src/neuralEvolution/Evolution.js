@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import EvolutionEpochRunner from './epochRunner/EvolutionEpochRunner';
 import HallOfFameEpochRunner from './epochRunner/HallOfFameEpochRunner';
 import AllTracksEpochRunner from './epochRunner/AllTracksEpochRunner';
+import EvoLab from '../evoLab/EvoLab';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -25,9 +26,15 @@ class Evolution {
     this.hallOfFameEpochRunner = new HallOfFameEpochRunner(this, tracks);
     this.allTracksEpochRunner = new AllTracksEpochRunner(this, tracks);
     this.currentEpochRunner = this.evolutionEpochRunner;
+    this.autoEvolve = localStorage.getItem('autoEvolve') === 'true';
 
+    this.evoLab = new EvoLab();
+    this.pixiApp.stage.addChild(this.evoLab);
+    
     this.isRunning = false;
     this.config = {};
+
+    this.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
   }
 
   get generation() {
@@ -36,6 +43,14 @@ class Evolution {
 
   set generation(generation) {
     this.latestGeneration = generation;
+  }
+
+  async evolve(generation) {
+    if(this.autoEvolve) {
+      return generation.evolve(this.hallOfFame, this.config.evolve);
+    } else {
+      return await this.evoLab.evolve(generation, this.hallOfFame, this.config.evolve);
+    }
   }
 
   // store in local storage
@@ -101,8 +116,23 @@ class Evolution {
     const simulation = new Simulation(this.pixiApp);
     simulation.scaleView(this.pixiApp.screen.width, this.pixiApp.screen.height);
     this.pixiApp.stage.addChild(simulation.view);
+    
+    simulation.view.on('evolutionModeChanged', (autoMode) => {
+      this.autoEvolve = autoMode;
+      localStorage.setItem('autoEvolve', autoMode);
+    });
+
+    simulation.view.autoEvolve = this.autoEvolve;
 
     return simulation;
+  }
+
+  destroySimulation(simulation) {
+    if(!simulation) return;
+    if(simulation.view) {
+      simulation.view.off('evolutionModeChanged');
+    }
+    simulation.removeAndDispose();
   }
 
   async runInLoop() {
@@ -129,14 +159,14 @@ class Evolution {
         simulation = this.createSimulation();
         generation = await this.currentEpochRunner.run(generation, simulation);
         this.latestGeneration = generation;
-        simulation.removeAndDispose();
+        this.destroySimulation(simulation);
       } else { // all tracks completed, run all tracks at once to find generalists
         this.currentEpochRunner = this.allTracksEpochRunner;
 
         simulation = this.createSimulation();
         generation = await this.currentEpochRunner.run(generation, simulation);
         this.latestGeneration = generation;
-        simulation.removeAndDispose();
+        this.destroySimulation(simulation);
       }
     }
     this.isRunning = false;
@@ -153,6 +183,7 @@ class Evolution {
     if(this.currentEpochRunner) {
       this.currentEpochRunner.scaleView(width, height);
     }
+    this.evoLab.scaleView(width, height);
   }
 
 }

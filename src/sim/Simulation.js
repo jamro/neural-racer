@@ -29,7 +29,6 @@ class Simulation {
         this.frameCount = 0;
         this.graphicsQuality = "low";
 
-
         this.carPhysicsProccessingTime = 0;
         this.carControlProccessingTime = 0;
         this.activeCars = 0
@@ -244,6 +243,8 @@ class Simulation {
         this.frameCount = 0;
         this.activeCars = 0;
         if(this.view) {
+          this.view.off('speedChanged');
+          this.view.off('evolutionModeChanged');
           this.view.destroy({children: true, texture: false, baseTexture: false});
         }
         this.view = null;

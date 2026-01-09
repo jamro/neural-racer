@@ -9,6 +9,7 @@ import {
 } from '../loaders/AssetLoader';
 import Frame from '../ui/Frame';
 import SpeedSelector from '../ui/SpeedSelector';
+import EvolutionModeButton from '../ui/EvolutionModeButton';
 
 const TITLES_HEIGHT = 30;
 const WIDGET_HEIGHT = 210;
@@ -89,7 +90,7 @@ class SimulationDetailsView extends PIXI.Container {
     stagnationWarningText.x = 22;
     stagnationWarningText.anchor.set(0, 0.5);
 
-    this.topContainer = new Frame(180, 115);
+    this.topContainer = new Frame(180, 180);
     this.addChild(this.topContainer);
 
     const trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
@@ -139,13 +140,23 @@ class SimulationDetailsView extends PIXI.Container {
     });
     this.speedButton.value = 1;
     this.topContainer.addChild(this.speedButton);
-    this.speedButton.x = 11;
-    this.speedButton.y = 85;
+    this.speedButton.x = 15;
+    this.speedButton.y = 90;
+
+    this.topContainer.addHorizontalLine(130, 'Evolution:');
+
+    this.evolutionButton = new EvolutionModeButton();
+    this.topContainer.addChild(this.evolutionButton);
+    this.evolutionButton.x = 15;
+    this.evolutionButton.y = 148;
+    this.evolutionButton.on('change', (autoMode) => {
+      this.emit('evolutionModeChanged', autoMode);
+    });
 
     this.scaleView(500, 200);
     setInterval(() => {
-        this.fps = this.fpsCounter;
-        this.fpsCounter = 0;
+      this.fps = this.fpsCounter;
+      this.fpsCounter = 0;
     }, 1000);
   }
 
@@ -208,6 +219,13 @@ class SimulationDetailsView extends PIXI.Container {
     return this.epochDescriptionLabel.text;
   }
 
+  set autoEvolve(autoMode) {
+    this.evolutionButton.autoMode = autoMode;
+  }
+  get autoEvolve() {
+    return this.evolutionButton.autoMode;
+  }
+
   setEvolutionHistory(evolutionHistory, trackName) {
     const history = evolutionHistory.getScoreHistoryForTrack(
       trackName,
@@ -266,6 +284,8 @@ class SimulationDetailsView extends PIXI.Container {
 
   destroy() {
     PIXI.Ticker.shared.remove(this.onTick, this);
+    this.evolutionButton.off('change');
+    this.speedButton.off('valueChanged');
     console.log('SimulationDetailsView destroyed');
     super.destroy();
   }

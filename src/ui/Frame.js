@@ -4,8 +4,8 @@ import { getUiFrameHorizontalLineTexture, getUiFrameCornerTexture } from '../loa
 export default class Frame extends PIXI.Container {
   constructor(width, height) {
     super();
-    this.width = width;
-    this.height = height;
+    this.frameWidth = width;
+    this.frameHeight = height;
 
     const topLine = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(topLine);
@@ -102,7 +102,7 @@ export default class Frame extends PIXI.Container {
     line.moveTo(1, y-1);
     line.lineTo(leftLineWidth, y-1);
     line.moveTo(label.x + label.width + 10, y-1)
-    line.lineTo(this.width -label.x - label.width - 11, y-1);
+    line.lineTo(this.frameWidth-1 , y-1);
     line.stroke({
       color: 0x5c0000,
       width: 1,
@@ -110,7 +110,7 @@ export default class Frame extends PIXI.Container {
     line.moveTo(1, y);
     line.lineTo(leftLineWidth, y);
     line.moveTo(label.x + label.width + 10, y)
-    line.lineTo(this.width -label.x - label.width - 11, y);
+    line.lineTo(this.frameWidth-1, y);
     line.stroke({
       color: 0x000000,
       width: 1,
@@ -118,7 +118,7 @@ export default class Frame extends PIXI.Container {
     line.moveTo(1, y+1);
     line.lineTo(leftLineWidth, y+1);
     line.moveTo(label.x + label.width + 10, y+1)
-    line.lineTo(this.width -label.x - label.width - 11, y+1);
+    line.lineTo(this.frameWidth-1, y+1);
     line.stroke({
       color: 0x787eac,
       width: 1,

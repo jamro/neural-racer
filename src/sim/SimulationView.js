@@ -10,6 +10,7 @@ class SimulationView extends PIXI.Container {
 
         this.simulationDetailsView = new SimulationDetailsView();
         this.simulationDetailsView.on('speedChanged', (speed) => this.emit('speedChanged', speed));
+        this.simulationDetailsView.on('evolutionModeChanged', (autoMode) => this.emit('evolutionModeChanged', autoMode));
         this.addChild(this.simulationDetailsView);
         this.track = null;
         this.cars = [];
@@ -23,6 +24,14 @@ class SimulationView extends PIXI.Container {
         }
 
         this._graphicsQuality = "low";
+    }
+
+    set autoEvolve(autoMode) {
+      this.simulationDetailsView.autoEvolve = autoMode;
+    }
+    
+    get autoEvolve() {
+      return this.simulationDetailsView.autoEvolve;
     }
 
     get simulationSpeed() {
@@ -60,8 +69,8 @@ class SimulationView extends PIXI.Container {
     }
 
     addCar(car) {
-        this.cars.push(car);
-        this.track.view.carsContainer.addChild(car.view);
+      this.cars.push(car);
+      this.track.view.carsContainer.addChild(car.view);
     }
 
     updateStats(simulation, scoreWeights) {
@@ -128,6 +137,12 @@ class SimulationView extends PIXI.Container {
       this.simulationDetailsView.scaleView(width, height);
       this.simulationDetailsView.x = - width / 2;
       this.simulationDetailsView.y = - height / 2;
+    }
+
+    destroy() {
+      this.simulationDetailsView.off('speedChanged');
+      this.simulationDetailsView.off('evolutionModeChanged');
+      super.destroy();
     }
 }
 

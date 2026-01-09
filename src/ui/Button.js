@@ -10,7 +10,7 @@ class Button extends PIXI.Container {
     this._buttonWidth = width;
 
     this._toggleMode = toggleMode;
-    this._value = 0;
+    this._value = false;
     
     this.bgMiddleOff = new PIXI.Sprite(getButtonBgOffMiddleTexture());
     this.bgMiddleOn = new PIXI.Sprite(getButtonBgOnMiddleTexture());
@@ -24,15 +24,11 @@ class Button extends PIXI.Container {
     this.bgLeftOff.y = -8;
     this.bgLeftOn.y = -8;
 
-    this.bgRightOff.x = width-7 + 15;
-    this.bgRightOn.x = width-7 + 15;
     this.bgRightOff.y = -8;
     this.bgRightOn.y = -8;
     this.bgRightOff.scale.x = -1;
     this.bgRightOn.scale.x = -1;
 
-    this.bgMiddleOff.width = width - 14;
-    this.bgMiddleOn.width = width - 14;
     this.bgMiddleOff.x = 7;
     this.bgMiddleOff.y = -8;
     this.bgMiddleOn.y = -8;
@@ -61,10 +57,21 @@ class Button extends PIXI.Container {
     this.on('pointerdown', this.onPointerDown, this);
     this.on('pointerup', this.onPointerUp, this);
     this.on('pointerupoutside', this.onPointerUpOutside, this);
+
+    this.refreshAppearance();
   }
 
   get buttonWidth() {
     return this._buttonWidth;
+  }
+
+  set buttonWidth(width) {
+    this._buttonWidth = width;
+    this.refreshAppearance();
+  }
+
+  get buttonHeight() {
+    return 20
   }
 
   get value() {
@@ -99,12 +106,13 @@ class Button extends PIXI.Container {
   onPointerUp() {
     if(this.toggleMode) {
       this.value = !this.value;
+      this.emit('change', this.value);
     }
     this.refreshAppearance();
   }
 
   refreshAppearance() {
-    if(this.value == 0) {
+    if(this._value === false) {
       this.bgMiddleOff.visible = true;
       this.bgMiddleOn.visible = false;
       this.bgLeftOff.visible = true;
@@ -124,6 +132,13 @@ class Button extends PIXI.Container {
       if(this._content !== null) {
         this._content.alpha = 1;
       }
+    }
+    this.bgRightOff.x = this.buttonWidth -7 + 15;
+    this.bgRightOn.x = this.buttonWidth-7 + 15;
+    this.bgMiddleOff.width = this.buttonWidth - 14;
+    this.bgMiddleOn.width = this.buttonWidth - 14;
+    if(this._content !== null) {
+      this._content.x = this.buttonWidth / 2;
     }
   }
 

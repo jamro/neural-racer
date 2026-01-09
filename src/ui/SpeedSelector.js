@@ -20,10 +20,10 @@ class SpeedSelector extends ToggleButtonGroup {
     fastGraphic.scale.set(0.45);
     superFastGraphic.scale.set(0.45);
 
-    this.addButton(new Button(36, slowGraphic),  0.5);
-    this.addButton(new Button(36, normalGraphic), 1);
-    this.addButton(new Button(36, fastGraphic), 2);
-    this.addButton(new Button(36, superFastGraphic), 20);
+    this.addButton(new Button(34, slowGraphic),  0.5);
+    this.addButton(new Button(34, normalGraphic), 1);
+    this.addButton(new Button(34, fastGraphic), 2);
+    this.addButton(new Button(34, superFastGraphic), 20);
   }
 }
 

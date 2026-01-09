@@ -110,6 +110,8 @@ const TEXTURE_REGISTRY = {
     ui_speed_super_fast: 'assets/img/ui_speed_super_fast.png',
     ui_track_icon: 'assets/img/ui_track_icon.png',
     ui_warning_icon: 'assets/img/ui_warn_icon.png',
+    ui_evo_auto: 'assets/img/ui_evo_auto.png',
+    ui_evo_manual: 'assets/img/ui_evo_manual.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -359,3 +361,7 @@ export async function loadUiTrackIconTexture() { return await loadTexture('ui_tr
 export function getUiTrackIconTexture() { return getTexture('ui_track_icon'); }
 export async function loadUiWarningIconTexture() { return await loadTexture('ui_warning_icon'); }
 export function getUiWarningIconTexture() { return getTexture('ui_warning_icon'); }
+export async function loadUiEvoAutoTexture() { return await loadTexture('ui_evo_auto'); }
+export function getUiEvoAutoTexture() { return getTexture('ui_evo_auto'); }
+export async function loadUiEvoManualTexture() { return await loadTexture('ui_evo_manual'); }
+export function getUiEvoManualTexture() { return getTexture('ui_evo_manual'); }

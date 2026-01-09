@@ -110,7 +110,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
 
       // remove current track from simulation
       if(this.simulation) {
-        this.simulation.removeAndDispose();
+        this.evolution.destroySimulation(this.simulation);
       }
       this.simulation = null
 
@@ -171,7 +171,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
     initialGeneration.trackName = ALL_TRACKS_NAME;
     await this.evolution.store(); // store before evolution to keep scoring for history
 
-    const newGeneration = initialGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
+    const newGeneration = await this.evolution.evolve(initialGeneration);
     newGeneration.resetScores();
     newGeneration.trackName = ALL_TRACKS_NAME;
 

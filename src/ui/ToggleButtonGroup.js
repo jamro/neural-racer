@@ -39,9 +39,9 @@ class ToggleButtonGroup extends PIXI.Container {
   refreshAppearance() {
     for(let i = 0; i < this._buttons.length; i++) {
       if(this._values[i] == this.value) {
-        this._buttons[i].value = 1;
+        this._buttons[i].value = true;
       } else {
-        this._buttons[i].value = 0;
+        this._buttons[i].value = false;
       }
     }
   }
