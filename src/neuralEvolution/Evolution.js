@@ -119,7 +119,7 @@ class Evolution {
     let simulation
     while(this.isRunning) {
       // select evolution runner
-      if(!this.evolutionEpochRunner.allTracksCompleted) { // standard mode, run track after track to learn step by step
+      if(this.evolutionEpochRunner.fullRoundCompleted < 3) { // standard mode, run track after track to learn step by step
         const evaluationCandidates = this.hallOfFame.getEvaluationCandidates(perTrackSize, populationSize);
         if(evaluationCandidates) {
           console.log('Evaluating hall of fame');

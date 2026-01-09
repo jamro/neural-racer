@@ -83,7 +83,7 @@ class GenerationHistory {
     });
   }
 
-  isPopulationStagnated(trackName, epochCount=30) {
+  isPopulationStagnated(trackName, epochCount=20) {
     const noiseMultiplier = 3.0;
     const minRequiredValid = Math.max(10, Math.floor(epochCount * 0.6));
     const floors = { max: 0.01, median: 0.005, completion: 0.01 };
@@ -127,9 +127,9 @@ class GenerationHistory {
     }
 
     const completionSaturated = completionRates[completionRates.length - 1] >= 0.95;
-    return deltas.max < epsilons.max && 
-           deltas.median < epsilons.median && 
-           (completionSaturated || deltas.completion < epsilons.completion);
+    return deltas.max <= epsilons.max && 
+           deltas.median <= epsilons.median && 
+           (completionSaturated || deltas.completion <= epsilons.completion);
   }
 }
 

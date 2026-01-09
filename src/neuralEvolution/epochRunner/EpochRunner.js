@@ -1,6 +1,6 @@
 
 
-const CONFIG_MODE_COOLDOWN = 10;
+const CONFIG_MODE_COOLDOWN = 11;
 const CONFIG_MODE_STANDARD = 'standard';
 const CONFIG_MODE_FINETUNING = 'finetuning';
 const CONFIG_MODE_EXPLORATION = 'exploration';
