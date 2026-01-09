@@ -9,6 +9,7 @@ class SimulationView extends PIXI.Container {
         this.addChild(this.masterContainer);
 
         this.simulationDetailsView = new SimulationDetailsView();
+        this.simulationDetailsView.on('speedChanged', (speed) => this.emit('speedChanged', speed));
         this.addChild(this.simulationDetailsView);
         this.track = null;
         this.cars = [];
@@ -22,6 +23,14 @@ class SimulationView extends PIXI.Container {
         }
 
         this._graphicsQuality = "low";
+    }
+
+    get simulationSpeed() {
+      return this.simulationDetailsView.simulationSpeed;
+    }
+
+    set simulationSpeed(speed) {
+      this.simulationDetailsView.simulationSpeed = speed;
     }
 
     set graphicsQuality(quality) {

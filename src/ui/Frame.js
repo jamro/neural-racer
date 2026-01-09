@@ -69,7 +69,6 @@ export default class Frame extends PIXI.Container {
     cornerBR.scale.y = -1;
 
 
-
     const bg = new PIXI.Graphics();
     this.addChild(bg);
     bg.rect(0, 0, width, height);
@@ -78,6 +77,52 @@ export default class Frame extends PIXI.Container {
       alpha: 0.8
     });
 
+  }
 
+  addHorizontalLine(y, text = "") {
+    const container = new PIXI.Container();
+    const label = new PIXI.Text();
+    label.style = {
+      fontFamily: 'Exo2',
+      fontSize: 10,
+      fill: 0x8888ff,
+    };
+    label.text = text;
+    container.addChild(label);
+    this.addChild(container);
+    container.x = 0;
+    container.y = y;
+    label.x = 20;
+    label.y = 0;
+    label.anchor.set(0, 0.5);
+
+    const leftLineWidth = 12;
+    const line = new PIXI.Graphics();
+    this.addChild(line);
+    line.moveTo(1, y-1);
+    line.lineTo(leftLineWidth, y-1);
+    line.moveTo(label.x + label.width + 10, y-1)
+    line.lineTo(this.width -label.x - label.width - 11, y-1);
+    line.stroke({
+      color: 0x5c0000,
+      width: 1,
+    });
+    line.moveTo(1, y);
+    line.lineTo(leftLineWidth, y);
+    line.moveTo(label.x + label.width + 10, y)
+    line.lineTo(this.width -label.x - label.width - 11, y);
+    line.stroke({
+      color: 0x000000,
+      width: 1,
+    });
+    line.moveTo(1, y+1);
+    line.lineTo(leftLineWidth, y+1);
+    line.moveTo(label.x + label.width + 10, y+1)
+    line.lineTo(this.width -label.x - label.width - 11, y+1);
+    line.stroke({
+      color: 0x787eac,
+      width: 1,
+    });
+    return container;
   }
 }

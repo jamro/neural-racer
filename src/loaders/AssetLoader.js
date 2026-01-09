@@ -99,6 +99,16 @@ const TEXTURE_REGISTRY = {
     ui_slip_icon: 'assets/img/slip_icon.png',
     ui_frame_horizontal_line: 'assets/img/hr.png',
     ui_frame_corner: 'assets/img/hr_corner.png',
+    button_bg_off_middle: 'assets/img/button_bg_off_middle.png',
+    button_bg_off_side: 'assets/img/button_bg_off_side.png',
+    button_bg_on_middle: 'assets/img/button_bg_on_middle.png',
+    button_bg_on_side: 'assets/img/button_bg_on_side.png',
+
+    ui_speed_slow: 'assets/img/ui_speed_slow.png',
+    ui_speed_normal: 'assets/img/ui_speed_normal.png',
+    ui_speed_fast: 'assets/img/ui_speed_fast.png',
+    ui_speed_super_fast: 'assets/img/ui_speed_super_fast.png',
+    ui_track_icon: 'assets/img/ui_track_icon.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -328,3 +338,21 @@ export async function loadUiFrameHorizontalLineTexture() { return await loadText
 export function getUiFrameHorizontalLineTexture() { return getTexture('ui_frame_horizontal_line'); }
 export async function loadUiFrameCornerTexture() { return await loadTexture('ui_frame_corner'); }
 export function getUiFrameCornerTexture() { return getTexture('ui_frame_corner'); }
+export async function loadButtonBgOffMiddleTexture() { return await loadTexture('button_bg_off_middle'); }
+export function getButtonBgOffMiddleTexture() { return getTexture('button_bg_off_middle'); }
+export async function loadButtonBgOffSideTexture() { return await loadTexture('button_bg_off_side'); }
+export function getButtonBgOffSideTexture() { return getTexture('button_bg_off_side'); }
+export async function loadButtonBgOnMiddleTexture() { return await loadTexture('button_bg_on_middle'); }
+export function getButtonBgOnMiddleTexture() { return getTexture('button_bg_on_middle'); }
+export async function loadButtonBgOnSideTexture() { return await loadTexture('button_bg_on_side'); }
+export function getButtonBgOnSideTexture() { return getTexture('button_bg_on_side'); }
+export async function loadUiSpeedSlowTexture() { return await loadTexture('ui_speed_slow'); }
+export function getUiSpeedSlowTexture() { return getTexture('ui_speed_slow'); }
+export async function loadUiSpeedNormalTexture() { return await loadTexture('ui_speed_normal'); }
+export function getUiSpeedNormalTexture() { return getTexture('ui_speed_normal'); }
+export async function loadUiSpeedFastTexture() { return await loadTexture('ui_speed_fast'); }
+export function getUiSpeedFastTexture() { return getTexture('ui_speed_fast'); }
+export async function loadUiSpeedSuperFastTexture() { return await loadTexture('ui_speed_super_fast'); }
+export function getUiSpeedSuperFastTexture() { return getTexture('ui_speed_super_fast'); }
+export async function loadUiTrackIconTexture() { return await loadTexture('ui_track_icon'); }
+export function getUiTrackIconTexture() { return getTexture('ui_track_icon'); }

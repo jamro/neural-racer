@@ -15,7 +15,10 @@ class Simulation {
         this.running = false;
         this.renderRunning = false;
         this.app = app;
+        this.simulationSpeedMultiplier = localStorage.getItem('simulationSpeedMultiplier') || 1;
         this.view = new SimulationView();
+        this.view.on('speedChanged', (speed) => this.changeSimulationSpeed(speed));
+        this.view.simulationSpeed = this.simulationSpeedMultiplier;
         this.leaderCar = null;
         this.cars = [];
         this.track = null;
@@ -25,6 +28,7 @@ class Simulation {
         this.cameraSnapFactor = FAST_CAMERA_SNAP_FACTOR;
         this.frameCount = 0;
         this.graphicsQuality = "low";
+
 
         this.carPhysicsProccessingTime = 0;
         this.carControlProccessingTime = 0;
@@ -74,6 +78,13 @@ class Simulation {
           this.cameraSnapFactor
         );
       }
+    }
+
+    changeSimulationSpeed(speed) {
+      this.simulationSpeedMultiplier = speed;
+
+      // save in local storage
+      localStorage.setItem('simulationSpeedMultiplier', this.simulationSpeedMultiplier);
     }
 
     start(epoch, simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low", scoreWeights = { trackDistance: 1 }) {
@@ -154,8 +165,10 @@ class Simulation {
         this.frameCount++;
         if (!this.running) return;
 
-        if(this.simulationSpeed > 1) {
-          const stepGroup = Math.round(this.simulationSpeed);
+        const actualSimulationSpeed = this.simulationSpeed * this.simulationSpeedMultiplier;
+
+        if(actualSimulationSpeed > 1) {
+          const stepGroup = Math.round(actualSimulationSpeed);
           for(let i = 0; i < stepGroup; i++) {
             if(!this.singleSimulationStep()) {
               return
@@ -163,7 +176,7 @@ class Simulation {
           }
           this.updateCamera();
         } else {
-          const skipFrames = Math.round(1 / this.simulationSpeed);
+          const skipFrames = Math.round(1 / actualSimulationSpeed);
           if(this.frameCount % skipFrames === 0) {
             if(!this.singleSimulationStep()) {
               return

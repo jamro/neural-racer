@@ -2,8 +2,13 @@ import * as PIXI from 'pixi.js';
 import RichNetworkPreview from '../ui/RichNetworkPreview';
 import PercentileChart from '../ui/PercentileChart';
 import { calculateScore } from '../neuralEvolution/fitness';
-import { getUiFrameHorizontalLineTexture } from '../loaders/AssetLoader';
+import { 
+  getUiFrameHorizontalLineTexture,
+  getUiTrackIconTexture,
+} from '../loaders/AssetLoader';
 import Frame from '../ui/Frame';
+import Button from '../ui/Button';
+import SpeedSelector from '../ui/SpeedSelector';
 
 const TITLES_HEIGHT = 30;
 const WIDGET_HEIGHT = 210;
@@ -58,8 +63,15 @@ class SimulationDetailsView extends PIXI.Container {
     this.neuralTitle.anchor.set(0.5, 0.5);
     this.bottomContainer.addChild(this.neuralTitle);
 
-    this.topContainer = new Frame(180, 70);
+    this.topContainer = new Frame(180, 115);
     this.addChild(this.topContainer);
+
+    const trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
+    this.topContainer.addChild(trackIcon);
+    trackIcon.x = 22;
+    trackIcon.y = 22;
+    trackIcon.anchor.set(0.5, 0.5);
+    trackIcon.scale.set(0.3);
 
     this.trackLabel = new PIXI.Text();
     this.trackLabel.style = {
@@ -69,7 +81,7 @@ class SimulationDetailsView extends PIXI.Container {
     };
     this.trackLabel.text = 'Track: ???';
     this.topContainer.addChild(this.trackLabel);
-    this.trackLabel.x = 7;
+    this.trackLabel.x = 48;
     this.trackLabel.y = 10;
 
     this.epochDescriptionLabel = new PIXI.Text();
@@ -79,7 +91,7 @@ class SimulationDetailsView extends PIXI.Container {
       fill: 0x8888ff,
     };
     this.topContainer.addChild(this.epochDescriptionLabel);
-    this.epochDescriptionLabel.x = 8;
+    this.epochDescriptionLabel.x = this.trackLabel.x+1;
     this.epochDescriptionLabel.y = 25;
 
     this.epochLabel = new PIXI.Text();
@@ -93,11 +105,30 @@ class SimulationDetailsView extends PIXI.Container {
     this.epochLabel.x = 7;
     this.epochLabel.y = 45;
 
+    this.topContainer.addHorizontalLine(70, 'Speed:');
+
+    this.speedButton = new SpeedSelector();
+    this.speedButton.on('valueChanged', (value) => {
+      this.emit('speedChanged', value);
+    });
+    this.speedButton.value = 1;
+    this.topContainer.addChild(this.speedButton);
+    this.speedButton.x = 11;
+    this.speedButton.y = 85;
+
     this.scaleView(500, 200);
     setInterval(() => {
         this.fps = this.fpsCounter;
         this.fpsCounter = 0;
     }, 1000);
+  }
+
+  set simulationSpeed(speed) {
+    this.speedButton.value = speed;
+  }
+
+  get simulationSpeed() {
+    return this.speedButton.value;
   }
 
   update(simulation, leaderCar, scoreWeights) {
@@ -116,7 +147,7 @@ class SimulationDetailsView extends PIXI.Container {
     //"Size: ✕ " + crashedCars + ", ▶ " + (totalCars - crashedCars - finishedCars) + ", ✓ " + finishedCars + " (" + totalCars + ")" + "\n\n\n"
 
 
-    this.trackLabel.text = 'Track: ' + simulation.track.name;
+    this.trackLabel.text = simulation.track.name;
     this.epochLabel.text = 'Epoch: ' + simulation.epoch;
 
     if(simulation.cars.length > 0) {
