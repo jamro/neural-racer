@@ -45,6 +45,28 @@ export default class EvolutionEpochRunner extends EpochRunner {
 
     const isReplay = this.completedTracks.includes(this.currentTrack.name);
 
+    // adjust evolve config if stagnation detected
+    if(!isReplay) {
+      const isStagnated = this.evolution.history.isPopulationStagnated(this.currentTrack.name);
+      let newConfigMode
+      if(isStagnated) {
+        const history = this.evolution.history.getScoreHistoryForTrack(this.currentTrack.name);
+        const lastEpoch = history[history.length - 1];
+        const leaderScore = lastEpoch.maxScore;
+        if(leaderScore > 1.0) {
+          this.requestFinetuningConfigMode();
+        } else {
+          this.requestExplorationConfigMode();
+        }
+      } else {
+        this.requestStandardConfigMode();
+      }
+      this.applyConfigMode();
+
+    } else {
+      this.evolution.config.setStandardMode();
+    }
+
     // run new simulation 
     this.simulation = simulation;
     this.simulation.setTrack(this.currentTrack);

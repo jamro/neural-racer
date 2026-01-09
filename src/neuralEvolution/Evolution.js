@@ -118,6 +118,7 @@ class Evolution {
     let generation = this.latestGeneration;
     let simulation
     while(this.isRunning) {
+      // select evolution runner
       if(!this.evolutionEpochRunner.allTracksCompleted) { // standard mode, run track after track to learn step by step
         const evaluationCandidates = this.hallOfFame.getEvaluationCandidates(perTrackSize, populationSize);
         if(evaluationCandidates) {

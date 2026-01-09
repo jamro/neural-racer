@@ -29,6 +29,7 @@ class Config {
   }
 
   setStandardMode() {
+    console.log('Setting standard mode of Config');
     this.evolve.eliteRatio = 0.03; // percentage of top performing genomes to carry over to next generation
     this.evolve.hallOfFameEliteRatio = 0.01; // percentage of genomes from the hall of fame to carry over to next generation
     this.evolve.eliminationEpochs = 10; // how often eliminate the weakest genomes and replace with random ones
@@ -40,6 +41,36 @@ class Config {
     this.evolve.mutation.hiddenSigma = 0.07; // standard deviation of the mutation (applied to hidden layers of NN)
     this.evolve.mutation.outputRate = 0.05; // probability of mutating a gene (applied to output layer of NN)
     this.evolve.mutation.outputSigma = 0.12; // standard deviation of the mutation (applied to output layer of NN)
+  }
+
+  setExplorationMode() {
+    console.log('Setting exploration mode of Config');
+    this.evolve.eliteRatio = 0.02; // percentage of top performing genomes to carry over to next generation
+    this.evolve.hallOfFameEliteRatio = 0.005; // percentage of genomes from the hall of fame to carry over to next generation
+    this.evolve.eliminationEpochs = 6; // how often eliminate the weakest genomes and replace with random ones
+    this.evolve.eliminationRate = 0.1; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
+    this.evolve.crossover.selectionTournamentSize = 3; // size of tournament selection group of genomes to select the best one for crossover
+    this.evolve.crossover.blendRatio = 0.4; // percentage blend crossovers, the remaining percentage is uniform crossover
+    this.evolve.crossover.hallOfFameSelectionProbability = 0.08; // probability of selecting a parent from the hall of fame for crossover
+    this.evolve.mutation.hiddenRate = 0.04; // probability of mutating a gene (applied to hidden layers of NN)
+    this.evolve.mutation.hiddenSigma = 0.12; // standard deviation of the mutation (applied to hidden layers of NN)
+    this.evolve.mutation.outputRate = 0.06; // probability of mutating a gene (applied to output layer of NN)
+    this.evolve.mutation.outputSigma = 0.20; // standard deviation of the mutation (applied to output layer of NN)
+  }
+
+  setFinetuningMode() {
+    console.log('Setting finetuning mode of Config');
+    this.evolve.eliteRatio = 0.05; // percentage of top performing genomes to carry over to next generation
+    this.evolve.hallOfFameEliteRatio = 0.05; // percentage of genomes from the hall of fame to carry over to next generation
+    this.evolve.eliminationEpochs = 15; // how often eliminate the weakest genomes and replace with random ones
+    this.evolve.eliminationRate = 0.02; // percentage of weakest genomes to eliminate every `eliminationEpochs` epochs 
+    this.evolve.crossover.selectionTournamentSize = 7; // size of tournament selection group of genomes to select the best one for crossover
+    this.evolve.crossover.blendRatio = 0.75; // percentage blend crossovers, the remaining percentage is uniform crossover
+    this.evolve.crossover.hallOfFameSelectionProbability = 0.20; // probability of selecting a parent from the hall of fame for crossover
+    this.evolve.mutation.hiddenRate = 0.02; // probability of mutating a gene (applied to hidden layers of NN)
+    this.evolve.mutation.hiddenSigma = 0.045; // standard deviation of the mutation (applied to hidden layers of NN)
+    this.evolve.mutation.outputRate = 0.04; // probability of mutating a gene (applied to output layer of NN)
+    this.evolve.mutation.outputSigma = 0.08; // standard deviation of the mutation (applied to output layer of NN)
   }
 
 }

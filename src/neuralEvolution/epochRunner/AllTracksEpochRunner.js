@@ -44,15 +44,29 @@ export default class AllTracksEpochRunner extends EpochRunner {
       simulationSpeed = 1, 
       graphicsQuality = "low", 
       scoreWeights = { trackDistance: 1 },
-      trackPassThreshold = 0.25, 
       populationHistorySize = 10,
-      replayInterval = 6
     } = this.evolution.config;
     const hallOfFameConfig = this.evolution.config.hallOfFame || {};
     const { 
       candidatesPerGeneration = 6
     } = hallOfFameConfig;
 
+
+    // adjust evolve config if stagnation detected
+    const isStagnated = this.evolution.history.isPopulationStagnated(ALL_TRACKS_NAME);
+    if(isStagnated) {
+      const history = this.evolution.history.getScoreHistoryForTrack(ALL_TRACKS_NAME);
+      const lastEpoch = history[history.length - 1];
+      const leaderScore = lastEpoch.maxScore;
+      if(leaderScore > 1.0) {
+        this.requestFinetuningConfigMode();
+      } else {
+        this.requestExplorationConfigMode();
+      }
+    } else {
+      this.requestStandardConfigMode();
+    }
+    this.applyConfigMode();
 
     let latestGeneration = initialGeneration;
     this.isRunning = true;
