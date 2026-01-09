@@ -43,11 +43,14 @@ export default class EvolutionEpochRunner extends EpochRunner {
 
     latestGeneration.resetScores();
 
+    const isReplay = this.completedTracks.includes(this.currentTrack.name);
+
     // run new simulation 
     this.simulation = simulation;
     this.simulation.setTrack(this.currentTrack);
     this.simulation.addGeneration(latestGeneration);
     this.simulation.view.setEvolutionHistory(this.evolution.history, this.currentTrack.name);
+    this.simulation.view.epochDescription = isReplay ? "Replay track" : "Single track evolution";
     this.simulation.start(latestGeneration.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
     this.simulation.startRender(); // Start render loop
 

@@ -58,7 +58,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.neuralTitle.anchor.set(0.5, 0.5);
     this.bottomContainer.addChild(this.neuralTitle);
 
-    this.topContainer = new Frame(180, 55);
+    this.topContainer = new Frame(180, 70);
     this.addChild(this.topContainer);
 
     this.trackLabel = new PIXI.Text();
@@ -72,6 +72,16 @@ class SimulationDetailsView extends PIXI.Container {
     this.trackLabel.x = 7;
     this.trackLabel.y = 10;
 
+    this.epochDescriptionLabel = new PIXI.Text();
+    this.epochDescriptionLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 10,
+      fill: 0x8888ff,
+    };
+    this.topContainer.addChild(this.epochDescriptionLabel);
+    this.epochDescriptionLabel.x = 8;
+    this.epochDescriptionLabel.y = 25;
+
     this.epochLabel = new PIXI.Text();
     this.epochLabel.style = {
       fontFamily: 'Exo2',
@@ -81,7 +91,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.epochLabel.text = 'Epoch: ???';
     this.topContainer.addChild(this.epochLabel);
     this.epochLabel.x = 7;
-    this.epochLabel.y = 33;
+    this.epochLabel.y = 45;
 
     this.scaleView(500, 200);
     setInterval(() => {
@@ -132,6 +142,13 @@ class SimulationDetailsView extends PIXI.Container {
       const activations = leaderCar.neuralNet ? leaderCar.neuralNet.getLastActivations() : null;
       this.networkPreview.renderView(leaderCar.neuralNet, leaderCar.genome, activations);
     }
+  }
+
+  set epochDescription(description) {
+    this.epochDescriptionLabel.text = description;
+  }
+  get epochDescription() {
+    return this.epochDescriptionLabel.text;
   }
 
   setEvolutionHistory(evolutionHistory, trackName) {

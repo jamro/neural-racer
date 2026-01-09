@@ -72,6 +72,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
       this.simulation.setTrack(track);
       this.simulation.addGeneration(latestGeneration);
       this.simulation.view.setEvolutionHistory(this.evolution.history, ALL_TRACKS_NAME);
+      this.simulation.view.epochDescription = `All tracks evolution (${i + 1}/${this.allTracks.length})`;
       this.simulation.start(latestGeneration.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
       this.simulation.startRender(); // Start render loop
 

@@ -5,7 +5,7 @@ class Config {
     this.populationSize = 200; // number of cars in the population
     this.populationHistorySize = 30; // number of full generations (with genomes) to keep in the population history
     this.simulationStep = 0.060; // time step in seconds
-    this.simulationSpeed = 15; // number of sim steps per frame
+    this.simulationSpeed = 0.5; // number of sim steps per frame
     this.replayInterval = 13; // every how many epochs to run evolution on random, completed track
     this.trackPassThreshold = 0.25; // threshold for the pass rate to promote to the next track
     this.scoreWeights = {

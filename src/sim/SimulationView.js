@@ -104,6 +104,14 @@ class SimulationView extends PIXI.Container {
         }
     }
 
+    set epochDescription(description) {
+      this.simulationDetailsView.epochDescription = description;
+    }
+
+    get epochDescription() {
+      return this.simulationDetailsView.epochDescription;
+    }
+
     scaleView(width, height) {
       this.viewWidth = width;
       this.viewHeight = height;
