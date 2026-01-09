@@ -175,13 +175,22 @@ export default class HallOfFame {
     this.genomeMap.set(entry.genomeId, entry);
   }
 
-  addCar(car, score, trackName) {
+  addCar(car, score, trackName, extraEvaluations = []) {
     if(!car || !score || !trackName) {
       return false;
     }
 
     if(!car.isFinished) { // Only add cars that have finished the track
       return false;
+    }
+
+    // make sure extraEvaluations containts base evaluation
+    if(!extraEvaluations.find(evaluation => evaluation.trackName === trackName && evaluation.score === score)) {
+      extraEvaluations.push({ trackName: trackName, score: score });
+    }
+    if(extraEvaluations.find(evaluation => !evaluation.trackName || !Number.isFinite(evaluation.score))) {
+      console.error('Extra evaluations must contain valid trackName and score', extraEvaluations);
+      throw new Error('Extra evaluations must contain valid trackName and score');
     }
 
     // Initialize the track array if it doesn't exist
@@ -200,40 +209,30 @@ export default class HallOfFame {
       return false; // Not sufficiently different, don't add
     }
 
-    // If below perTrackSize, add the car
-    if(trackEntries.length < this._perTrackSize) {
-      this._addEntry(new HallOfFameEntry(car, score, trackName));
-      // Sort by score descending (highest first) for easier management
-      trackEntries.sort((a, b) => b.globalScore - a.globalScore);
-      // add to list of all tracks too
-      this.updateCar(car, score, trackName);
-      return true;
+    // Create and add the new entry
+    const newEntry = new HallOfFameEntry(car, score, trackName);
+    this._addEntry(newEntry);
+    
+    // add to list of all tracks too
+    extraEvaluations.forEach(evaluation => this.updateCar(car, evaluation.score, evaluation.trackName));
+    
+    // Sort by globalScore descending (highest first)
+    trackEntries.sort((a, b) => b.globalScore - a.globalScore);
+    
+    // Remove the lowest scored entries to keep length within limit
+    if(trackEntries.length > this._perTrackSize) {
+      // Keep only the top _perTrackSize entries, removing the lowest-scoring ones
+      const removedEntries = trackEntries.splice(this._perTrackSize);
+      
+      // Remove removed entries from genomeMap
+      removedEntries.forEach(entry => {
+        this.genomeMap.delete(entry.genomeId);
+      });
     }
-
-    // If at perTrackSize, only add if score is higher than the lowest
-    // Find the lowest score entry
-    let lowestScore = trackEntries[0].globalScore;
-    let lowestIndex = 0;
-    for(let i = 1; i < trackEntries.length; i++) {
-      if(trackEntries[i].globalScore < lowestScore) {
-        lowestScore = trackEntries[i].globalScore;
-        lowestIndex = i;
-      }
-    }
-
-    // Only add if the new score is higher than the lowest
-    if(score > lowestScore) {
-      // Remove the lowest-scoring entry
-      trackEntries.splice(lowestIndex, 1);
-      // Add the new entry
-      this._addEntry(new HallOfFameEntry(car, score, trackName));
-      // Sort by score descending
-      trackEntries.sort((a, b) => b.globalScore - a.globalScore);
-      // add to list of all tracks too
-      this.updateCar(car, score, trackName);
-      return true;
-    }
-    return false;
+    
+    // Check if the newly added entry is still in the list
+    const wasAdded = trackEntries.includes(newEntry);
+    return wasAdded;
   }
 
   updateCar(car, score, trackName) {

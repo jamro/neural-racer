@@ -57,6 +57,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
     let latestGeneration = initialGeneration;
     this.isRunning = true;
     this.simulation = simulation
+    const allScoresMap = {}
     const allScores = [];
     const allStats = [];
     for(let i = 0; i < this.allTracks.length && this.isRunning; i++) {
@@ -82,6 +83,15 @@ export default class AllTracksEpochRunner extends EpochRunner {
       latestGeneration.calculateScores(scoreWeights);
       allScores.push(latestGeneration.scores);
       allStats.push(latestGeneration.stats);
+      for(let j = 0; j < latestGeneration.cars.length; j++) {
+        if(!allScoresMap[latestGeneration.cars[j].genome.genomeId]) {
+          allScoresMap[latestGeneration.cars[j].genome.genomeId] = [];
+        }
+        allScoresMap[latestGeneration.cars[j].genome.genomeId].push({
+          trackName: track.name, 
+          score: latestGeneration.scores[j] 
+        });
+      }
 
       // remove current track from simulation
       if(this.simulation) {
@@ -119,8 +129,28 @@ export default class AllTracksEpochRunner extends EpochRunner {
 
     // update history and hall of fame
     this.evolution.history.addGenerationInstance(initialGeneration, ALL_TRACKS_NAME);
+    const [leaders, leadersScores] = initialGeneration.getLeaders(candidatesPerGeneration);
+    for(let i = 0; i < leaders.length; i++) {
+      const leaderEvaluations = allScoresMap[leaders[i].genome.genomeId]; 
+      const mainEvaluationIndex = Math.floor(Math.random() * leaderEvaluations.length);
+      const mainEvaluation = leaderEvaluations[mainEvaluationIndex];
+      this.evolution.hallOfFame.addCar(
+        leaders[i], 
+        mainEvaluation.score, 
+        mainEvaluation.trackName,
+        leaderEvaluations
+      );
+    }
+    const hallOfFameResults = latestGeneration.getHallOfFameCarsAndScores(this.evolution.hallOfFame);
+    for(const result of hallOfFameResults) {
+      const hofEvaluations = allScoresMap[result.car.genome.genomeId];
+      hofEvaluations.forEach(evaluation => this.evolution.hallOfFame.updateCar(
+        result.car, 
+        evaluation.score, 
+        evaluation.trackName
+      ));
+    }
     
-
     // store and trim generation history
     await this.evolution.database.trimGenerationHistory(this.evolution.evolutionId, populationHistorySize);
     initialGeneration.trackName = ALL_TRACKS_NAME;
