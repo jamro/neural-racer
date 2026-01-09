@@ -182,9 +182,14 @@ export default class AllTracksEpochRunner extends EpochRunner {
 
   stop() {
     this.isRunning = false;
+    if(!this.simulation) return;
+    this.simulation.stop(); // Stop simulation loop
+    this.simulation.stopRender(); // Stop render loop
   }
 
   scaleView(width, height) {
-
+    if(!this.simulation) return;
+    this.simulation.scaleView(width, height);
   }
+
 }

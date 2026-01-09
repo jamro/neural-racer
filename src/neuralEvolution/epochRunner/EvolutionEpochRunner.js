@@ -110,16 +110,16 @@ export default class EvolutionEpochRunner extends EpochRunner {
     latestGeneration.trackName = this.currentTrack.name;
     await this.evolution.store(); // store before evolution to keep scoring for history
 
-    const newGeneration = latestGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
-    newGeneration.resetScores();
-    this.currentTrack = this.getNextTrack(newGeneration.epoch, replayInterval);
-    newGeneration.trackName = this.currentTrack.name;
-
     // remove current track from simulation
     if(this.simulation) {
       this.simulation.removeAndDispose();
     }
     this.simulation = null
+
+    const newGeneration = latestGeneration.evolve(this.evolution.hallOfFame, this.evolution.config.evolve);
+    newGeneration.resetScores();
+    this.currentTrack = this.getNextTrack(newGeneration.epoch, replayInterval);
+    newGeneration.trackName = this.currentTrack.name;
 
     await this.evolution.store();
 
