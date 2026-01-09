@@ -5,9 +5,9 @@ import { calculateScore } from '../neuralEvolution/fitness';
 import { 
   getUiFrameHorizontalLineTexture,
   getUiTrackIconTexture,
+  getUiWarningIconTexture,
 } from '../loaders/AssetLoader';
 import Frame from '../ui/Frame';
-import Button from '../ui/Button';
 import SpeedSelector from '../ui/SpeedSelector';
 
 const TITLES_HEIGHT = 30;
@@ -62,6 +62,32 @@ class SimulationDetailsView extends PIXI.Container {
     this.neuralTitle.text = 'Neural Network';
     this.neuralTitle.anchor.set(0.5, 0.5);
     this.bottomContainer.addChild(this.neuralTitle);
+
+    this.stagnationWarning = new PIXI.Container();
+    this.stagnationWarning.visible = false;
+    const stagnationBg = new PIXI.Graphics();
+    this.stagnationWarning.addChild(stagnationBg);
+    stagnationBg.rect(-2, -12, 100, 22);
+    stagnationBg.fill({
+      color: 0x000000,
+      alpha: 0.3
+    });
+    const warningIcon = new PIXI.Sprite(getUiWarningIconTexture());
+    this.stagnationWarning.addChild(warningIcon);
+    warningIcon.x = 10;
+    warningIcon.anchor.set(0.5, 0.5);
+    warningIcon.scale.set(0.18);
+    this.bottomContainer.addChild(this.stagnationWarning);
+    const stagnationWarningText = new PIXI.Text();
+    stagnationWarningText.style = {
+      fontFamily: 'Exo2',
+      fontSize: 12,
+      fill: 0xdedede,
+    };
+    stagnationWarningText.text = 'STAGNATION';
+    this.stagnationWarning.addChild(stagnationWarningText);
+    stagnationWarningText.x = 22;
+    stagnationWarningText.anchor.set(0, 0.5);
 
     this.topContainer = new Frame(180, 115);
     this.addChild(this.topContainer);
@@ -191,6 +217,8 @@ class SimulationDetailsView extends PIXI.Container {
     .map(h => [h.minScore, h.percentile25Score, h.medianScore, h.percentile75Score, h.maxScore]);
 
     this.historyChart.updateHistory(history);
+
+    this.stagnationWarning.visible = evolutionHistory.isPopulationStagnated(trackName);
   }
 
   scaleView(width, height) {
@@ -226,10 +254,14 @@ class SimulationDetailsView extends PIXI.Container {
     this.bottomHr.y = WIDGET_HEIGHT + this.bottomHr.height
     this.bottomHr.scale.y = -1
     this.bottomHr.width = width
+
+    this.stagnationWarning.x = this.historyChart.x + 45
+    this.stagnationWarning.y = this.historyChart.y + this.historyChart.canvasHeight - 42
   }
 
   onTick(delta) {
     this.fpsCounter += 1;
+    this.stagnationWarning.alpha = Math.cos(performance.now()/100)*0.4+0.6;
   }
 
   destroy() {

@@ -109,6 +109,7 @@ const TEXTURE_REGISTRY = {
     ui_speed_fast: 'assets/img/ui_speed_fast.png',
     ui_speed_super_fast: 'assets/img/ui_speed_super_fast.png',
     ui_track_icon: 'assets/img/ui_track_icon.png',
+    ui_warning_icon: 'assets/img/ui_warn_icon.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -356,3 +357,5 @@ export async function loadUiSpeedSuperFastTexture() { return await loadTexture('
 export function getUiSpeedSuperFastTexture() { return getTexture('ui_speed_super_fast'); }
 export async function loadUiTrackIconTexture() { return await loadTexture('ui_track_icon'); }
 export function getUiTrackIconTexture() { return getTexture('ui_track_icon'); }
+export async function loadUiWarningIconTexture() { return await loadTexture('ui_warning_icon'); }
+export function getUiWarningIconTexture() { return getTexture('ui_warning_icon'); }
