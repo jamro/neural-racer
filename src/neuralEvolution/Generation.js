@@ -311,9 +311,10 @@ class Generation {
       // Keep elite genomes (clone them to avoid mutation)
       const eliteGenomes = [];
       for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
-        eliteGenomes.push(indexedCars[i].genome.clone());
+        const eliteClone = indexedCars[i].genome.clone()
+        eliteGenomes.push(eliteClone);
         genealogy.push({
-          child: indexedCars[i].genome.genomeId,
+          child: eliteClone.genomeId,
           type: 'elite',
           parents: [indexedCars[i].genome.genomeId]
         });

@@ -2,22 +2,22 @@ import * as PIXI from 'pixi.js';
 import { createCircleParticleTexture } from './generationPreview/createCircleParticleTexture';
 import { ParticleLayoutController } from './generationPreview/ParticleLayoutController';
 import TrackView from './generationPreview/TrackView';
-
+import NewGenArea from './generationPreview/NewGenArea';
+import WinnerZone from './generationPreview/WinnerZone';
 
 const MAX_SCORE = 1.35;
 const TRACK_WIDTH = 400;
-const TRACK_LENGTH = 700;
+const TRACK_LENGTH = 750;
 const TRACK_CENTER_Y_OFFSET = 70
 const UNIT_RADIUS = 4;
 const BLINK_GLOW_TINT = 0xffff66;
 const COMPLETE_COLOR = 0x8888FF;
 const INCOMPLETE_COLOR = 0xee0000;
 const PARTICLE_SCALE_UP_DURATION_MS = 300;
-const LEFT_PADDING = 100;
+const LEFT_PADDING = 50;
 // Minimum empty space between particle edges.
 // Increase this to make particles keep a bigger distance.
 const MIN_EDGE_GAP = UNIT_RADIUS;
-const MIN_CENTER_DISTANCE = UNIT_RADIUS * 2 + MIN_EDGE_GAP;
 
 // Random helpers
 // - randSigned(): [-1, 1)
@@ -40,7 +40,7 @@ class GenerationPreview extends PIXI.Container {
     this._scaleAnimationsByGenomeId = new Map(); // genomeId -> { particle, elapsed, duration }
     this._scaleTickerAdded = false;
     
-    // Create static lines container
+    // Create track view and new gen area
     this.trackView = new TrackView(
       MAX_SCORE, 
       TRACK_LENGTH, 
@@ -49,8 +49,24 @@ class GenerationPreview extends PIXI.Container {
     );
     this.trackView.x = LEFT_PADDING / 2;
     this.trackView.y = TRACK_CENTER_Y_OFFSET;
-
     this.addChild(this.trackView);
+
+    this.winnerZone = new WinnerZone(
+      TRACK_LENGTH * ((MAX_SCORE-1)/MAX_SCORE) - 24, 
+      TRACK_WIDTH/2 + TRACK_CENTER_Y_OFFSET
+    );
+    this.winnerZone.x = TRACK_LENGTH/2*(1/MAX_SCORE)+LEFT_PADDING/2 + 12
+    this.winnerZone.y = TRACK_CENTER_Y_OFFSET;
+    this.addChild(this.winnerZone);
+
+    this.newGenArea = new NewGenArea(
+      TRACK_LENGTH, 
+      TRACK_CENTER_Y_OFFSET*2
+    );
+    this.newGenArea.x = -TRACK_LENGTH/2 + LEFT_PADDING/2;
+    this.newGenArea.y = -TRACK_WIDTH/2 + TRACK_CENTER_Y_OFFSET*0.75;
+    this.newGenArea.visible = false;
+    this.addChild(this.newGenArea);
 
     // Create particle container
     this.particleContainer = new PIXI.ParticleContainer({
@@ -91,7 +107,7 @@ class GenerationPreview extends PIXI.Container {
     for(let i = 0; i < this.generation.cars.length; i++) {
       const score = this.generation.scores[i];
       const car = this.generation.cars[i];
-      const scaledScore = score < 1.0 ? score : 1.0 + (score - 1.0) * 0.25;
+      const scaledScore = score < 1.0 ? score : (1 + (MAX_SCORE-1)/2) + randPow3() * ((MAX_SCORE-1)/8);
       const x = scaledScore/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * UNIT_RADIUS;
       const y = randPow3() * TRACK_WIDTH * 0.25 + TRACK_CENTER_Y_OFFSET
       const color = score > 1.0 ? COMPLETE_COLOR : INCOMPLETE_COLOR;
@@ -106,12 +122,14 @@ class GenerationPreview extends PIXI.Container {
   }
 
   addChildParticle(parentIds, childId) {
+    this.newGenArea.visible = true;
     const parents = parentIds.map(id => this._particleByGenomeId.get(id)).filter(p => p !== undefined);
     const parentAvgX = parents.length > 0 ? parents.reduce((acc, p) => acc + p.x, 0) / parents.length : -TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * TRACK_LENGTH
 
+    const baselineX = -TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * TRACK_LENGTH * (1/MAX_SCORE)
     const particle = this._createParticle(
-      0.5*parentAvgX + 0.5*(-TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * TRACK_LENGTH),
-      -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS + TRACK_CENTER_Y_OFFSET/2,
+      0.4*parentAvgX + 0.6*baselineX,
+      -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS + TRACK_CENTER_Y_OFFSET*0.75,
       BLINK_GLOW_TINT, childId
     );
     this.particleContainer.addParticle(particle);

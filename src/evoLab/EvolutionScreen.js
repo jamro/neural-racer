@@ -43,7 +43,7 @@ class EvolutionScreen extends PIXI.Container {
     const genealogy = []
     const newGeneration = this.generation.evolve(this.hallOfFame, this.config, genealogy);
     for(const entry of genealogy) {
-      this.generationPreview.addChildParticle(entry.parents, entry.child, Math.random() * 800 - 400, -150);
+      this.generationPreview.addChildParticle(entry.parents, entry.child + "|child", Math.random() * 800 - 400, -150);
       await new Promise(resolve => setTimeout(resolve, EVOLVE_ANIMATION_DELAY));
     }
     this.nextGeneration = newGeneration;
