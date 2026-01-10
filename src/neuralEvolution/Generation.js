@@ -196,7 +196,7 @@ class Generation {
       return indexedCars;
     }
 
-    riseOffsprings(count, crossoverConfig, mutationConfig, hallOfFame) {
+    riseOffsprings(count, crossoverConfig, mutationConfig, hallOfFame, genealogy) {
       const { 
         blendRatio = 0.7, 
         selectionTournamentSize = 5,
@@ -266,6 +266,13 @@ class Generation {
         });
       
         offsprings.push(child);
+        genealogy[child.genomeId] = {
+          type: 'offspring',
+          parents: [
+            parent1.genome.genomeId, 
+            parent2.genome.genomeId
+          ]
+        }
       }
       return offsprings;
     }
@@ -283,7 +290,7 @@ class Generation {
       return randomGenomes;
     }
 
-    evolve(hallOfFame, config = {}, ) {
+    evolve(hallOfFame, config = {}, genealogy = {}) {
       const { 
         eliteRatio = 0.02, 
         eliminationEpochs = 5, 
@@ -304,11 +311,21 @@ class Generation {
       const eliteGenomes = [];
       for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
         eliteGenomes.push(indexedCars[i].genome.clone());
+        genealogy[indexedCars[i].genome.genomeId] = {
+          type: 'elite',
+          parents: [indexedCars[i].genome.genomeId]
+        }
       }
 
       // Get elite genomes from hall of fame
       const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
       eliteGenomes.push(...hofEliteGenomes);
+      for(let i = 0; i < hofEliteGenomes.length; i++) {
+        genealogy[hofEliteGenomes[i].genomeId] = {
+          type: 'hallOfFame',
+          parents: [hofEliteGenomes[i].genomeId]
+        }
+      }
       
       // Fill the rest of the population with crossover offspring
       const newGenomes = [...eliteGenomes];
@@ -319,13 +336,19 @@ class Generation {
         remainingCount -= Math.ceil(remainingCount * eliminationRate);
       }
       
-      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig, hallOfFame);
+      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig, hallOfFame, genealogy);
       newGenomes.push(...offsprings);
 
       // Fill the rest of the population with random genomes
       if (newGenomes.length < populationSize) {
         const randomGenomes = this.createRandomGenomes(populationSize - newGenomes.length);
         newGenomes.push(...randomGenomes);        
+        for(let i = 0; i < randomGenomes.length; i++) {
+          genealogy[randomGenomes[i].genomeId] = {
+            type: 'random',
+            parents: []
+          }
+        }
       }
       
       const newGeneration = new Generation();

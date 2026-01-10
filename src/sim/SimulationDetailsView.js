@@ -149,6 +149,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.topContainer.addChild(this.evolutionButton);
     this.evolutionButton.x = 15;
     this.evolutionButton.y = 148;
+    this.evolutionButton.buttonWidth = 151
     this.evolutionButton.on('change', (autoMode) => {
       this.emit('evolutionModeChanged', autoMode);
     });

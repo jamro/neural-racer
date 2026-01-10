@@ -10,7 +10,6 @@ class EvolutionModeButton extends TextButton {
 
   constructor() {
     super('Manual', 30, true);
-    this.buttonWidth = 151
     
     this.on('change', (autoMode) => {
       this.refreshEvolutionAppearance();
