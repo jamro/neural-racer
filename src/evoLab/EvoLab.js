@@ -23,7 +23,10 @@ class EvoLab extends PIXI.Container {
     this.evoScreen.scaleView(this.screenWidth, this.screenHeight);
     await this.evoScreen.initialize(generation);
 
-    return await new Promise(resolve => this.evoScreen.on('evolutionCompleted', (newGeneration) => resolve(newGeneration)));
+    const newGeneration = await new Promise(resolve => this.evoScreen.on('evolutionCompleted', (newGeneration) => resolve(newGeneration)));
+    this.removeChild(this.evoScreen);
+    this.evoScreen.destroy({children: true, texture: false, baseTexture: false});
+    return newGeneration;
   }
 
   scaleView(width, height) {
