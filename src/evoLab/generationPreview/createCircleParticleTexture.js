@@ -6,8 +6,8 @@ import * as PIXI from 'pixi.js';
  */
 export function createCircleParticleTexture({
   radius,
-  fillAlpha = 0.3,
-  strokeAlpha = 0.7,
+  fillAlpha = 0.5,
+  strokeAlpha = 1,
   strokeWidth = radius / 2,
 } = {}) {
   const r = radius ?? 5;

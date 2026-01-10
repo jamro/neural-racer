@@ -87,7 +87,9 @@ function hasAnyOverlap(particles, baseRadius, minEdgeGap) {
 }
 
 function clampToBounds(particles, bounds, { zeroVelocityOnHit } = {}) {
-  const { halfW, halfL } = bounds;
+  const { halfW, halfL, leftBound, rightBound } = bounds;
+  const minX = leftBound !== undefined ? leftBound : -halfL;
+  const maxX = rightBound !== undefined ? rightBound : halfL;
   for (const p of particles) {
     let hit = false;
 
@@ -99,11 +101,11 @@ function clampToBounds(particles, bounds, { zeroVelocityOnHit } = {}) {
       hit = true;
     }
 
-    if (p.x < -halfL) {
-      p.x = -halfL;
+    if (p.x < minX) {
+      p.x = minX;
       hit = true;
-    } else if (p.x > halfL) {
-      p.x = halfL;
+    } else if (p.x > maxX) {
+      p.x = maxX;
       hit = true;
     }
 
@@ -139,13 +141,20 @@ function integrate(particles, { damping, maxSpeed }, dt) {
 }
 
 /**
- * One positional overlap resolution pass.
+ * One positional overlap resolution pass using a more stable method.
  * Returns true if any particle moved.
+ * Uses mass-based separation for better convergence in dense scenarios.
  */
 function solveOverlapsOnce(particles, baseRadius, minEdgeGap) {
   // Use a conservative cell size based on maximum possible distance
   const maxCellSize = baseRadius * 2 + minEdgeGap;
   let movedAny = false;
+  
+  // Store accumulated displacement per particle for better stability
+  const displacements = new Map();
+  for (let i = 0; i < particles.length; i++) {
+    displacements.set(particles[i], { x: 0, y: 0, count: 0 });
+  }
 
   visitNeighborPairs(particles, maxCellSize, (a, b) => {
     const minCenterDistance = getMinCenterDistance(a, b, baseRadius, minEdgeGap);
@@ -156,8 +165,10 @@ function solveOverlapsOnce(particles, baseRadius, minEdgeGap) {
     let d2 = dx * dx + dy * dy;
 
     if (d2 < MIN_DIST_EPS2) {
-      dx = (Math.random() * 2 - 1) * 0.001;
-      dy = (Math.random() * 2 - 1) * 0.001;
+      // For overlapping particles at same position, use a more significant separation
+      const angle = Math.random() * Math.PI * 2;
+      dx = Math.cos(angle) * 0.1;
+      dy = Math.sin(angle) * 0.1;
       d2 = dx * dx + dy * dy;
     }
 
@@ -166,19 +177,30 @@ function solveOverlapsOnce(particles, baseRadius, minEdgeGap) {
     const d = Math.sqrt(d2);
     const nx = dx / d;
     const ny = dy / d;
-    const corr = (minCenterDistance - d) / 2;
+    const overlap = minCenterDistance - d;
+    
+    // Use mass-based separation (both particles move proportionally)
+    // For dense clusters, use a slightly more aggressive correction factor
+    const correctionFactor = overlap > minCenterDistance * 0.5 ? 0.6 : 0.5;
+    const corr = overlap * correctionFactor;
+    
+    // Accumulate displacements instead of applying immediately
+    const dispA = displacements.get(a);
+    const dispB = displacements.get(b);
+    dispA.x -= nx * corr;
+    dispA.y -= ny * corr;
+    dispA.count++;
+    dispB.x += nx * corr;
+    dispB.y += ny * corr;
+    dispB.count++;
 
-    a.x -= nx * corr;
-    a.y -= ny * corr;
-    b.x += nx * corr;
-    b.y += ny * corr;
-
-    // Dampen relative velocity along separation axis (prevents re-collisions).
+    // Dampen relative velocity along separation axis more aggressively to prevent oscillation
     const rvx = b.vx - a.vx;
     const rvy = b.vy - a.vy;
     const relAlongN = rvx * nx + rvy * ny;
     if (relAlongN < 0) {
-      const impulse = relAlongN * 0.5;
+      // More aggressive damping to prevent oscillation
+      const impulse = relAlongN * 0.7;
       a.vx += nx * impulse;
       a.vy += ny * impulse;
       b.vx -= nx * impulse;
@@ -188,6 +210,18 @@ function solveOverlapsOnce(particles, baseRadius, minEdgeGap) {
     movedAny = true;
     return false;
   });
+
+  // Apply accumulated displacements
+  // For particles with multiple overlaps, use a weighted average to prevent overcorrection
+  for (const [particle, disp] of displacements) {
+    if (disp.count > 0) {
+      // Use inverse square root weighting: reduces correction when many overlaps, but not as aggressively as simple average
+      // This helps convergence in dense clusters while preventing oscillation
+      const weight = disp.count > 1 ? 1 / Math.sqrt(disp.count) : 1;
+      particle.x += disp.x * weight;
+      particle.y += disp.y * weight;
+    }
+  }
 
   return movedAny;
 }
@@ -211,7 +245,7 @@ export class ParticleLayoutController {
     springStrength = 6,
     damping = 0.85,
     maxSpeed = 600,
-    positionSolveIterations = 6,
+    positionSolveIterations = 10, // Increased from 6 for better convergence in dense states
   }) {
     this.particles = particles;
     this.baseRadius = baseRadius;
@@ -247,15 +281,35 @@ export class ParticleLayoutController {
   }
 
   invalidate(frames = this.settleFramesOnDisturb) {
+    const wasSettling = this._settleFramesRemaining > 0;
+    const hadOverlaps = hasAnyOverlap(this.particles, this.baseRadius, this.minEdgeGap);
+    const previousFrames = this._settleFramesRemaining;
     this._settleFramesRemaining = Math.max(this._settleFramesRemaining, frames);
+    
+    // Clear velocities when starting a new settle period with overlaps to prevent oscillation
+    if (hadOverlaps && !wasSettling && previousFrames === 0) {
+      for (const p of this.particles) {
+        p.vx *= 0.2;
+        p.vy *= 0.2;
+      }
+    }
   }
 
   _onTick = (ticker) => {
     const dt = getDeltaSeconds(ticker);
 
     // Trigger settling when needed.
-    if (didParticlesMoveExternally(this.particles, this.moveEpsilon)) this.invalidate();
+    if (didParticlesMoveExternally(this.particles, this.moveEpsilon)) {
+      this.invalidate();
+    }
+    
+    // Check for overlaps and trigger settling if needed
     if (this._settleFramesRemaining === 0 && hasAnyOverlap(this.particles, this.baseRadius, this.minEdgeGap)) {
+      // Clear velocities more aggressively when overlaps are detected during idle state
+      for (const p of this.particles) {
+        p.vx *= 0.1;
+        p.vy *= 0.1;
+      }
       this.invalidate();
     }
 
@@ -272,26 +326,59 @@ export class ParticleLayoutController {
       return;
     }
 
-    // 1) spring towards origin
-    applySpringToOrigin(particles, this.springStrength, dt);
+    // Check if we have overlaps before settling
+    const hadOverlaps = hasAnyOverlap(particles, this.baseRadius, this.minEdgeGap);
+    
+    // 1) spring towards origin (but reduce spring strength when resolving overlaps to prevent oscillation)
+    const effectiveSpringStrength = hadOverlaps ? this.springStrength * 0.5 : this.springStrength;
+    applySpringToOrigin(particles, effectiveSpringStrength, dt);
 
     // 2) integrate velocities -> positions
+    const effectiveDamping = hadOverlaps ? this.damping * 0.95 : this.damping; // More damping when resolving overlaps
     integrate(
       particles,
-      { damping: this.damping, maxSpeed: this.maxSpeed },
+      { damping: effectiveDamping, maxSpeed: this.maxSpeed },
       dt
     );
 
     // 3) solve overlaps (dense-group safe) + clamp
     // Uses per-particle scale to calculate effective collision sizes
-    for (let i = 0; i < this.positionSolveIterations; i++) {
+    // Use more iterations for dense initial states
+    const iterations = hadOverlaps ? this.positionSolveIterations * 2 : this.positionSolveIterations;
+    let overlapResolved = false;
+    
+    for (let i = 0; i < iterations; i++) {
       const moved = solveOverlapsOnce(particles, this.baseRadius, this.minEdgeGap);
       clampToBounds(particles, this.bounds);
-      if (!moved) break;
+      
+      // Check if overlaps are resolved
+      if (!moved && !hasAnyOverlap(particles, this.baseRadius, this.minEdgeGap)) {
+        overlapResolved = true;
+        break;
+      }
     }
     clampToBounds(particles, this.bounds, { zeroVelocityOnHit: true });
 
-    this._settleFramesRemaining--;
+    // If overlaps are resolved and particles are stable, reduce remaining frames
+    // Otherwise, keep settling to ensure stability
+    if (overlapResolved) {
+      // Check if particles are stable (low velocity)
+      let maxSpeed = 0;
+      for (const p of particles) {
+        const speed = Math.hypot(p.vx, p.vy);
+        if (speed > maxSpeed) maxSpeed = speed;
+      }
+      
+      // If velocities are low and no overlaps, settle faster
+      if (maxSpeed < 1.0 && !hasAnyOverlap(particles, this.baseRadius, this.minEdgeGap)) {
+        this._settleFramesRemaining = Math.max(0, this._settleFramesRemaining - 2);
+      } else {
+        this._settleFramesRemaining--;
+      }
+    } else {
+      // Still have overlaps, continue settling
+      this._settleFramesRemaining--;
+    }
   }
 }
 

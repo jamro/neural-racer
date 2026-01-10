@@ -4,15 +4,16 @@ import { ParticleLayoutController } from './generationPreview/ParticleLayoutCont
 import TrackView from './generationPreview/TrackView';
 
 
-const MAX_SCORE = 1.7;
+const MAX_SCORE = 1.35;
 const TRACK_WIDTH = 400;
-const TRACK_LENGTH = 800;
+const TRACK_LENGTH = 700;
 const TRACK_CENTER_Y_OFFSET = 70
 const UNIT_RADIUS = 4;
 const BLINK_GLOW_TINT = 0xffff66;
 const COMPLETE_COLOR = 0x8888FF;
 const INCOMPLETE_COLOR = 0xee0000;
 const PARTICLE_SCALE_UP_DURATION_MS = 300;
+const LEFT_PADDING = 100;
 // Minimum empty space between particle edges.
 // Increase this to make particles keep a bigger distance.
 const MIN_EDGE_GAP = UNIT_RADIUS;
@@ -46,6 +47,7 @@ class GenerationPreview extends PIXI.Container {
       TRACK_WIDTH/2 + TRACK_CENTER_Y_OFFSET,
       UNIT_RADIUS
     );
+    this.trackView.x = LEFT_PADDING / 2;
     this.trackView.y = TRACK_CENTER_Y_OFFSET;
 
     this.addChild(this.trackView);
@@ -68,7 +70,12 @@ class GenerationPreview extends PIXI.Container {
       particles: this.particles,
       baseRadius: UNIT_RADIUS,
       minEdgeGap: MIN_EDGE_GAP,
-      bounds: { halfW: TRACK_WIDTH / 2, halfL: TRACK_LENGTH / 2 },
+      bounds: { 
+        halfW: TRACK_WIDTH / 2, 
+        halfL: TRACK_LENGTH / 2,
+        leftBound: -TRACK_LENGTH / 2 - LEFT_PADDING + LEFT_PADDING / 2,
+        rightBound: TRACK_LENGTH / 2 + LEFT_PADDING / 2,
+      },
     });
 
   }
@@ -84,7 +91,8 @@ class GenerationPreview extends PIXI.Container {
     for(let i = 0; i < this.generation.cars.length; i++) {
       const score = this.generation.scores[i];
       const car = this.generation.cars[i];
-      const x = score/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2 + randPow3() * UNIT_RADIUS;
+      const scaledScore = score < 1.0 ? score : 1.0 + (score - 1.0) * 0.25;
+      const x = scaledScore/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * UNIT_RADIUS;
       const y = randPow3() * TRACK_WIDTH * 0.25 + TRACK_CENTER_Y_OFFSET
       const color = score > 1.0 ? COMPLETE_COLOR : INCOMPLETE_COLOR;
 
@@ -99,10 +107,10 @@ class GenerationPreview extends PIXI.Container {
 
   addChildParticle(parentIds, childId) {
     const parents = parentIds.map(id => this._particleByGenomeId.get(id)).filter(p => p !== undefined);
-    const parentAvgX = parents.length > 0 ? parents.reduce((acc, p) => acc + p.x, 0) / parents.length : -TRACK_LENGTH/2  + Math.random() * TRACK_LENGTH
+    const parentAvgX = parents.length > 0 ? parents.reduce((acc, p) => acc + p.x, 0) / parents.length : -TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * TRACK_LENGTH
 
     const particle = this._createParticle(
-      0.5*parentAvgX + 0.5*(-TRACK_LENGTH/2  + Math.random() * TRACK_LENGTH),
+      0.5*parentAvgX + 0.5*(-TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * TRACK_LENGTH),
       -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS + TRACK_CENTER_Y_OFFSET/2,
       BLINK_GLOW_TINT, childId
     );
