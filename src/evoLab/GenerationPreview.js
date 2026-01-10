@@ -1,12 +1,17 @@
 import * as PIXI from 'pixi.js';
 import { createCircleParticleTexture } from './generationPreview/createCircleParticleTexture';
 import { ParticleLayoutController } from './generationPreview/ParticleLayoutController';
+import TrackView from './generationPreview/TrackView';
 
 
 const MAX_SCORE = 1.6;
-const TRACK_WIDTH = 300;
+const TRACK_WIDTH = 400;
 const TRACK_LENGTH = 800;
-const UNIT_RADIUS = 5;
+const TRACK_CENTER_Y_OFFSET = 100
+const UNIT_RADIUS = 4;
+const BLINK_GLOW_TINT = 0xffff66;
+const COMPLETE_COLOR = 0x8888FF;
+const INCOMPLETE_COLOR = 0xee0000;
 // Minimum empty space between particle edges.
 // Increase this to make particles keep a bigger distance.
 const MIN_EDGE_GAP = UNIT_RADIUS;
@@ -22,26 +27,18 @@ const randPow3 = () => {
 };
 
 class GenerationPreview extends PIXI.Container {
-  constructor(generation) {
+  constructor() {
     super();
 
-    this.generation = generation;
+    this.generation = null;
     this.particles = [];
+    this._particleByGenomeId = new Map();
+    this._blinksByGenomeId = new Map(); // genomeId -> { particle, baseTint, mix, phase, fadeInSec, fadeOutSec }
+    this._blinkTickerAdded = false;
     
     // Create static lines container
-    this.linesContainer = new PIXI.Container();
-    this.addChild(this.linesContainer);
-
-    const linesGraphics = new PIXI.Graphics();
-    linesGraphics.moveTo(1/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2, -TRACK_WIDTH/2);
-    linesGraphics.lineTo(1/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2, TRACK_WIDTH/2);
-    linesGraphics.moveTo(- TRACK_LENGTH/2 - UNIT_RADIUS*1.5, -TRACK_WIDTH/2);
-    linesGraphics.lineTo(- TRACK_LENGTH/2 - UNIT_RADIUS*1.5, TRACK_WIDTH/2);
-    linesGraphics.stroke({ 
-      color: 0x888888,
-      width: 1,
-    });
-    this.linesContainer.addChild(linesGraphics);
+    this.trackView = new TrackView(MAX_SCORE, TRACK_LENGTH, TRACK_WIDTH, UNIT_RADIUS);
+    this.addChild(this.trackView);
 
     // Create particle container
     this.particleContainer = new PIXI.ParticleContainer({
@@ -62,25 +59,50 @@ class GenerationPreview extends PIXI.Container {
       bounds: { halfW: TRACK_WIDTH / 2, halfL: TRACK_LENGTH / 2 },
     });
 
-    // Create particles for each generation unit
-    for(let i = 0; i < this.generation.cars.length; i++) {
-      const score = this.generation.scores[i];
-      const x = score/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2 + randPow3() * UNIT_RADIUS;
-      const y = randPow3() * TRACK_WIDTH * 0.25;
-      const color = score > 1.0 ? 0x8888FF : 0xff6600;
+  }
 
-      const particle = this._createParticle(x, y, color);
-      
-      this.particleContainer.addParticle(particle);
-      this.particles.push(particle);
-    }
+  async initialize(generation) {
+    this.generation = generation;
 
     // Initial settle so particles never overlap.
     this.layout.invalidate();
     this.layout.start();
+
+    // Create particles for each generation unit
+    for(let i = 0; i < this.generation.cars.length; i++) {
+      const score = this.generation.scores[i];
+      const car = this.generation.cars[i];
+      const x = score/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2 + randPow3() * UNIT_RADIUS;
+      const y = randPow3() * TRACK_WIDTH * 0.25 + TRACK_CENTER_Y_OFFSET
+      const color = score > 1.0 ? COMPLETE_COLOR : INCOMPLETE_COLOR;
+
+      const particle = this._createParticle(x, y, color, car.genome.genomeId);
+      
+      this.particleContainer.addParticle(particle);
+      this.particles.push(particle);
+      this._particleByGenomeId.set(particle.genomeId, particle);
+      await new Promise(resolve => setTimeout(resolve, 5));
+    }
   }
 
-  _createParticle(x, y, tint) {
+  addChildParticle(parentIds, childId) {
+    const parents = parentIds.map(id => this._particleByGenomeId.get(id)).filter(p => p !== undefined);
+    const parentAvgX = parents.length > 0 ? parents.reduce((acc, p) => acc + p.x, 0) / parents.length : -TRACK_LENGTH/2  + Math.random() * TRACK_LENGTH
+
+    const particle = this._createParticle(
+      0.5*parentAvgX + 0.5*(-TRACK_LENGTH/2  + Math.random() * TRACK_LENGTH),
+      -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS,
+      BLINK_GLOW_TINT, childId
+    );
+    this.particleContainer.addParticle(particle);
+    this.particles.push(particle);
+    this._particleByGenomeId.set(particle.genomeId, particle);
+    for(const parentId of parentIds) {
+      this.blinkParticle(parentId);
+    }
+  }
+
+  _createParticle(x, y, tint, genomeId) {
     const particle = new PIXI.Particle({
       texture: this.particleTexture,
       x,
@@ -92,6 +114,8 @@ class GenerationPreview extends PIXI.Container {
       scaleY: 1,
       tint,
     });
+    particle.genomeId = genomeId;
+    particle.baseTint = tint;
 
     // Physics state (kept on the particle for simplicity)
     particle.ox = x;
@@ -104,8 +128,123 @@ class GenerationPreview extends PIXI.Container {
     return particle;
   }
 
+  /**
+   * Blink particle with given genomeId.
+   * Glow tint: 0xffff66. Fades in then fades out.
+   *
+   * If called while a blink is already in progress for that particle, the old
+   * blink is replaced and the new one starts from the current fade level.
+   */
+  blinkParticle(genomeId, fadeInSec = 0.25, keepSec = 0.5, fadeOutSec = 1.5) {
+    const particle = this._particleByGenomeId.get(genomeId);
+    if (!particle) return;
+
+    const prev = this._blinksByGenomeId.get(genomeId);
+    const mix = prev?.mix ?? 0;
+    const baseTint = prev?.baseTint ?? particle.baseTint ?? particle.tint;
+
+    const keep = Math.max(0, keepSec);
+    const phase =
+      mix >= 1 ? (keep > 0 ? 'hold' : 'out') : 'in';
+
+    this._blinksByGenomeId.set(genomeId, {
+      particle,
+      baseTint,
+      mix,
+      phase,
+      holdRemaining: phase === 'hold' ? keep : 0,
+      fadeInSec: Math.max(0, fadeInSec),
+      keepSec: keep,
+      fadeOutSec: Math.max(0, fadeOutSec),
+    });
+
+    if (!this._blinkTickerAdded) {
+      this._blinkTickerAdded = true;
+      PIXI.Ticker.shared.add(this._onBlinkTick);
+    }
+  }
+
+  _onBlinkTick = (ticker) => {
+    const dt = ticker && typeof ticker.deltaTime === 'number' ? ticker.deltaTime / 60 : 1 / 60;
+
+    for (const [genomeId, b] of this._blinksByGenomeId) {
+      const { particle, baseTint } = b;
+      if (!particle || particle.destroyed) {
+        this._blinksByGenomeId.delete(genomeId);
+        continue;
+      }
+
+      if (b.phase === 'in') {
+        if (b.fadeInSec <= 0) {
+          b.mix = 1;
+          if (b.keepSec > 0) {
+            b.phase = 'hold';
+            b.holdRemaining = b.keepSec;
+          } else {
+            b.phase = 'out';
+          }
+        } else {
+          b.mix = Math.min(1, b.mix + dt / b.fadeInSec);
+          if (b.mix >= 1) {
+            if (b.keepSec > 0) {
+              b.phase = 'hold';
+              b.holdRemaining = b.keepSec;
+            } else {
+              b.phase = 'out';
+            }
+          }
+        }
+      }
+
+      if (b.phase === 'hold') {
+        b.mix = 1;
+        b.holdRemaining = Math.max(0, (b.holdRemaining ?? 0) - dt);
+        if (b.holdRemaining <= 0) b.phase = 'out';
+      }
+
+      if (b.phase === 'out') {
+        if (b.fadeOutSec <= 0) {
+          b.mix = 0;
+        } else {
+          b.mix = Math.max(0, b.mix - dt / b.fadeOutSec);
+        }
+      }
+
+      particle.tint = this._lerpTint(baseTint, BLINK_GLOW_TINT, b.mix);
+
+      if (b.phase === 'out' && b.mix <= 0) {
+        particle.tint = baseTint;
+        this._blinksByGenomeId.delete(genomeId);
+      }
+    }
+
+    if (this._blinksByGenomeId.size === 0 && this._blinkTickerAdded) {
+      this._blinkTickerAdded = false;
+      PIXI.Ticker.shared.remove(this._onBlinkTick);
+    }
+  };
+
+  _lerpTint(a, b, t) {
+    const tt = Math.max(0, Math.min(1, t));
+    const ar = (a >> 16) & 0xff;
+    const ag = (a >> 8) & 0xff;
+    const ab = a & 0xff;
+    const br = (b >> 16) & 0xff;
+    const bg = (b >> 8) & 0xff;
+    const bb = b & 0xff;
+    const rr = Math.round(ar + (br - ar) * tt);
+    const rg = Math.round(ag + (bg - ag) * tt);
+    const rb = Math.round(ab + (bb - ab) * tt);
+    return (rr << 16) | (rg << 8) | rb;
+  }
+
   destroy(options) {
     this.layout?.destroy();
+    if (this._blinkTickerAdded) {
+      this._blinkTickerAdded = false;
+      PIXI.Ticker.shared.remove(this._onBlinkTick);
+    }
+    this._blinksByGenomeId.clear();
     super.destroy(options);
   }
 }

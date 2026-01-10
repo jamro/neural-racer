@@ -266,13 +266,14 @@ class Generation {
         });
       
         offsprings.push(child);
-        genealogy[child.genomeId] = {
+        genealogy.push({
+          child: child.genomeId,
           type: 'offspring',
           parents: [
             parent1.genome.genomeId, 
             parent2.genome.genomeId
           ]
-        }
+        });
       }
       return offsprings;
     }
@@ -290,7 +291,7 @@ class Generation {
       return randomGenomes;
     }
 
-    evolve(hallOfFame, config = {}, genealogy = {}) {
+    evolve(hallOfFame, config = {}, genealogy = []) {
       const { 
         eliteRatio = 0.02, 
         eliminationEpochs = 5, 
@@ -311,20 +312,22 @@ class Generation {
       const eliteGenomes = [];
       for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
         eliteGenomes.push(indexedCars[i].genome.clone());
-        genealogy[indexedCars[i].genome.genomeId] = {
+        genealogy.push({
+          child: indexedCars[i].genome.genomeId,
           type: 'elite',
           parents: [indexedCars[i].genome.genomeId]
-        }
+        });
       }
 
       // Get elite genomes from hall of fame
       const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
       eliteGenomes.push(...hofEliteGenomes);
       for(let i = 0; i < hofEliteGenomes.length; i++) {
-        genealogy[hofEliteGenomes[i].genomeId] = {
+        genealogy.push({
+          child: hofEliteGenomes[i].genomeId,
           type: 'hallOfFame',
           parents: [hofEliteGenomes[i].genomeId]
-        }
+        });
       }
       
       // Fill the rest of the population with crossover offspring
@@ -344,10 +347,11 @@ class Generation {
         const randomGenomes = this.createRandomGenomes(populationSize - newGenomes.length);
         newGenomes.push(...randomGenomes);        
         for(let i = 0; i < randomGenomes.length; i++) {
-          genealogy[randomGenomes[i].genomeId] = {
+          genealogy.push({
+            child: randomGenomes[i].genomeId,
             type: 'random',
             parents: []
-          }
+          })
         }
       }
       
