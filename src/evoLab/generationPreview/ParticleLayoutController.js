@@ -25,6 +25,7 @@ function didParticlesMoveExternally(particles, moveEpsilon) {
 /**
  * Visits nearby particle pairs using a uniform grid so work stays ~linear.
  * Calls `fn(a, b)` once for each nearby pair (a before b).
+ * Note: cellSize should be >= maximum expected interaction distance for correctness.
  */
 function visitNeighborPairs(particles, cellSize, fn, stopOnTrue = false) {
   if (particles.length <= 1) return false;
@@ -57,12 +58,26 @@ function visitNeighborPairs(particles, cellSize, fn, stopOnTrue = false) {
   return false;
 }
 
-function hasAnyOverlap(particles, minCenterDistance) {
-  const minD2 = minCenterDistance * minCenterDistance;
+function getEffectiveRadius(particle, baseRadius) {
+  const scale = particle.scaleX ?? 1;
+  return baseRadius * scale;
+}
+
+function getMinCenterDistance(particleA, particleB, baseRadius, minEdgeGap) {
+  const radiusA = getEffectiveRadius(particleA, baseRadius);
+  const radiusB = getEffectiveRadius(particleB, baseRadius);
+  return radiusA + radiusB + minEdgeGap;
+}
+
+function hasAnyOverlap(particles, baseRadius, minEdgeGap) {
+  // Use a conservative cell size based on maximum possible distance
+  const maxCellSize = baseRadius * 2 + minEdgeGap;
   return visitNeighborPairs(
     particles,
-    minCenterDistance,
+    maxCellSize,
     (a, b) => {
+      const minDist = getMinCenterDistance(a, b, baseRadius, minEdgeGap);
+      const minD2 = minDist * minDist;
       const dx = b.x - a.x;
       const dy = b.y - a.y;
       return dx * dx + dy * dy < minD2;
@@ -127,11 +142,15 @@ function integrate(particles, { damping, maxSpeed }, dt) {
  * One positional overlap resolution pass.
  * Returns true if any particle moved.
  */
-function solveOverlapsOnce(particles, minCenterDistance) {
-  const minD2 = minCenterDistance * minCenterDistance;
+function solveOverlapsOnce(particles, baseRadius, minEdgeGap) {
+  // Use a conservative cell size based on maximum possible distance
+  const maxCellSize = baseRadius * 2 + minEdgeGap;
   let movedAny = false;
 
-  visitNeighborPairs(particles, minCenterDistance, (a, b) => {
+  visitNeighborPairs(particles, maxCellSize, (a, b) => {
+    const minCenterDistance = getMinCenterDistance(a, b, baseRadius, minEdgeGap);
+    const minD2 = minCenterDistance * minCenterDistance;
+    
     let dx = b.x - a.x;
     let dy = b.y - a.y;
     let d2 = dx * dx + dy * dy;
@@ -179,11 +198,13 @@ function solveOverlapsOnce(particles, minCenterDistance) {
  *
  * - Call `invalidate()` whenever you move particles externally.
  * - The controller also auto-detects external movement.
+ * - Uses per-particle scale to calculate effective sizes for physics.
  */
 export class ParticleLayoutController {
   constructor({
     particles,
-    minCenterDistance,
+    baseRadius,
+    minEdgeGap,
     bounds, // { halfW, halfL }
     settleFramesOnDisturb = 180,
     moveEpsilon = 0.05,
@@ -193,7 +214,8 @@ export class ParticleLayoutController {
     positionSolveIterations = 6,
   }) {
     this.particles = particles;
-    this.minCenterDistance = minCenterDistance;
+    this.baseRadius = baseRadius;
+    this.minEdgeGap = minEdgeGap;
     this.bounds = bounds;
 
     this.settleFramesOnDisturb = settleFramesOnDisturb;
@@ -233,7 +255,7 @@ export class ParticleLayoutController {
 
     // Trigger settling when needed.
     if (didParticlesMoveExternally(this.particles, this.moveEpsilon)) this.invalidate();
-    if (this._settleFramesRemaining === 0 && hasAnyOverlap(this.particles, this.minCenterDistance)) {
+    if (this._settleFramesRemaining === 0 && hasAnyOverlap(this.particles, this.baseRadius, this.minEdgeGap)) {
       this.invalidate();
     }
 
@@ -261,8 +283,9 @@ export class ParticleLayoutController {
     );
 
     // 3) solve overlaps (dense-group safe) + clamp
+    // Uses per-particle scale to calculate effective collision sizes
     for (let i = 0; i < this.positionSolveIterations; i++) {
-      const moved = solveOverlapsOnce(particles, this.minCenterDistance);
+      const moved = solveOverlapsOnce(particles, this.baseRadius, this.minEdgeGap);
       clampToBounds(particles, this.bounds);
       if (!moved) break;
     }

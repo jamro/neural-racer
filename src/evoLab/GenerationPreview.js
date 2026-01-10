@@ -4,14 +4,15 @@ import { ParticleLayoutController } from './generationPreview/ParticleLayoutCont
 import TrackView from './generationPreview/TrackView';
 
 
-const MAX_SCORE = 1.6;
+const MAX_SCORE = 1.7;
 const TRACK_WIDTH = 400;
 const TRACK_LENGTH = 800;
-const TRACK_CENTER_Y_OFFSET = 100
+const TRACK_CENTER_Y_OFFSET = 70
 const UNIT_RADIUS = 4;
 const BLINK_GLOW_TINT = 0xffff66;
 const COMPLETE_COLOR = 0x8888FF;
 const INCOMPLETE_COLOR = 0xee0000;
+const PARTICLE_SCALE_UP_DURATION_MS = 300;
 // Minimum empty space between particle edges.
 // Increase this to make particles keep a bigger distance.
 const MIN_EDGE_GAP = UNIT_RADIUS;
@@ -35,9 +36,18 @@ class GenerationPreview extends PIXI.Container {
     this._particleByGenomeId = new Map();
     this._blinksByGenomeId = new Map(); // genomeId -> { particle, baseTint, mix, phase, fadeInSec, fadeOutSec }
     this._blinkTickerAdded = false;
+    this._scaleAnimationsByGenomeId = new Map(); // genomeId -> { particle, elapsed, duration }
+    this._scaleTickerAdded = false;
     
     // Create static lines container
-    this.trackView = new TrackView(MAX_SCORE, TRACK_LENGTH, TRACK_WIDTH, UNIT_RADIUS);
+    this.trackView = new TrackView(
+      MAX_SCORE, 
+      TRACK_LENGTH, 
+      TRACK_WIDTH/2 + TRACK_CENTER_Y_OFFSET,
+      UNIT_RADIUS
+    );
+    this.trackView.y = TRACK_CENTER_Y_OFFSET;
+
     this.addChild(this.trackView);
 
     // Create particle container
@@ -45,6 +55,7 @@ class GenerationPreview extends PIXI.Container {
       dynamicProperties: {
         position: true,
         color: true,
+        vertex: true, // Required for dynamic scale animations
       },
     });
     this.addChild(this.particleContainer);
@@ -55,7 +66,8 @@ class GenerationPreview extends PIXI.Container {
     // Physics/layout controller (spring to origin + keep min distance)
     this.layout = new ParticleLayoutController({
       particles: this.particles,
-      minCenterDistance: MIN_CENTER_DISTANCE,
+      baseRadius: UNIT_RADIUS,
+      minEdgeGap: MIN_EDGE_GAP,
       bounds: { halfW: TRACK_WIDTH / 2, halfL: TRACK_LENGTH / 2 },
     });
 
@@ -91,7 +103,7 @@ class GenerationPreview extends PIXI.Container {
 
     const particle = this._createParticle(
       0.5*parentAvgX + 0.5*(-TRACK_LENGTH/2  + Math.random() * TRACK_LENGTH),
-      -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS,
+      -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS + TRACK_CENTER_Y_OFFSET/2,
       BLINK_GLOW_TINT, childId
     );
     this.particleContainer.addParticle(particle);
@@ -110,8 +122,8 @@ class GenerationPreview extends PIXI.Container {
       anchorX: 0.5,
       anchorY: 0.5,
       alpha: 1,
-      scaleX: 1,
-      scaleY: 1,
+      scaleX: 0,
+      scaleY: 0,
       tint,
     });
     particle.genomeId = genomeId;
@@ -124,6 +136,9 @@ class GenerationPreview extends PIXI.Container {
     particle.vy = 0;
     particle._lx = x;
     particle._ly = y;
+
+    // Register scale-up animation
+    this._startScaleAnimation(genomeId, particle);
 
     return particle;
   }
@@ -238,13 +253,66 @@ class GenerationPreview extends PIXI.Container {
     return (rr << 16) | (rg << 8) | rb;
   }
 
+  /**
+   * Start scale-up animation for a newly created particle.
+   * Particle starts at scale 0 and animates to scale 1 over PARTICLE_SCALE_UP_DURATION_MS.
+   */
+  _startScaleAnimation(genomeId, particle) {
+    this._scaleAnimationsByGenomeId.set(genomeId, {
+      particle,
+      elapsed: 0,
+      duration: PARTICLE_SCALE_UP_DURATION_MS / 1000, // Convert ms to seconds
+    });
+
+    if (!this._scaleTickerAdded) {
+      this._scaleTickerAdded = true;
+      PIXI.Ticker.shared.add(this._onScaleTick);
+    }
+  }
+
+  _onScaleTick = (ticker) => {
+    const dt = ticker && typeof ticker.deltaTime === 'number' ? ticker.deltaTime / 60 : 1 / 60;
+
+    for (const [genomeId, anim] of this._scaleAnimationsByGenomeId) {
+      const { particle } = anim;
+      if (!particle || particle.destroyed) {
+        this._scaleAnimationsByGenomeId.delete(genomeId);
+        continue;
+      }
+
+      anim.elapsed += dt;
+
+      if (anim.elapsed >= anim.duration) {
+        // Animation complete - set to final scale
+        particle.scaleX = 1;
+        particle.scaleY = 1;
+        this._scaleAnimationsByGenomeId.delete(genomeId);
+      } else {
+        // Interpolate from 0 to 1
+        const progress = Math.min(1, anim.elapsed / anim.duration);
+        particle.scaleX = progress;
+        particle.scaleY = progress;
+      }
+    }
+
+    if (this._scaleAnimationsByGenomeId.size === 0 && this._scaleTickerAdded) {
+      this._scaleTickerAdded = false;
+      PIXI.Ticker.shared.remove(this._onScaleTick);
+    }
+  };
+
   destroy(options) {
     this.layout?.destroy();
     if (this._blinkTickerAdded) {
       this._blinkTickerAdded = false;
       PIXI.Ticker.shared.remove(this._onBlinkTick);
     }
+    if (this._scaleTickerAdded) {
+      this._scaleTickerAdded = false;
+      PIXI.Ticker.shared.remove(this._onScaleTick);
+    }
     this._blinksByGenomeId.clear();
+    this._scaleAnimationsByGenomeId.clear();
     super.destroy(options);
   }
 }
