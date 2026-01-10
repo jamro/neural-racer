@@ -2,7 +2,22 @@ import * as PIXI from 'pixi.js';
 import TextButton from '../ui/TextButton';
 import GenerationPreview from './GenerationPreview';
 
-const EVOLVE_ANIMATION_DELAY = 5;
+const EVOLVE_ANIMATION_DELAY = 1200;
+const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
+
+function sortGenealogy(arr) {
+  const typeOrder = {
+    'offspring': 0,
+    'elite': 1,
+    'hallOfFame': 2
+  };
+  
+  arr.sort((a, b) => {
+    const orderA = typeOrder.hasOwnProperty(a.type) ? typeOrder[a.type] : 3;
+    const orderB = typeOrder.hasOwnProperty(b.type) ? typeOrder[b.type] : 3;
+    return orderA - orderB;
+  });
+}
 
 class EvolutionScreen extends PIXI.Container {
   constructor(generation, hallOfFame, config) {
@@ -42,9 +57,14 @@ class EvolutionScreen extends PIXI.Container {
     this.evolveButton.visible = false;
     const genealogy = []
     const newGeneration = this.generation.evolve(this.hallOfFame, this.config, genealogy);
+    let delay = EVOLVE_ANIMATION_DELAY
+    this.generationPreview.newGenArea.visible = true;
+    sortGenealogy(genealogy)
+    await new Promise(resolve => setTimeout(resolve, 200));
     for(const entry of genealogy) {
       this.generationPreview.addChildParticle(entry.parents, entry.child + "|child", Math.random() * 800 - 400, -150);
-      await new Promise(resolve => setTimeout(resolve, EVOLVE_ANIMATION_DELAY));
+      delay *= EVOLVE_ANIMATION_DELAY_DECAY
+      await new Promise(resolve => setTimeout(resolve, delay));
     }
     this.nextGeneration = newGeneration;
     this.raceButton.visible = true;

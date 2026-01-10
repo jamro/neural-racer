@@ -4,6 +4,7 @@ import { ParticleLayoutController } from './generationPreview/ParticleLayoutCont
 import TrackView from './generationPreview/TrackView';
 import NewGenArea from './generationPreview/NewGenArea';
 import WinnerZone from './generationPreview/WinnerZone';
+import ParticleNetwork from './generationPreview/ParticleNetwork';
 
 const MAX_SCORE = 1.35;
 const TRACK_WIDTH = 400;
@@ -68,6 +69,10 @@ class GenerationPreview extends PIXI.Container {
     this.newGenArea.visible = false;
     this.addChild(this.newGenArea);
 
+    // Create particle network
+    this.particleNetwork = new ParticleNetwork();
+    this.addChild(this.particleNetwork);
+
     // Create particle container
     this.particleContainer = new PIXI.ParticleContainer({
       dynamicProperties: {
@@ -93,7 +98,6 @@ class GenerationPreview extends PIXI.Container {
         rightBound: TRACK_LENGTH / 2 + LEFT_PADDING / 2,
       },
     });
-
   }
 
   async initialize(generation) {
@@ -137,7 +141,18 @@ class GenerationPreview extends PIXI.Container {
     this._particleByGenomeId.set(particle.genomeId, particle);
     for(const parentId of parentIds) {
       this.blinkParticle(parentId);
+      const connection = this.connectParticles(parentId, childId);
+      if (connection) {
+        connection.fadeOut();
+      }
     }
+  }
+
+  connectParticles(sourceId, targetId) {
+    const source = this._particleByGenomeId.get(sourceId);
+    const target = this._particleByGenomeId.get(targetId);
+    if (!source || !target) return;
+    return this.particleNetwork.addConnection(source, target);
   }
 
   _createParticle(x, y, tint, genomeId) {
