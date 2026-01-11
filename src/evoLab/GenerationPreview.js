@@ -9,7 +9,7 @@ import { ParticleInteractionController } from './generationPreview/ParticleInter
 
 const MAX_SCORE = 1.35;
 const TRACK_WIDTH = 300;
-const TRACK_LENGTH = 625;
+const TRACK_LENGTH = 525;
 const TRACK_CENTER_Y_OFFSET = 70
 const UNIT_RADIUS = 3;
 const BLINK_GLOW_TINT = 0xffff66;

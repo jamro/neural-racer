@@ -5,6 +5,9 @@ import TiledBackground from '../sim/track/view/TiledBackground';
 import TopBar from './TopBar';
 import BottomBar from './BottomBar';
 import Genealogy from '../neuralEvolution/Genealogy';
+import CarPreviewPanel from './sidePanel/CarPreviewPanel';
+import SidePanelController from './sidePanel/SidePanelController';
+import EmptyPanel from './sidePanel/EmptyPanel';
 
 const EVOLVE_ANIMATION_DELAY = 1200;
 const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
@@ -37,6 +40,10 @@ class EvolutionScreen extends PIXI.Container {
     });
     this.activeParticleConnection = null;
     this.genealogy = null
+
+    this.carPreviewPanel = new SidePanelController();
+    this.addChild(this.carPreviewPanel);
+    this.carPreviewPanel.showPanel(EmptyPanel);
 
     this.topBar = new TopBar();
     this.topBar.epoch = generation.epoch;
@@ -91,28 +98,38 @@ class EvolutionScreen extends PIXI.Container {
 
     const topBarHeight = 70;
     const bottomBarHeight = 70;
+    const carPreviewPanelWidth = width * 0.25;
 
     this.topBar.scaleView(width, topBarHeight);
     this.bottomBar.scaleView(width, bottomBarHeight);
     this.bottomBar.y = height - bottomBarHeight;
 
     const screenSpaceHeight = height - topBarHeight - bottomBarHeight;
-    const scaleW = width / this.generationPreview.canvasWidth;
+    const screenSpaceWidth = width - carPreviewPanelWidth;
+    const scaleW = screenSpaceWidth / this.generationPreview.canvasWidth;
     const scaleH = screenSpaceHeight / this.generationPreview.canvasHeight;
     const scale = Math.min(scaleW, scaleH);
     this.generationPreview.scale.set(scale);
-    this.generationPreview.x = width / 2 - this.generationPreview.canvasX * scale;
+    this.generationPreview.x = screenSpaceWidth / 2 - this.generationPreview.canvasX * scale 
     this.generationPreview.y = height / 2 - this.generationPreview.canvasY * scale;
+
+    this.carPreviewPanel.scaleView(carPreviewPanelWidth, height - bottomBarHeight - topBarHeight)
+    this.carPreviewPanel.x = width - carPreviewPanelWidth;
+    this.carPreviewPanel.y = topBarHeight;
   }
 
   onParticleClick(particle) {
+    if(!particle) return;
+
+    const genomeId = particle.genomeId.replace('|child', '');
+    this.carPreviewPanel.showPanel(CarPreviewPanel, {carName: genomeId});
+    
+    if(!this.genealogy) return;
     if (this.activeParticleConnection) {
       this.activeParticleConnection.fadeOut();
       this.activeParticleConnection = null;
     }
-    if(!particle || !this.genealogy) return;
-
-    const genomeId = particle.genomeId.replace('|child', '');
+    
 
     if(particle.particleType === 'parent') {
       const children = this.genealogy.getChildren(genomeId);

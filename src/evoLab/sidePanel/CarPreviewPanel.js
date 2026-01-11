@@ -1,0 +1,45 @@
+import * as PIXI from 'pixi.js';
+import SidePanel from './SidePanel';
+import CarSensorPreview from '../../ui/CarSensorPreview';
+
+class CarPreviewPanel extends SidePanel {
+  constructor(props = {}) {
+    super();
+    this._contentBoundaries = {x: 0, y: 0, width: 300, height: 500}
+
+    this.carName = props.carName || '????';
+
+    const title = new PIXI.Text()
+    title.style = {
+      fontFamily: 'Exo2',
+      fontSize: 22,
+      fill: 0xffffff,
+    }
+    title.text = 'CAR DETAILS'
+    title.anchor.set(0.5, 0);
+    title.x = this._contentBoundaries.width / 2;
+    title.y = 20;
+    this.masterContainer.addChild(title);
+
+    this.carNameLabel = new PIXI.Text()
+    this.carNameLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 12,
+      fill: 0x888888,
+    }
+    this.carNameLabel.text = this.carName;
+    this.carNameLabel.anchor.set(0.5, 0);
+    this.carNameLabel.x = this._contentBoundaries.width / 2;
+    this.carNameLabel.y = title.y + 120
+    this.masterContainer.addChild(this.carNameLabel);
+
+    this.carPreview = new CarSensorPreview({showRadar: false, showTires: true});
+    this.masterContainer.addChild(this.carPreview);
+    this.carPreview.x = this._contentBoundaries.width *0.5;
+    this.carPreview.y = title.y + 75
+    this.carPreview.rotation = -Math.PI * 0.4;
+  }
+
+}
+
+export default CarPreviewPanel;

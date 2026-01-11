@@ -10,6 +10,15 @@ export default async function waitForFonts() {
   // Wait for fonts to load
   await document.fonts.ready;
 
+  // Explicitly load the variants we rely on (regular and bold, normal and italic)
+  const variants = [
+    '400 12px Exo2',
+    '400 italic 12px Exo2',
+    '700 12px Exo2',
+    '700 italic 12px Exo2',
+  ];
+  await Promise.all(variants.map(desc => document.fonts.load(desc)));
+
   // Verify Exo2 is actually loaded by measuring
   const testElement = document.createElement('span');
   testElement.style.cssText = 'position:absolute;left:-9999px;font-size:12px;white-space:nowrap;';

@@ -13,21 +13,6 @@ class BottomBar extends PIXI.Container {
     this.edge = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(this.edge);
 
-    this.evolveButton = new TextButton("Evolve Next Generation", 20, false);
-    this.evolveButton.visible = false;
-    this.evolveButton.scale.set(1.2);
-    this.addChild(this.evolveButton);
-
-    this.raceButton = new TextButton("Start Single Race");
-    this.raceButton.visible = false;
-    this.raceButton.scale.set(1.2);
-    this.addChild(this.raceButton);
-
-    this.autoPlayButton = new AutoPlayButton("Auto Play");
-    this.autoPlayButton.visible = false;
-    this.autoPlayButton.scale.set(1.2);
-    this.addChild(this.autoPlayButton);
-
     this.trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
     this.addChild(this.trackIcon);
     
@@ -70,6 +55,21 @@ class BottomBar extends PIXI.Container {
 
     this.trackName = '???';
     this.populationSize = 0;
+
+    this.evolveButton = new TextButton("Evolve Next Generation", 20, false);
+    this.evolveButton.visible = false;
+    this.evolveButton.scale.set(1.2);
+    this.addChild(this.evolveButton);
+
+    this.raceButton = new TextButton("Start Single Race");
+    this.raceButton.visible = false;
+    this.raceButton.scale.set(1.2);
+    this.addChild(this.raceButton);
+
+    this.autoPlayButton = new AutoPlayButton("Auto Play");
+    this.autoPlayButton.visible = false;
+    this.autoPlayButton.scale.set(1.2);
+    this.addChild(this.autoPlayButton);
   }
 
   set trackName(name) {
@@ -134,6 +134,7 @@ class BottomBar extends PIXI.Container {
 
     this.statsLabel.x = 320;
     this.statsLabel.y = height/2-2;
+    this.statsLabel.visible = width > 800;
   }
 
 }
