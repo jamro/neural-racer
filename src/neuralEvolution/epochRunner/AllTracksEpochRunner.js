@@ -63,7 +63,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
       } else {
         this.requestExplorationConfigMode();
       }
-    } else {
+    } else if(!this.isFinetuningConfigMode) {
       this.requestStandardConfigMode();
     }
     this.applyConfigMode();

@@ -26,7 +26,7 @@ class CarPhysicModel {
     this.Iz = 1500;
 
     // engine / braking
-    this.enginePower = 147000;  // W
+    this.enginePower = 220650;  // W (300 hp)
     this.driveForceMax = 6000;  // N
     this.brakeForceMax = 20000; // N
 

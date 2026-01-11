@@ -64,7 +64,7 @@ class TopBar extends PIXI.Container {
     this.title.x = width/2;
     this.title.y = height/2-10;
     this.subtitle.x = width/2;
-    this.subtitle.y = height/2+20;
+    this.subtitle.y = height/2+15;
 
   }
 }

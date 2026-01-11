@@ -32,7 +32,7 @@ class BottomBar extends PIXI.Container {
     this.addChild(this.trackIcon);
     
     this.trackIcon.anchor.set(0.5, 0.5);
-    this.trackIcon.scale.set(0.5);
+    this.trackIcon.scale.set(0.55);
 
     this.trackLabel = new PIXI.Text();
     this.trackLabel.style = {
@@ -53,6 +53,17 @@ class BottomBar extends PIXI.Container {
     this.populationLabel.text = 'Population Size: ???';
     this.populationLabel.anchor.set(0, 0.5);
     this.addChild(this.populationLabel);
+
+    this.statsLabel = new PIXI.Text();
+    this.statsLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 12,
+      lineHeight: 16,
+      fill: 0x888888,
+    };
+    this.statsLabel.text = 'Crashes: ?\nCompleted: ?\nAverage Speed: ?';
+    this.statsLabel.anchor.set(0, 0.5);
+    this.addChild(this.statsLabel);
 
     this._trackName = null;
     this._populationSize = null;
@@ -79,11 +90,25 @@ class BottomBar extends PIXI.Container {
     return this._populationSize;
   }
 
+  setStats(crashes, completed, averageSpeed) {
+    this.statsLabel.text = 'Crashes: ' + crashes + ' cars\nCompleted: ' + completed + ' cars\nAverage Speed: ' + Math.round(averageSpeed*3.6) + ' km/h';
+  }
+
   scaleView(width, height) {
 
     this.background.clear();
     this.background.rect(0, 0, width, height);
     this.background.fill({ color: 0x000000, alpha: 0.8 });
+
+    const lineColors = [0x5c0000, 0x000000, 0x787eac];
+    for(let i=0; i < lineColors.length; i++) {
+      this.background.moveTo(300 + i - 1, 5);
+      this.background.lineTo(300 + i - 1, height-5);
+      this.background.stroke({
+        color: lineColors[i],
+        width: 1,
+      });
+    }
 
     this.edge.x = 0;
     this.edge.y = -this.edge.height;
@@ -99,14 +124,18 @@ class BottomBar extends PIXI.Container {
     this.evolveButton.y = height/2 - this.evolveButton.buttonHeight/2;
 
     this.trackIcon.x = 40;
-    this.trackIcon.y = height/2
+    this.trackIcon.y = height/2-5
 
     this.trackLabel.x = 80;
-    this.trackLabel.y = height/2 - 6
+    this.trackLabel.y = height/2 - 8
 
     this.populationLabel.x = 80;
-    this.populationLabel.y = height/2 + 14;
+    this.populationLabel.y = height/2 + 12;
+
+    this.statsLabel.x = 320;
+    this.statsLabel.y = height/2-2;
   }
+
 }
 
 export default BottomBar;

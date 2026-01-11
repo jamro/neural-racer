@@ -50,6 +50,11 @@ class EvolutionScreen extends PIXI.Container {
     this.bottomBar = new BottomBar();
     this.bottomBar.trackName = this.generation.trackName;
     this.bottomBar.populationSize = this.generation.totalCount;
+    this.bottomBar.setStats(
+      this.generation.crashedCount, 
+      this.generation.finishedCount, 
+      this.generation.stats[0].averageSpeed
+    );
     this.addChild(this.bottomBar);
     this.bottomBar.evolveButton.on('click', async () => await this.evolve());
     this.bottomBar.raceButton.on('click', async () => this.emit('evolutionCompleted', this.nextGeneration, false));

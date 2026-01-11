@@ -27,6 +27,16 @@ export default class EpochRunner {
     this._requestedConfigMode = CONFIG_MODE_EXPLORATION;
   }
 
+  get isStandardConfigMode() {
+    return this._currentConfigMode === CONFIG_MODE_STANDARD;
+  }
+  get isFinetuningConfigMode() {
+    return this._currentConfigMode === CONFIG_MODE_FINETUNING;
+  }
+  get isExplorationConfigMode() {
+    return this._currentConfigMode === CONFIG_MODE_EXPLORATION;
+  }
+
   applyConfigMode() {
     this._configModeCooldown--;
     if(this._configModeCooldown <= 0 && this._requestedConfigMode !== this._currentConfigMode) {
