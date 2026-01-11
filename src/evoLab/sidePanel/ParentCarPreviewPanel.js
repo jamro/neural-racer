@@ -24,7 +24,7 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
 
     this.statsInfo.anchor.set(0, 0);
     this.statsInfo.x = 30
-    this.statsInfo.y = this.carPreview.y + 100;
+    this.statsInfo.y = 310;
     this.masterContainer.addChild(this.statsInfo);
   }
 

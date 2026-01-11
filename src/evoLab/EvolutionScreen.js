@@ -162,6 +162,7 @@ class EvolutionScreen extends PIXI.Container {
 
     if(particle.particleType === 'parent') {
       this.carPreviewPanel.showPanel(ParentCarPreviewPanel, {
+        car: this.selectedObject.car,
         carName: this.selectedObject.carName,
         score: this.selectedObject.score,
         progress: this.selectedObject.progress,
@@ -172,6 +173,7 @@ class EvolutionScreen extends PIXI.Container {
       });
     } else {
       this.carPreviewPanel.showPanel(ChildCarPreviewPanel, {
+        car: this.selectedObject.car,
         carName: this.selectedObject.carName,
         type: this.selectedObject.particleType,
       });

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import SidePanel from './SidePanel';
 import CarSensorPreview from '../../ui/CarSensorPreview';
+import StaticNetworkPreview from '../../ui/networkPreview/StaticNetworkPreview';
 
 class CarPreviewPanel extends SidePanel {
   constructor(props = {
@@ -9,6 +10,7 @@ class CarPreviewPanel extends SidePanel {
     progress: 0,
     averageSpeed: 0,
     type: 'parent',
+    car: null,
   }) {
     super();
     this._contentBoundaries = {x: 0, y: 0, width: 300, height: 500}
@@ -42,6 +44,18 @@ class CarPreviewPanel extends SidePanel {
     this.carPreview.x = this._contentBoundaries.width *0.5;
     this.carPreview.y = title.y + 75
     this.carPreview.rotation = -Math.PI * 0.4;
+
+    if(props.car) {
+      this.networkPreview = new StaticNetworkPreview(
+        this._contentBoundaries.width * 0.8,
+        this._contentBoundaries.width * 0.35,
+        props.car.neuralNet,
+        props.car.genome
+      );
+      this.networkPreview.x = this._contentBoundaries.width*0.5 - this.networkPreview.canvasWidth*0.5;
+      this.networkPreview.y = 170
+      this.masterContainer.addChild(this.networkPreview);
+    }
   }
 
 }

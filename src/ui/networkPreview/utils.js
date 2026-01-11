@@ -41,6 +41,33 @@ export function extractWeights(network, genome) {
 }
 
 /**
+ * Extracts per-layer bias vectors from a genome.
+ * Mirrors the weight extraction offset logic but returns 1D arrays per output layer.
+ */
+export function extractBiases(network, genome) {
+    const { sizes } = network;
+    const genes = genome.genes || genome;
+    const biases = [];
+    let offset = 0;
+
+    for (let l = 0; l < sizes.length - 1; l++) {
+        const inD = sizes[l];
+        const outD = sizes[l + 1];
+        const layerBiases = [];
+
+        const biasBase = offset + outD * inD;
+        for (let o = 0; o < outD; o++) {
+            layerBiases.push(genes[biasBase + o]);
+        }
+
+        biases.push(layerBiases);
+        offset += outD * inD + outD;
+    }
+
+    return biases;
+}
+
+/**
  * Calculates signal values for each layer
  */
 export function getSignals(sizes, weights, activations) {
