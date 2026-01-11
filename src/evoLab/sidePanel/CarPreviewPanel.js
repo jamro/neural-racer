@@ -3,11 +3,15 @@ import SidePanel from './SidePanel';
 import CarSensorPreview from '../../ui/CarSensorPreview';
 
 class CarPreviewPanel extends SidePanel {
-  constructor(props = {}) {
+  constructor(props = {
+    carName: '????',
+    score: 0,
+    progress: 0,
+    averageSpeed: 0,
+    type: 'parent',
+  }) {
     super();
     this._contentBoundaries = {x: 0, y: 0, width: 300, height: 500}
-
-    this.carName = props.carName || '????';
 
     const title = new PIXI.Text()
     title.style = {
@@ -27,7 +31,7 @@ class CarPreviewPanel extends SidePanel {
       fontSize: 12,
       fill: 0x888888,
     }
-    this.carNameLabel.text = this.carName;
+    this.carNameLabel.text = props.carName;
     this.carNameLabel.anchor.set(0.5, 0);
     this.carNameLabel.x = this._contentBoundaries.width / 2;
     this.carNameLabel.y = title.y + 120

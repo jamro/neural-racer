@@ -360,6 +360,21 @@ class Generation {
       newGeneration.scores = Array(this.cars.length).fill(null);
       return newGeneration;
     }
+
+    getCarByGenomeId(genomeId) {
+      return this.cars.find(car => car.genome.genomeId === genomeId);
+    }
+
+    getCarDetailsByGenomeId(genomeId) {
+      const car = this.getCarByGenomeId(genomeId);
+      if(!car) return null;
+      const carIndex = this.cars.indexOf(car);
+      return {
+        car: car,
+        score: this.scores[carIndex],
+        stats: this.stats[carIndex],
+      };
+    }
 }
 
 export { serializeGeneration, deserializeGeneration, Generation };

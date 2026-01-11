@@ -1,11 +1,11 @@
 import * as PIXI from 'pixi.js';
-import TextButton from '../ui/TextButton';
 import GenerationPreview from './GenerationPreview';
 import TiledBackground from '../sim/track/view/TiledBackground';
 import TopBar from './TopBar';
 import BottomBar from './BottomBar';
 import Genealogy from '../neuralEvolution/Genealogy';
-import CarPreviewPanel from './sidePanel/CarPreviewPanel';
+import ParentCarPreviewPanel from './sidePanel/ParentCarPreviewPanel';
+import ChildCarPreviewPanel from './sidePanel/ChildCarPreviewPanel';
 import SidePanelController from './sidePanel/SidePanelController';
 import EmptyPanel from './sidePanel/EmptyPanel';
 
@@ -55,7 +55,7 @@ class EvolutionScreen extends PIXI.Container {
     this.bottomBar.setStats(
       this.generation.crashedCount, 
       this.generation.finishedCount, 
-      this.generation.stats[0].averageSpeed
+      this.generation.overallScore.averageSpeed
     );
     this.addChild(this.bottomBar);
     this.bottomBar.evolveButton.on('click', async () => await this.evolve());
@@ -63,14 +63,23 @@ class EvolutionScreen extends PIXI.Container {
     this.bottomBar.autoPlayButton.on('click', async () => this.emit('evolutionCompleted', this.nextGeneration, true));
     this.bottomBar.evolveButton.enabled = false;
     this.bottomBar.evolveButton.visible = true;
+
+    this.selectedObject = null;
   }
 
   async initialize() {
+    this.carPreviewPanel.showPanel(EmptyPanel, {showEvolveMessage: false});
     await this.generationPreview.initialize(this.generation);
     this.bottomBar.evolveButton.enabled = true;
+    if(!this.selectedObject) {
+      this.carPreviewPanel.showPanel(EmptyPanel, {showEvolveMessage: true});
+    }
   }
 
   async evolve(event) {
+    if(!this.selectedObject) {
+      this.carPreviewPanel.showPanel(EmptyPanel, {showEvolveMessage: false});
+    }
     this.bottomBar.evolveButton.enabled = false;
     const genealogy = new Genealogy();
     const newGeneration = this.generation.evolve(this.hallOfFame, this.config, genealogy);
@@ -120,17 +129,52 @@ class EvolutionScreen extends PIXI.Container {
 
   onParticleClick(particle) {
     if(!particle) return;
-
-    const genomeId = particle.genomeId.replace('|child', '');
-    this.carPreviewPanel.showPanel(CarPreviewPanel, {carName: genomeId});
-    
-    if(!this.genealogy) return;
+    // deselect current one
     if (this.activeParticleConnection) {
       this.activeParticleConnection.fadeOut();
       this.activeParticleConnection = null;
     }
-    
+    if(this.selectedObject) {
+      this.selectedObject = null;
+    }
 
+    // select new one
+    const genomeId = particle.genomeId.replace('|child', '');
+    const car1 = this.generation.getCarDetailsByGenomeId(genomeId);
+    const car2 = this.nextGeneration ? this.nextGeneration.getCarDetailsByGenomeId(genomeId) : null;
+    const carDetails = car1 || car2;
+    if(!carDetails) {
+      this.carPreviewPanel.showPanel(EmptyPanel, {showEvolveMessage: !this.genealogy});
+      return;
+    }
+  
+    this.selectedObject = {
+      genomeId: genomeId,
+      type: particle.particleType,
+      car: carDetails.car,
+      score: carDetails.score || 0,
+      progress: carDetails.stats?.progress || 0,
+      averageSpeed: carDetails.stats?.averageSpeed || 0,
+    }
+
+    if(particle.particleType === 'parent') {
+      this.carPreviewPanel.showPanel(ParentCarPreviewPanel, {
+        carName: this.selectedObject.genomeId,
+        score: this.selectedObject.score,
+        progress: this.selectedObject.progress,
+        averageSpeed: this.selectedObject.averageSpeed,
+        type: particle.particleType,
+      });
+    } else {
+      this.carPreviewPanel.showPanel(ChildCarPreviewPanel, {
+        carName: this.selectedObject.genomeId,
+        type: particle.particleType,
+      });
+    }
+
+
+    if(!this.genealogy) return; 
+    // this part works after evolve is called (both parent and child are available)
     if(particle.particleType === 'parent') {
       const children = this.genealogy.getChildren(genomeId);
       this.activeParticleConnection = this.generationPreview.connectMultipleParticles(genomeId, children.map(id => id + "|child"));
