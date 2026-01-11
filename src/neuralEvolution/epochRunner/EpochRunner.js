@@ -28,7 +28,7 @@ export default class EpochRunner {
   }
 
   applyConfigMode() {
-    this.configModeCooldown--;
+    this._configModeCooldown--;
     if(this._configModeCooldown <= 0 && this._requestedConfigMode !== this._currentConfigMode) {
       this._configModeCooldown = CONFIG_MODE_COOLDOWN;
       this._currentConfigMode = this._requestedConfigMode;
