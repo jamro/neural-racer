@@ -36,10 +36,10 @@ class CarPhysicModel {
 
     // steering (wheel angle)
     this.delta = 0;
-    this.deltaMax = 30 * Math.PI / 180;
-    this.steerRate = 3.5; // rad/s
+    this.deltaMax = 25 * Math.PI / 180;
+    this.steerRate = 3.0; // rad/s
     this.turn_v0 = 0.5;  // m/s – below practically no steering
-    this.turn_v1 = 3.5;  // m/s – from this speed full steering
+    this.turn_v1 = 4.0;  // m/s – from this speed full steering
 
     // tires / grip
     this.mu = 1.05;
