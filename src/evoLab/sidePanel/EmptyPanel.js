@@ -92,19 +92,25 @@ class EmptyPanel extends SidePanel {
         align: 'center',
       };
 
-      const evolvePrefix = new PIXI.Text('...or ', lineStyle);
+      const evolvePrefix = new PIXI.Text();
+      evolvePrefix.text = '...or '
+      evolvePrefix.style = lineStyle
       evolvePrefix.x = 0;
       evolveLine.addChild(evolvePrefix);
 
-      const evolveWord = new PIXI.Text('Evolve', {
+      const evolveWord = new PIXI.Text();
+      evolveWord.text = 'Evolve'
+      evolveWord.style = {
         ...lineStyle,
         fill: 0xffffff,
         fontWeight: 700,
-      });
+      }
       evolveWord.x = evolvePrefix.width;
       evolveLine.addChild(evolveWord);
 
-      const evolveSuffix = new PIXI.Text(' button to', lineStyle);
+      const evolveSuffix = new PIXI.Text();
+      evolveSuffix.text = ' button to'
+      evolveSuffix.style = lineStyle
       evolveSuffix.x = evolvePrefix.width + evolveWord.width;
       evolveLine.addChild(evolveSuffix);
 
@@ -112,10 +118,12 @@ class EmptyPanel extends SidePanel {
       evolveLine.y = 280;
       this.masterContainer.addChild(evolveLine);
 
-      label = new PIXI.Text('improve driving skills.', {
+      label = new PIXI.Text();
+      label.text = 'improve driving skills.'
+      label.style = {
         ...lineStyle,
         lineHeight: 22,
-      });
+      }
       label.anchor.set(0.5, 0);
       label.x = this._contentBoundaries.width / 2;
       label.y = 280 + 22;

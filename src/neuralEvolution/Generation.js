@@ -104,6 +104,8 @@ class Generation {
         this.stats[i] = {
           progress: car.checkpointsProgress,
           averageSpeed: car.calculateAverageSpeed(),
+          topSpeed: car.topSpeed,
+          lifetimeSeconds: car.lifetimeSeconds,
         }
       }
 

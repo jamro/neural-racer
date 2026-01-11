@@ -155,6 +155,8 @@ class EvolutionScreen extends PIXI.Container {
       score: carDetails.score || 0,
       progress: carDetails.stats?.progress || 0,
       averageSpeed: carDetails.stats?.averageSpeed || 0,
+      topSpeed: carDetails.stats?.topSpeed || 0,
+      lapTimeSec: (carDetails.stats?.progress || null) >= 1 ? carDetails.stats?.lifetimeSeconds : null
     }
 
     if(particle.particleType === 'parent') {
@@ -163,12 +165,14 @@ class EvolutionScreen extends PIXI.Container {
         score: this.selectedObject.score,
         progress: this.selectedObject.progress,
         averageSpeed: this.selectedObject.averageSpeed,
-        type: particle.particleType,
+        type: this.selectedObject.particleType,
+        topSpeed: this.selectedObject.topSpeed,
+        lapTimeSec: this.selectedObject.lapTimeSec,
       });
     } else {
       this.carPreviewPanel.showPanel(ChildCarPreviewPanel, {
         carName: this.selectedObject.genomeId,
-        type: particle.particleType,
+        type: this.selectedObject.particleType,
       });
     }
 

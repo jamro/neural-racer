@@ -29,6 +29,7 @@ class CarObject {
         this.liftimeFrames = 0;
         this.lifetimeSeconds = 0;
         this.speedSum = 0;
+        this.topSpeed = 0
         this.debug = ""
         this.safeDirection = 0;
         this.noProgressCounter = 0;
@@ -188,6 +189,7 @@ class CarObject {
       // track average speed
       if(!this._isFinished) {
         this.speedSum += this.model.speed;
+        this.topSpeed = Math.max(this.topSpeed, this.model.speed)
       }
 
       // find safe direction
