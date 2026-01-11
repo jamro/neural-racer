@@ -8,6 +8,7 @@ import EvolutionEpochRunner from './epochRunner/EvolutionEpochRunner';
 import HallOfFameEpochRunner from './epochRunner/HallOfFameEpochRunner';
 import AllTracksEpochRunner from './epochRunner/AllTracksEpochRunner';
 import EvoLab from '../evoLab/EvoLab';
+import { getAutoEvolveSetting, setAutoEvolveSetting } from '../loaders/settings';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -26,7 +27,7 @@ class Evolution {
     this.hallOfFameEpochRunner = new HallOfFameEpochRunner(this, tracks);
     this.allTracksEpochRunner = new AllTracksEpochRunner(this, tracks);
     this.currentEpochRunner = this.evolutionEpochRunner;
-    this.autoEvolve = localStorage.getItem('autoEvolve') === 'true';
+    this.autoEvolve = getAutoEvolveSetting();
 
     this.evoLab = new EvoLab();
     this.pixiApp.stage.addChild(this.evoLab);
@@ -119,7 +120,7 @@ class Evolution {
     
     simulation.view.on('evolutionModeChanged', (autoMode) => {
       this.autoEvolve = autoMode;
-      localStorage.setItem('autoEvolve', autoMode);
+      setAutoEvolveSetting(autoMode);
     });
 
     simulation.view.autoEvolve = this.autoEvolve;
@@ -148,6 +149,7 @@ class Evolution {
     let generation = this.latestGeneration;
     let simulation
     while(this.isRunning) {
+      this.autoEvolve = getAutoEvolveSetting();
       // select evolution runner
       if(this.evolutionEpochRunner.fullRoundCompleted < 3) { // standard mode, run track after track to learn step by step
         const evaluationCandidates = this.hallOfFame.getEvaluationCandidates(perTrackSize, populationSize);

@@ -2,9 +2,10 @@ import * as PIXI from 'pixi.js';
 import { getButtonBgOffMiddleTexture, getButtonBgOffSideTexture, getButtonBgOnMiddleTexture, getButtonBgOnSideTexture } from '../loaders/AssetLoader';
 
 class Button extends PIXI.Container {
-  constructor(width = 30, content = null, toggleMode = false) {
+  constructor(width = 30, content = null, toggleMode = false, inverted = false) {
     super();
 
+    this._inverted = inverted;
     this._content = content;
 
     this._buttonWidth = width;
@@ -39,12 +40,7 @@ class Button extends PIXI.Container {
     this.addChild(this.bgLeftOn);
     this.addChild(this.bgRightOff);
     this.addChild(this.bgRightOn);
-    this.bgMiddleOff.visible = true;
-    this.bgMiddleOn.visible = false;
-    this.bgLeftOff.visible = true;
-    this.bgLeftOn.visible = false;
-    this.bgRightOff.visible = true;
-    this.bgRightOn.visible = false;
+
 
     if(content !== null) {
       content.x = this._buttonWidth / 2;
@@ -58,6 +54,21 @@ class Button extends PIXI.Container {
     this.on('pointerup', this.onPointerUp, this);
     this.on('pointerupoutside', this.onPointerUpOutside, this);
 
+
+    this._enabled = true;
+
+    this.refreshAppearance();
+  }
+
+
+  get enabled() {
+    return this._enabled;
+  }
+
+  set enabled(enabled) {
+    this._enabled = enabled;
+    this.interactive = enabled;
+    this.cursor = enabled ? 'pointer' : 'default';
     this.refreshAppearance();
   }
 
@@ -95,12 +106,12 @@ class Button extends PIXI.Container {
 
 
   onPointerDown() {
-    this.bgMiddleOff.visible = false;
-    this.bgMiddleOn.visible = true;
-    this.bgLeftOff.visible = false;
-    this.bgLeftOn.visible = true;
-    this.bgRightOff.visible = false;
-    this.bgRightOn.visible = true;
+    this.bgMiddleOff.visible = this._inverted;
+    this.bgMiddleOn.visible = !this._inverted;
+    this.bgLeftOff.visible = this._inverted;
+    this.bgLeftOn.visible = !this._inverted;
+    this.bgRightOff.visible = this._inverted;
+    this.bgRightOn.visible = !this._inverted;
   }
 
   onPointerUp() {
@@ -113,22 +124,22 @@ class Button extends PIXI.Container {
 
   refreshAppearance() {
     if(this._value === false) {
-      this.bgMiddleOff.visible = true;
-      this.bgMiddleOn.visible = false;
-      this.bgLeftOff.visible = true;
-      this.bgLeftOn.visible = false;
-      this.bgRightOff.visible = true;
-      this.bgRightOn.visible = false;
+      this.bgMiddleOff.visible = !this._inverted;
+      this.bgMiddleOn.visible = this._inverted;
+      this.bgLeftOff.visible = !this._inverted;
+      this.bgLeftOn.visible = this._inverted;
+      this.bgRightOff.visible = !this._inverted;
+      this.bgRightOn.visible = this._inverted;
       if(this._content !== null) {
         this._content.alpha = 0.7;
       }
     } else {
-      this.bgMiddleOff.visible = false;
-      this.bgMiddleOn.visible = true;
-      this.bgLeftOff.visible = false;
-      this.bgLeftOn.visible = true;
-      this.bgRightOff.visible = false;
-      this.bgRightOn.visible = true;
+      this.bgMiddleOff.visible = this._inverted;
+      this.bgMiddleOn.visible = !this._inverted;
+      this.bgLeftOff.visible = this._inverted;
+      this.bgLeftOn.visible = !this._inverted;
+      this.bgRightOff.visible = this._inverted;
+      this.bgRightOn.visible = !this._inverted;
       if(this._content !== null) {
         this._content.alpha = 1;
       }
@@ -140,15 +151,16 @@ class Button extends PIXI.Container {
     if(this._content !== null) {
       this._content.x = this.buttonWidth / 2;
     }
+    this.alpha = this._enabled ? 1 : 0.5;
   }
 
   onPointerUpOutside() {
-    this.bgMiddleOff.visible = true;
-    this.bgMiddleOn.visible = false;
-    this.bgLeftOff.visible = true;
-    this.bgLeftOn.visible = false;
-    this.bgRightOff.visible = true;
-    this.bgRightOn.visible = false;
+    this.bgMiddleOff.visible = !this._inverted;
+    this.bgMiddleOn.visible = this._inverted;
+    this.bgLeftOff.visible = !this._inverted;
+    this.bgLeftOn.visible = this._inverted;
+    this.bgRightOff.visible = !this._inverted;
+    this.bgRightOn.visible = this._inverted;
   }
 }
 

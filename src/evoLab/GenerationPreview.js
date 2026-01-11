@@ -7,15 +7,15 @@ import WinnerZone from './generationPreview/WinnerZone';
 import ParticleNetwork from './generationPreview/ParticleNetwork';
 
 const MAX_SCORE = 1.35;
-const TRACK_WIDTH = 400;
-const TRACK_LENGTH = 750;
+const TRACK_WIDTH = 300;
+const TRACK_LENGTH = 625;
 const TRACK_CENTER_Y_OFFSET = 70
-const UNIT_RADIUS = 4;
+const UNIT_RADIUS = 3;
 const BLINK_GLOW_TINT = 0xffff66;
 const COMPLETE_COLOR = 0x8888FF;
 const INCOMPLETE_COLOR = 0xee0000;
 const PARTICLE_SCALE_UP_DURATION_MS = 300;
-const LEFT_PADDING = 50;
+const LEFT_PADDING = 75;
 // Minimum empty space between particle edges.
 // Increase this to make particles keep a bigger distance.
 const MIN_EDGE_GAP = UNIT_RADIUS;
@@ -62,11 +62,10 @@ class GenerationPreview extends PIXI.Container {
 
     this.newGenArea = new NewGenArea(
       TRACK_LENGTH, 
-      TRACK_CENTER_Y_OFFSET*2
+      TRACK_CENTER_Y_OFFSET + UNIT_RADIUS*6
     );
     this.newGenArea.x = -TRACK_LENGTH/2 + LEFT_PADDING/2;
     this.newGenArea.y = -TRACK_WIDTH/2 + TRACK_CENTER_Y_OFFSET*0.75;
-    this.newGenArea.visible = false;
     this.addChild(this.newGenArea);
 
     // Create particle network
@@ -100,6 +99,22 @@ class GenerationPreview extends PIXI.Container {
     });
   }
 
+  get canvasWidth() {
+    return TRACK_LENGTH + LEFT_PADDING;
+  }
+
+  get canvasHeight() {
+    return TRACK_WIDTH + 120
+  }
+
+  get canvasX() {
+    return 38;
+  }
+
+  get canvasY() {
+    return 40
+  }
+
   async initialize(generation) {
     this.generation = generation;
 
@@ -126,7 +141,6 @@ class GenerationPreview extends PIXI.Container {
   }
 
   addChildParticle(parentIds, childId) {
-    this.newGenArea.visible = true;
     const parents = parentIds.map(id => this._particleByGenomeId.get(id)).filter(p => p !== undefined);
     const parentAvgX = parents.length > 0 ? parents.reduce((acc, p) => acc + p.x, 0) / parents.length : -TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * TRACK_LENGTH
 

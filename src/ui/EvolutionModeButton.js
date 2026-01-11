@@ -49,7 +49,7 @@ class EvolutionModeButton extends TextButton {
   refreshEvolutionAppearance() {
     if(!this.evoButtonReady) return;
     if(this.autoMode) {
-      this.label.text = 'Automatic';
+      this.label.text = 'Auto Play';
       this.autoIcon.visible = true;
       this.manualIcon.visible = false;
     } else {

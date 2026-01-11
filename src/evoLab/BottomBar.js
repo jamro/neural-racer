@@ -1,0 +1,112 @@
+import * as PIXI from 'pixi.js';
+import { getUiFrameHorizontalLineTexture, getUiTrackIconTexture } from '../loaders/AssetLoader';
+import TextButton from '../ui/TextButton';
+import AutoPlayButton from '../ui/AutoPlayButton';
+
+class BottomBar extends PIXI.Container {
+  constructor() {
+    super();
+
+    this.background = new PIXI.Graphics();
+    this.addChild(this.background);
+
+    this.edge = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.addChild(this.edge);
+
+    this.evolveButton = new TextButton("Evolve Next Generation", 20, false);
+    this.evolveButton.visible = false;
+    this.evolveButton.scale.set(1.2);
+    this.addChild(this.evolveButton);
+
+    this.raceButton = new TextButton("Start Single Race");
+    this.raceButton.visible = false;
+    this.raceButton.scale.set(1.2);
+    this.addChild(this.raceButton);
+
+    this.autoPlayButton = new AutoPlayButton("Auto Play");
+    this.autoPlayButton.visible = false;
+    this.autoPlayButton.scale.set(1.2);
+    this.addChild(this.autoPlayButton);
+
+    this.trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
+    this.addChild(this.trackIcon);
+    
+    this.trackIcon.anchor.set(0.5, 0.5);
+    this.trackIcon.scale.set(0.5);
+
+    this.trackLabel = new PIXI.Text();
+    this.trackLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 16,
+      fill: 0xffffff,
+    };
+    this.trackLabel.text = 'Track: ???';
+    this.trackLabel.anchor.set(0, 0.5);
+    this.addChild(this.trackLabel);
+
+    this.populationLabel = new PIXI.Text();
+    this.populationLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 12,
+      fill: 0x888888,
+    };
+    this.populationLabel.text = 'Population Size: ???';
+    this.populationLabel.anchor.set(0, 0.5);
+    this.addChild(this.populationLabel);
+
+    this._trackName = null;
+    this._populationSize = null;
+
+    this.trackName = '???';
+    this.populationSize = 0;
+  }
+
+  set trackName(name) {
+    this._trackName = name;
+    this.trackLabel.text = 'Track: ' + name;
+  }
+
+  set populationSize(size) {
+    this._populationSize = size;
+    this.populationLabel.text = 'Population Size: ' + size + ' cars';
+  }
+
+  get trackName() {
+    return this._trackName;
+  }
+
+  get populationSize() {
+    return this._populationSize;
+  }
+
+  scaleView(width, height) {
+
+    this.background.clear();
+    this.background.rect(0, 0, width, height);
+    this.background.fill({ color: 0x000000, alpha: 0.8 });
+
+    this.edge.x = 0;
+    this.edge.y = -this.edge.height;
+    this.edge.width = width;
+
+    this.autoPlayButton.x = width - this.autoPlayButton.buttonWidth - 70;
+    this.autoPlayButton.y = height/2 - this.autoPlayButton.buttonHeight/2;
+
+    this.raceButton.x = this.autoPlayButton.x - this.raceButton.buttonWidth - 50;
+    this.raceButton.y = height/2 - this.raceButton.buttonHeight/2;
+
+    this.evolveButton.x = width - this.evolveButton.buttonWidth - 70;
+    this.evolveButton.y = height/2 - this.evolveButton.buttonHeight/2;
+
+    this.trackIcon.x = 40;
+    this.trackIcon.y = height/2
+
+    this.trackLabel.x = 80;
+    this.trackLabel.y = height/2 - 6
+
+    this.populationLabel.x = 80;
+    this.populationLabel.y = height/2 + 14;
+  }
+}
+
+export default BottomBar;

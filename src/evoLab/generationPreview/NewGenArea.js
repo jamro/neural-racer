@@ -21,9 +21,10 @@ class NewGenArea extends PIXI.Container {
     label.anchor.set(0.5, 0.5);
     this.addChild(label);
 
+    const cornerLength = 10;
+
     this.canvas = new PIXI.Graphics();
     this.addChild(this.canvas);
-
 
     this.canvas.moveTo(0, -height/2);
     this.canvas.lineTo(label.x - 10 - label.width/2, -height/2);
@@ -31,6 +32,22 @@ class NewGenArea extends PIXI.Container {
     this.canvas.lineTo(width,-height/2);
     this.canvas.moveTo(0, height/2);
     this.canvas.lineTo(width,height/2);
+
+    this.canvas.moveTo(0, -height/2 + cornerLength);
+    this.canvas.lineTo(0, -height/2)
+
+    this.canvas.moveTo(0, height/2 - cornerLength);
+    this.canvas.lineTo(0, height/2)
+
+    this.canvas.moveTo(width, -height/2 + cornerLength);
+    this.canvas.lineTo(width, -height/2)
+
+    this.canvas.moveTo(width, height/2 - cornerLength);
+    this.canvas.lineTo(width, height/2)
+
+
+
+    this.canvas.moveTo(-width/2 + cornerLength, height/2);
     
     this.canvas.stroke({ color: MAIN_COLOR, width: 1.3 });
 

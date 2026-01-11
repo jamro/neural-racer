@@ -1,5 +1,6 @@
 import SimulationView from './SimulationView';
 import { metersToPixels } from './unitConversion';
+import { getSimulationSpeedSetting, setSimulationSpeedSetting } from '../loaders/settings';
 
 const COMPLETE_DELAY = 20;
 const LEADER_RELOAD_DELAY = 20;
@@ -15,8 +16,8 @@ class Simulation {
         this.running = false;
         this.renderRunning = false;
         this.app = app;
-        this.simulationSpeedMultiplier = localStorage.getItem('simulationSpeedMultiplier') || 1;
-        this.view = new SimulationView();
+        this.simulationSpeedMultiplier = getSimulationSpeedSetting() || 1;
+        this.view = new SimulationView(); 
         this.view.on('speedChanged', (speed) => this.changeSimulationSpeed(speed));
         this.view.simulationSpeed = this.simulationSpeedMultiplier;
         this.leaderCar = null;
@@ -83,7 +84,7 @@ class Simulation {
       this.simulationSpeedMultiplier = speed;
 
       // save in local storage
-      localStorage.setItem('simulationSpeedMultiplier', this.simulationSpeedMultiplier);
+      setSimulationSpeedSetting(this.simulationSpeedMultiplier);
     }
 
     start(epoch, simulationStep = 0.05, simulationSpeed = 1, graphicsQuality = "low", scoreWeights = { trackDistance: 1 }) {

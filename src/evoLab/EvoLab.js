@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js';
 import EvolutionScreen from './EvolutionScreen';
+import { setAutoEvolveSetting } from '../loaders/settings';
 
 class EvoLab extends PIXI.Container {
   constructor() {
@@ -23,9 +24,13 @@ class EvoLab extends PIXI.Container {
     this.evoScreen.scaleView(this.screenWidth, this.screenHeight);
     await this.evoScreen.initialize(generation);
 
-    const newGeneration = await new Promise(resolve => this.evoScreen.on('evolutionCompleted', (newGeneration) => resolve(newGeneration)));
+    const [newGeneration, autoPlay] = await new Promise(resolve => this.evoScreen.on('evolutionCompleted', (newGeneration, autoPlay) => resolve([newGeneration, autoPlay])));
     this.removeChild(this.evoScreen);
     this.evoScreen.destroy({children: true, texture: false, baseTexture: false});
+
+    if(autoPlay) {
+      setAutoEvolveSetting(true);
+    }
     return newGeneration;
   }
 
