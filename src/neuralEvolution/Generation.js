@@ -2,6 +2,7 @@ import NeuralCarObject from '../sim/car/NeuralCarObject';
 import { Genome, serializeGenome, deserializeGenome } from './Genome';
 import { calculateScore } from './fitness';
 import { v4 as uuidv4 } from 'uuid';
+import Genealogy from './Genealogy';
 
 function serializeGeneration(generation) {
   return {
@@ -266,14 +267,11 @@ class Generation {
         });
       
         offsprings.push(child);
-        genealogy.push({
-          child: child.genomeId,
-          type: 'offspring',
-          parents: [
-            parent1.genome.genomeId, 
-            parent2.genome.genomeId
-          ]
-        });
+        genealogy.add(
+          child.genomeId,
+          [parent1.genome.genomeId, parent2.genome.genomeId],
+          'offspring'
+        );
       }
       return offsprings;
     }
@@ -291,7 +289,7 @@ class Generation {
       return randomGenomes;
     }
 
-    evolve(hallOfFame, config = {}, genealogy = []) {
+    evolve(hallOfFame, config = {}, genealogy = new Genealogy()) {
       const { 
         eliteRatio = 0.02, 
         eliminationEpochs = 5, 
@@ -313,22 +311,22 @@ class Generation {
       for (let i = 0; i < Math.min(eliteCount, populationSize); i++) {
         const eliteClone = indexedCars[i].genome.clone()
         eliteGenomes.push(eliteClone);
-        genealogy.push({
-          child: eliteClone.genomeId,
-          type: 'elite',
-          parents: [indexedCars[i].genome.genomeId]
-        });
+        genealogy.add(
+          eliteClone.genomeId,
+          [indexedCars[i].genome.genomeId],
+          'elite'
+        );
       }
 
       // Get elite genomes from hall of fame
       const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
       eliteGenomes.push(...hofEliteGenomes);
       for(let i = 0; i < hofEliteGenomes.length; i++) {
-        genealogy.push({
-          child: hofEliteGenomes[i].genomeId,
-          type: 'hallOfFame',
-          parents: [hofEliteGenomes[i].genomeId]
-        });
+        genealogy.add(
+          hofEliteGenomes[i].genomeId,
+          [hofEliteGenomes[i].genomeId],
+          'hallOfFame'
+        );
       }
       
       // Fill the rest of the population with crossover offspring
@@ -348,11 +346,11 @@ class Generation {
         const randomGenomes = this.createRandomGenomes(populationSize - newGenomes.length);
         newGenomes.push(...randomGenomes);        
         for(let i = 0; i < randomGenomes.length; i++) {
-          genealogy.push({
-            child: randomGenomes[i].genomeId,
-            type: 'random',
-            parents: []
-          })
+          genealogy.add(
+            randomGenomes[i].genomeId,
+            [],
+            'random'
+          );
         }
       }
       

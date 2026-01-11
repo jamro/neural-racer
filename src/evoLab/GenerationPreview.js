@@ -4,7 +4,8 @@ import { ParticleLayoutController } from './generationPreview/ParticleLayoutCont
 import TrackView from './generationPreview/TrackView';
 import NewGenArea from './generationPreview/NewGenArea';
 import WinnerZone from './generationPreview/WinnerZone';
-import ParticleNetwork from './generationPreview/ParticleNetwork';
+import ParticleNetwork, { ConnectionGroup } from './generationPreview/ParticleNetwork';
+import { ParticleInteractionController } from './generationPreview/ParticleInteractionController';
 
 const MAX_SCORE = 1.35;
 const TRACK_WIDTH = 300;
@@ -97,6 +98,16 @@ class GenerationPreview extends PIXI.Container {
         rightBound: TRACK_LENGTH / 2 + LEFT_PADDING / 2,
       },
     });
+
+    this.interaction = new ParticleInteractionController({
+      container: this,
+      particles: this.particles,
+      unitRadius: UNIT_RADIUS*1.3, // include stroke width
+      trackLength: TRACK_LENGTH,
+      trackWidth: TRACK_WIDTH,
+      leftPadding: LEFT_PADDING,
+      trackCenterYOffset: TRACK_CENTER_Y_OFFSET,
+    });
   }
 
   get canvasWidth() {
@@ -131,7 +142,7 @@ class GenerationPreview extends PIXI.Container {
       const y = randPow3() * TRACK_WIDTH * 0.25 + TRACK_CENTER_Y_OFFSET
       const color = score > 1.0 ? COMPLETE_COLOR : INCOMPLETE_COLOR;
 
-      const particle = this._createParticle(x, y, color, car.genome.genomeId);
+      const particle = this._createParticle(x, y, color, car.genome.genomeId, 'parent');
       
       this.particleContainer.addParticle(particle);
       this.particles.push(particle);
@@ -148,18 +159,28 @@ class GenerationPreview extends PIXI.Container {
     const particle = this._createParticle(
       0.4*parentAvgX + 0.6*baselineX,
       -TRACK_WIDTH/2 - Math.random() * UNIT_RADIUS + TRACK_CENTER_Y_OFFSET*0.75,
-      BLINK_GLOW_TINT, childId
+      BLINK_GLOW_TINT, childId,
+      'child'
     );
     this.particleContainer.addParticle(particle);
     this.particles.push(particle);
     this._particleByGenomeId.set(particle.genomeId, particle);
     for(const parentId of parentIds) {
       this.blinkParticle(parentId);
-      const connection = this.connectParticles(parentId, childId);
+    }
+    const connectionGroup = this.connectMultipleParticles(childId, parentIds);
+    connectionGroup.fadeOut();
+  }
+
+  connectMultipleParticles(sourceId, targetIds) {
+    const connectionGroup = new ConnectionGroup();
+    for(const targetId of targetIds) {
+      const connection = this.connectParticles(targetId, sourceId);
       if (connection) {
-        connection.fadeOut();
+        connectionGroup.addConnection(connection);
       }
     }
+    return connectionGroup;
   }
 
   connectParticles(sourceId, targetId) {
@@ -169,7 +190,7 @@ class GenerationPreview extends PIXI.Container {
     return this.particleNetwork.addConnection(source, target);
   }
 
-  _createParticle(x, y, tint, genomeId) {
+  _createParticle(x, y, tint, genomeId, particleType = 'parent') {
     const particle = new PIXI.Particle({
       texture: this.particleTexture,
       x,
@@ -183,6 +204,7 @@ class GenerationPreview extends PIXI.Container {
     });
     particle.genomeId = genomeId;
     particle.baseTint = tint;
+    particle.particleType = particleType;
 
     // Physics state (kept on the particle for simplicity)
     particle.ox = x;
@@ -366,6 +388,7 @@ class GenerationPreview extends PIXI.Container {
       this._scaleTickerAdded = false;
       PIXI.Ticker.shared.remove(this._onScaleTick);
     }
+    this.interaction?.destroy();
     this._blinksByGenomeId.clear();
     this._scaleAnimationsByGenomeId.clear();
     super.destroy(options);

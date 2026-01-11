@@ -4,23 +4,10 @@ import GenerationPreview from './GenerationPreview';
 import TiledBackground from '../sim/track/view/TiledBackground';
 import TopBar from './TopBar';
 import BottomBar from './BottomBar';
+import Genealogy from '../neuralEvolution/Genealogy';
 
 const EVOLVE_ANIMATION_DELAY = 1200;
 const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
-
-function sortGenealogy(arr) {
-  const typeOrder = {
-    'offspring': 0,
-    'elite': 1,
-    'hallOfFame': 2
-  };
-  
-  arr.sort((a, b) => {
-    const orderA = typeOrder.hasOwnProperty(a.type) ? typeOrder[a.type] : 3;
-    const orderB = typeOrder.hasOwnProperty(b.type) ? typeOrder[b.type] : 3;
-    return orderA - orderB;
-  });
-}
 
 class EvolutionScreen extends PIXI.Container {
   constructor(generation, hallOfFame, config) {
@@ -42,6 +29,14 @@ class EvolutionScreen extends PIXI.Container {
 
     this.generationPreview = new GenerationPreview();
     this.addChild(this.generationPreview);
+    this.generationPreview.on('particle-click', ({ particle }) => {
+      this.onParticleClick(particle);
+    });
+    this.generationPreview.on('particle-empty-click', () => {
+      this.onParticleClick(null);
+    });
+    this.activeParticleConnection = null;
+    this.genealogy = null
 
     this.topBar = new TopBar();
     this.topBar.epoch = generation.epoch;
@@ -70,17 +65,19 @@ class EvolutionScreen extends PIXI.Container {
 
   async evolve(event) {
     this.bottomBar.evolveButton.enabled = false;
-    const genealogy = []
+    const genealogy = new Genealogy();
     const newGeneration = this.generation.evolve(this.hallOfFame, this.config, genealogy);
     let delay = EVOLVE_ANIMATION_DELAY
-    sortGenealogy(genealogy)
+    genealogy.sortRecordsByType(['offspring', 'elite', 'hallOfFame']);
     await new Promise(resolve => setTimeout(resolve, 200));
-    for(const entry of genealogy) {
+    const genealogyEntries = genealogy.toArray();
+    for(const entry of genealogyEntries) {
       this.generationPreview.addChildParticle(entry.parents, entry.child + "|child", Math.random() * 800 - 400, -150);
       delay *= EVOLVE_ANIMATION_DELAY_DECAY
       await new Promise(resolve => setTimeout(resolve, delay));
     }
     this.nextGeneration = newGeneration;
+    this.genealogy = genealogy;
     this.bottomBar.evolveButton.visible = false;
     this.bottomBar.raceButton.visible = true;
     this.bottomBar.autoPlayButton.visible = true;
@@ -106,6 +103,25 @@ class EvolutionScreen extends PIXI.Container {
     this.generationPreview.scale.set(scale);
     this.generationPreview.x = width / 2 - this.generationPreview.canvasX * scale;
     this.generationPreview.y = height / 2 - this.generationPreview.canvasY * scale;
+  }
+
+  onParticleClick(particle) {
+    if (this.activeParticleConnection) {
+      this.activeParticleConnection.fadeOut();
+      this.activeParticleConnection = null;
+    }
+    if(!particle || !this.genealogy) return;
+
+    const genomeId = particle.genomeId.replace('|child', '');
+
+    if(particle.particleType === 'parent') {
+      const children = this.genealogy.getChildren(genomeId);
+      this.activeParticleConnection = this.generationPreview.connectMultipleParticles(genomeId, children.map(id => id + "|child"));
+    } else if(particle.particleType === 'child') {
+      const parents = this.genealogy.getParents(genomeId);
+      this.activeParticleConnection = this.generationPreview.connectMultipleParticles(genomeId + "|child", parents);
+    }
+      
   }
 }
 
