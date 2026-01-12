@@ -85,6 +85,8 @@ class EvolutionScreen extends PIXI.Container {
     const newGeneration = this.generation.evolve(this.hallOfFame, this.config, genealogy);
     let delay = EVOLVE_ANIMATION_DELAY
     genealogy.sortRecordsByType(['offspring', 'elite', 'hallOfFame']);
+    this.genealogy = genealogy;
+    this.nextGeneration = newGeneration;
     await new Promise(resolve => setTimeout(resolve, 200));
     const genealogyEntries = genealogy.toArray();
     for(const entry of genealogyEntries) {
@@ -92,8 +94,6 @@ class EvolutionScreen extends PIXI.Container {
       delay *= EVOLVE_ANIMATION_DELAY_DECAY
       await new Promise(resolve => setTimeout(resolve, delay));
     }
-    this.nextGeneration = newGeneration;
-    this.genealogy = genealogy;
     this.bottomBar.evolveButton.visible = false;
     this.bottomBar.raceButton.visible = true;
     this.bottomBar.autoPlayButton.visible = true;
@@ -172,10 +172,19 @@ class EvolutionScreen extends PIXI.Container {
         lapTimeSec: this.selectedObject.lapTimeSec,
       });
     } else {
+
+      let parents = []
+      if(this.genealogy) {
+        parents = this.genealogy.getParents(genomeId)
+          .map(id => this.generation.getCarDetailsByGenomeId(id))
+          .filter(parent => parent);
+      }
+      
       this.carPreviewPanel.showPanel(ChildCarPreviewPanel, {
         car: this.selectedObject.car,
         carName: this.selectedObject.carName,
         type: this.selectedObject.particleType,
+        parents: parents,
       });
     }
 

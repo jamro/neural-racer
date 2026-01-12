@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import SidePanel from './SidePanel';
 import CarSensorPreview from '../../ui/CarSensorPreview';
-import StaticNetworkPreview from '../../ui/networkPreview/StaticNetworkPreview';
+import StaticNetworkPreview from '../../ui/networkPreview/staticPreview/StaticNetworkPreview';
 
 class CarPreviewPanel extends SidePanel {
   constructor(props = {
