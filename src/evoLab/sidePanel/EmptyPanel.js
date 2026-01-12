@@ -4,7 +4,7 @@ import SidePanel from './SidePanel';
 class EmptyPanel extends SidePanel {
   constructor({showEvolveMessage = true}) {
     super();
-    this._contentBoundaries = {x: 0, y: 0, width: 300, height: 340}
+    this._contentBoundaries = {x: 0, y: 0, width: 300, height: 320}
 
     const glowRadius = 80;
     const carGlow = new PIXI.Graphics();

@@ -16,7 +16,7 @@ class TopBar extends PIXI.Container {
     this.title.text = "NEURAL EVOLUTION";
     this.title.style = {
       fontFamily: 'Exo2',
-      fontSize: 32,
+      fontSize: 20,
       fill: 0xffffff,
       lineHeight: 16,
       align: 'center',
@@ -28,7 +28,7 @@ class TopBar extends PIXI.Container {
     this.subtitle.text = "GENERATION #? TO #?";
     this.subtitle.style = {
       fontFamily: 'Exo2',
-      fontSize: 12,
+      fontSize: 10,
       fill: 0x888888,
       lineHeight: 16,
       align: 'center',
@@ -62,9 +62,9 @@ class TopBar extends PIXI.Container {
     this.edge.width = width;
 
     this.title.x = width/2;
-    this.title.y = height/2-10;
+    this.title.y = height/2-6;
     this.subtitle.x = width/2;
-    this.subtitle.y = height/2+15;
+    this.subtitle.y = height/2+12;
 
   }
 }

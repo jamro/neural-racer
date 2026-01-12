@@ -13,8 +13,10 @@ class CarPreviewPanel extends SidePanel {
     car: null,
   }) {
     super();
-    this._contentBoundaries = {x: 0, y: 0, width: 300, height: 500}
+    this._contentBoundaries = {x: 0, y: 0, width: 300, height: 470}
 
+    this.genome = props.car?.genome ?? null;
+    
     this.title = new PIXI.Text()
     this.title.style = {
       fontFamily: 'Exo2',
@@ -57,19 +59,24 @@ class CarPreviewPanel extends SidePanel {
     this.masterContainer.addChild(this.networkPreview);
   }
 
-  addCarNameLabel(x, y, carName) {
-    this.carNameLabel = this.addLabel(x, y, carName, {
-      fontSize: 12,
-      fill: 0x888888,
-    });
-  }
-
-  addCarPreview(x, y) {
+  addCarPreview(y, carName) {
     this.carPreview = new CarSensorPreview({showRadar: false, showTires: true});
     this.masterContainer.addChild(this.carPreview);
-    this.carPreview.x = x;
+    this.carPreview.x = this._contentBoundaries.width * 0.5
     this.carPreview.y = y;
     this.carPreview.rotation = -Math.PI * 0.4;
+
+    this.carNameLabel = this.addLabel(
+      this._contentBoundaries.width * 0.5, 
+      y, 
+      carName, 
+      {
+        fontSize: 12,
+        fill: 0x888888,
+      }
+    );
+    this.carNameLabel.x = this._contentBoundaries.width * 0.5
+    this.carNameLabel.y = y + 40;
   }
   addArrow(x, y) {
     for(let i = 0; i < 2; i++) {
@@ -86,6 +93,15 @@ class CarPreviewPanel extends SidePanel {
       arrow.y = y + i*10 - 10;
       this.masterContainer.addChild(arrow);
     }
+  }
+
+  emitNeuralTestEvent() {
+    if(!this.genome) return;
+    this.emit("neuralTest", this.genome);
+  }
+  emitTestDriveEvent() {
+    if(!this.genome) return;
+    this.emit("testDrive", this.genome);
   }
 }
 

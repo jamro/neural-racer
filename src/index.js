@@ -5,14 +5,10 @@ import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
 import { loadTextures, getTextureKeys } from './loaders/AssetLoader';
 import waitForFonts from './loaders/waitForFonts';
-import NeuralLab from './neuralLab/NeuralLab';
 
 let app = null;
 let evolution = null;
-let neuralLab = null;
 let resizeHandler = null;
-
-const MODE = 'evolution'; // 'evolution' or 'neuralLab'
 
 /**
  * Initialize the application
@@ -70,22 +66,11 @@ async function initApp() {
       if(app && app.resize) {
         app.resize(window.innerWidth, window.innerHeight);
         evolution.scaleView(window.innerWidth, window.innerHeight);
-        if(neuralLab) {
-          neuralLab.scaleView(window.innerWidth, window.innerHeight);
-        }
       }
     };
     window.addEventListener('resize', resizeHandler);
 
-    if(MODE === 'neuralLab') {
-      // test Neural Lab
-      neuralLab = new NeuralLab(evolution.generation.cars[0]);
-      app.stage.addChild(neuralLab);
-      neuralLab.scaleView(app.screen.width, app.screen.height);
-      neuralLab.startRenderLoop();
-    } else if(MODE === 'evolution') {
-      await evolution.runInLoop();
-    }
+    await evolution.runInLoop();
 }
 
 /**
@@ -100,11 +85,6 @@ function cleanup() {
     if (resizeHandler) {
         window.removeEventListener('resize', resizeHandler);
         resizeHandler = null;
-    }
-
-    if (neuralLab) {
-        neuralLab.stopRenderLoop();
-        neuralLab = null;
     }
     
     if (app) {

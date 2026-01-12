@@ -8,6 +8,7 @@ import ParentCarPreviewPanel from './sidePanel/ParentCarPreviewPanel';
 import ChildCarPreviewPanel from './sidePanel/ChildCarPreviewPanel';
 import SidePanelController from './sidePanel/SidePanelController';
 import EmptyPanel from './sidePanel/EmptyPanel';
+import NeuralLab from '../neuralLab/NeuralLab';
 
 const EVOLVE_ANIMATION_DELAY = 1200;
 const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
@@ -17,6 +18,9 @@ class EvolutionScreen extends PIXI.Container {
     super();
 
     this.nextGeneration = null;
+    this.neuralLab = null;
+    this.screenWidth = 100;
+    this.screenHeight = 100;
 
     this.generation = generation;
     this.hallOfFame = hallOfFame;
@@ -42,6 +46,8 @@ class EvolutionScreen extends PIXI.Container {
     this.genealogy = null
 
     this.carPreviewPanel = new SidePanelController();
+    this.carPreviewPanel.on("neuralTest", (genome) => this.showNuerualLab(genome));
+    this.carPreviewPanel.on("testDrive", (genome) => this.startTestDrive(genome));
     this.addChild(this.carPreviewPanel);
     this.carPreviewPanel.showPanel(EmptyPanel);
 
@@ -100,12 +106,14 @@ class EvolutionScreen extends PIXI.Container {
   }
 
   scaleView(width, height) {
+    this.screenWidth = width;
+    this.screenHeight = height;
     this.tiles.renderSync(width, height, 1, 0, 0);
     this.background.clear();
     this.background.rect(0, 0, width, height);
     this.background.fill({ color: 0x000000, alpha: 0.9 });
 
-    const topBarHeight = 70;
+    const topBarHeight = 40;
     const bottomBarHeight = 70;
     const carPreviewPanelWidth = width * 0.25;
 
@@ -214,6 +222,17 @@ class EvolutionScreen extends PIXI.Container {
       this.activeParticleConnection = this.generationPreview.connectMultipleParticles(genomeId + "|child", parents);
     }
       
+  }
+
+  showNuerualLab(genome) {
+    this.neuralLab = new NeuralLab(genome);
+    this.addChild(this.neuralLab);
+    this.neuralLab.scaleView(this.screenWidth, this.screenHeight);
+    this.neuralLab.startRenderLoop();
+  }
+
+  startTestDrive(genome) {
+    console.log("Start Test Drive", genome);
   }
 }
 

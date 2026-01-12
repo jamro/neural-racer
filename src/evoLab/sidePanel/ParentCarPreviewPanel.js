@@ -13,8 +13,10 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
   }) {
     super(props);
 
-    this.addCarNameLabel(this._contentBoundaries.width / 2, this.title.y + 295, props.carName);
-    this.addCarPreview(this._contentBoundaries.width *0.5, this.title.y + 250);
+    this.testDriveButton.visible = true;
+    this.neuralTestButton.visible = true;
+
+    this.addCarPreview(this.title.y + 250, props.carName);
 
     if(props.car) {
       this.addCarNetworkPreview(
@@ -49,7 +51,7 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
 
     this.statsInfo.anchor.set(0, 0);
     this.statsInfo.x = 30
-    this.statsInfo.y = 360;
+    this.statsInfo.y = 340;
     this.masterContainer.addChild(this.statsInfo);
   }
 

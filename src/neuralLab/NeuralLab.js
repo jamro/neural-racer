@@ -1,14 +1,14 @@
 import * as PIXI from 'pixi.js';
 import RichNetworkPreview from '../ui/RichNetworkPreview';
 import InputController from './InputController';
-
+import NeuralCarObject from '../sim/car/NeuralCarObject';
 
 const WIDGETS_V_PADDING = 25;
 
 class NeuralLab extends PIXI.Container {
-  constructor(car) {
+  constructor(genome) {
     super();
-    this.car = car;
+    this.car = new NeuralCarObject(genome);
 
     this.background = new PIXI.Graphics();
     this.addChild(this.background);
@@ -33,6 +33,36 @@ class NeuralLab extends PIXI.Container {
       this.inputController.x = (this.networkPreview.canvasWidth - this.inputController.canvasWidth) / 2;
     }
 
+    this.closeButton = new PIXI.Container();
+    this.closeButton.interactive = true;
+    this.closeButton.cursor = 'pointer';
+    this.closeButton.on('click', () => {
+      this.stopRenderLoop();
+      if(this.parent) {
+        this.parent.removeChild(this);
+      }
+    });
+    const cross = new PIXI.Graphics();
+    cross.rect(-80, -15, 100, 30);
+    cross.fill({ color: 0, alpha: 0 });
+    cross.moveTo(-10, -10);
+    cross.lineTo(10, 10);
+    cross.moveTo(10, -10);
+    cross.lineTo(-10, 10);
+    cross.stroke({ color: 0xffffff });
+    this.closeButton.addChild(cross);
+    this.addChild(this.closeButton);
+    const closeLabel = new PIXI.Text()
+    closeLabel.style = {
+      fontFamily: 'Exo2',
+      fontSize: 16,
+      fill: 0xffffff,
+    }
+    closeLabel.text = 'CLOSE';
+    closeLabel.x = -20;
+    closeLabel.anchor.set(1, 0.5)
+    this.closeButton.addChild(closeLabel);
+
 
     this.runNetwork()
   }
@@ -51,6 +81,9 @@ class NeuralLab extends PIXI.Container {
     this.masterContainer.scale.set(scale, scale);
     this.masterContainer.x = (width - masterCanvasWidth * scale) / 2;
     this.masterContainer.y = (height - masterCanvasHeight * scale) / 2;
+
+    this.closeButton.x = width - 20;
+    this.closeButton.y = 20;
   }
 
   runNetwork() {

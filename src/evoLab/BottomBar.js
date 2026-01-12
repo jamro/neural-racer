@@ -56,7 +56,7 @@ class BottomBar extends PIXI.Container {
     this.trackName = '???';
     this.populationSize = 0;
 
-    this.evolveButton = new TextButton("Evolve Next Generation", 20, false);
+    this.evolveButton = new TextButton("Evolve Next Generation", 20, false, true);
     this.evolveButton.visible = false;
     this.evolveButton.scale.set(1.2);
     this.addChild(this.evolveButton);
@@ -114,13 +114,13 @@ class BottomBar extends PIXI.Container {
     this.edge.y = -this.edge.height;
     this.edge.width = width;
 
-    this.autoPlayButton.x = width - this.autoPlayButton.buttonWidth - 70;
+    this.autoPlayButton.x = width - this.autoPlayButton.buttonWidth - 50;
     this.autoPlayButton.y = height/2 - this.autoPlayButton.buttonHeight/2;
 
     this.raceButton.x = this.autoPlayButton.x - this.raceButton.buttonWidth - 50;
     this.raceButton.y = height/2 - this.raceButton.buttonHeight/2;
 
-    this.evolveButton.x = width - this.evolveButton.buttonWidth - 70;
+    this.evolveButton.x = width - this.evolveButton.buttonWidth - 60;
     this.evolveButton.y = height/2 - this.evolveButton.buttonHeight/2;
 
     this.trackIcon.x = 40;

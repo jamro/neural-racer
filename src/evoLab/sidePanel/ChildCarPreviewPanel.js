@@ -14,6 +14,8 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
     source: 'unknown',
   }) {
     super(props);
+    this.testDriveButton.visible = true;
+    this.neuralTestButton.visible = true;
 
     this.title.text = 'CAR EVOLUTION'
 
@@ -29,7 +31,7 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
     const parent2 = props.parents?.[1]?.car ?? null;
 
     const w = this._contentBoundaries.width * 0.8;
-    const h = this._contentBoundaries.width * 0.4;
+    const h = this._contentBoundaries.width * 0.35;
 
     if (props.car && parent1 && parent2) {
       this.networkPreview = new EvoNetworkPreview(
@@ -58,14 +60,13 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
 
     if (this.networkPreview) {
       this.networkPreview.x = this._contentBoundaries.width * 0.5 - this.networkPreview.canvasWidth * 0.5;
-      this.networkPreview.y = 200;
+      this.networkPreview.y = 190;
       this.masterContainer.addChild(this.networkPreview);
-      this.addArrow(this._contentBoundaries.width*0.5, 190);
+      this.addArrow(this._contentBoundaries.width*0.5, 185);
     }
 
-    this.addArrow(this._contentBoundaries.width*0.5, 380);
-    this.addCarPreview(this._contentBoundaries.width*0.5, 425);
-    this.addCarNameLabel(this._contentBoundaries.width*0.5, 470, props.carName);
+    this.addArrow(this._contentBoundaries.width*0.5, 355);
+    this.addCarPreview(395, props.carName);
 
     // parent networks
     if(props.parents.length  === 2) {
@@ -115,12 +116,12 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
       );
       networkPreview.scale.set(0.5);
       networkPreview.x = this._contentBoundaries.width*0.5 - networkPreview.canvasWidth*(0.52 - (i % 2)*0.53);
-      networkPreview.y = 70
+      networkPreview.y = 65
       this.masterContainer.addChild(networkPreview);
 
       this.addLabel(
         networkPreview.x + networkPreview.canvasWidth*0.5*networkPreview.scale.x, 
-        150, 
+        145, 
         "PARENT " + numberToLetter(i+1), 
         {
           fontSize: 10,
@@ -130,7 +131,7 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
 
       this.addLabel(
         this._contentBoundaries.width*0.5,
-        320, 
+        305, 
         "EVOLVED NEURAL NETWORK\n(CHILD)", 
         {
           fontSize: 10,
