@@ -15,49 +15,78 @@ class CarPreviewPanel extends SidePanel {
     super();
     this._contentBoundaries = {x: 0, y: 0, width: 300, height: 500}
 
-    const title = new PIXI.Text()
-    title.style = {
+    this.title = new PIXI.Text()
+    this.title.style = {
       fontFamily: 'Exo2',
       fontSize: 22,
       fill: 0xffffff,
     }
-    title.text = 'CAR DETAILS'
-    title.anchor.set(0.5, 0);
-    title.x = this._contentBoundaries.width / 2;
-    title.y = 20;
-    this.masterContainer.addChild(title);
+    this.title.text = 'CAR DETAILS'
+    this.title.anchor.set(0.5, 0);
+    this.title.x = this._contentBoundaries.width / 2;
+    this.title.y = 20;
+    this.masterContainer.addChild(this.title);
+  }
 
-    this.carNameLabel = new PIXI.Text()
-    this.carNameLabel.style = {
+  addLabel(x, y, text, style={}) {
+    const label = new PIXI.Text()
+    label.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
       fill: 0x888888,
+      ...style,
     }
-    this.carNameLabel.text = props.carName;
-    this.carNameLabel.anchor.set(0.5, 0);
-    this.carNameLabel.x = this._contentBoundaries.width / 2;
-    this.carNameLabel.y = title.y + 120
-    this.masterContainer.addChild(this.carNameLabel);
-
-    this.carPreview = new CarSensorPreview({showRadar: false, showTires: true});
-    this.masterContainer.addChild(this.carPreview);
-    this.carPreview.x = this._contentBoundaries.width *0.5;
-    this.carPreview.y = title.y + 75
-    this.carPreview.rotation = -Math.PI * 0.4;
-
-    if(props.car) {
-      this.networkPreview = new StaticNetworkPreview(
-        this._contentBoundaries.width * 0.8,
-        this._contentBoundaries.width * 0.35,
-        props.car.neuralNet,
-        props.car.genome
-      );
-      this.networkPreview.x = this._contentBoundaries.width*0.5 - this.networkPreview.canvasWidth*0.5;
-      this.networkPreview.y = 170
-      this.masterContainer.addChild(this.networkPreview);
-    }
+    label.text = text;
+    label.anchor.set(0.5, 0);
+    label.x = x;
+    label.y = y;
+    this.masterContainer.addChild(label);
+    return label;
   }
 
+  addCarNetworkPreview(x, y, neuralNet, genome, color=0x888888) {
+    this.networkPreview = new StaticNetworkPreview(
+      this._contentBoundaries.width * 0.8,
+      this._contentBoundaries.width * 0.35,
+      neuralNet,
+      genome,
+      color
+    );
+    this.networkPreview.x = x;
+    this.networkPreview.y = y;
+    this.masterContainer.addChild(this.networkPreview);
+  }
+
+  addCarNameLabel(x, y, carName) {
+    this.carNameLabel = this.addLabel(x, y, carName, {
+      fontSize: 12,
+      fill: 0x888888,
+    });
+  }
+
+  addCarPreview(x, y) {
+    this.carPreview = new CarSensorPreview({showRadar: false, showTires: true});
+    this.masterContainer.addChild(this.carPreview);
+    this.carPreview.x = x;
+    this.carPreview.y = y;
+    this.carPreview.rotation = -Math.PI * 0.4;
+  }
+  addArrow(x, y) {
+    for(let i = 0; i < 2; i++) {
+      const arrow = new PIXI.Graphics();
+      arrow.moveTo(0, 0);
+      arrow.lineTo(10, -10);
+      arrow.lineTo(5, -10);
+      arrow.lineTo(0, -5);
+      arrow.lineTo(-5, -10);
+      arrow.lineTo(-10, -10);
+      arrow.lineTo(0, 0);
+      arrow.fill({ color: 0x888888 });
+      arrow.x = x
+      arrow.y = y + i*10 - 10;
+      this.masterContainer.addChild(arrow);
+    }
+  }
 }
 
 export default CarPreviewPanel;

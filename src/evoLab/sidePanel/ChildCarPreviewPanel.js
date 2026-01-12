@@ -1,12 +1,20 @@
 import CarPreviewPanel from './CarPreviewPanel';
 import StaticNetworkPreview from '../../ui/networkPreview/staticPreview/StaticNetworkPreview';
 import EvoNetworkPreview from '../../ui/networkPreview/staticPreview/EvoNetworkPreview';
+import * as PIXI from 'pixi.js';
+
+function numberToLetter(n) {
+  return String.fromCharCode(64 + n);
+}
 
 class ChildCarPreviewPanel extends CarPreviewPanel {
   constructor(props = {
     parents: [],
+    carName: '????',
   }) {
     super(props);
+
+    this.title.text = 'CAR EVOLUTION'
 
     // Replace the default (single-color) preview from CarPreviewPanel with a
     // crossover-aware preview (child colored by parent provenance).
@@ -20,7 +28,7 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
     const parent2 = props.parents?.[1]?.car ?? null;
 
     const w = this._contentBoundaries.width * 0.8;
-    const h = this._contentBoundaries.width * 0.35;
+    const h = this._contentBoundaries.width * 0.4;
 
     if (props.car && parent1 && parent2) {
       this.networkPreview = new EvoNetworkPreview(
@@ -49,23 +57,52 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
 
     if (this.networkPreview) {
       this.networkPreview.x = this._contentBoundaries.width * 0.5 - this.networkPreview.canvasWidth * 0.5;
-      this.networkPreview.y = 170;
+      this.networkPreview.y = 200;
       this.masterContainer.addChild(this.networkPreview);
+      this.addArrow(this._contentBoundaries.width*0.5, 190);
     }
 
+    this.addArrow(this._contentBoundaries.width*0.5, 380);
+    this.addCarPreview(this._contentBoundaries.width*0.5, 425);
+    this.addCarNameLabel(this._contentBoundaries.width*0.5, 470, props.carName);
+
+    // parent networks
     const colors = [0xFF6600, 0x6666FF];
     for(let i = 0; i < props.parents.length; i++) {
       const parent = props.parents[i];
       const networkPreview = new StaticNetworkPreview(
         this._contentBoundaries.width * 0.8,
-        this._contentBoundaries.width * 0.35,
+        this._contentBoundaries.width * 0.5,
         parent.car.neuralNet,
         parent.car.genome,
         colors[i]
       );
-      networkPreview.x = this._contentBoundaries.width*0.5 - networkPreview.canvasWidth*0.5;
-      networkPreview.y = 170 + (i+1)*this._contentBoundaries.width * 0.35
+      networkPreview.scale.set(0.5);
+      networkPreview.x = this._contentBoundaries.width*0.5 - networkPreview.canvasWidth*(0.52 - (i % 2)*0.53);
+      networkPreview.y = 70
       this.masterContainer.addChild(networkPreview);
+
+      this.addLabel(
+        networkPreview.x + networkPreview.canvasWidth*0.5*networkPreview.scale.x, 
+        150, 
+        "PARENT " + numberToLetter(i+1), 
+        {
+          fontSize: 10,
+          fill: 0x888888,
+        }
+      );
+
+      this.addLabel(
+        this._contentBoundaries.width*0.5,
+        320, 
+        "EVOLVED NEURAL NETWORK\n(CHILD)", 
+        {
+          fontSize: 10,
+          fill: 0x888888,
+          align: 'center',
+        }
+      );
+
     }
   }
 

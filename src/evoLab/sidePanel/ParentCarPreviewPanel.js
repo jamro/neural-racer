@@ -12,6 +12,31 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
     type: 'parent',
   }) {
     super(props);
+
+    this.addCarNameLabel(this._contentBoundaries.width / 2, this.title.y + 295, props.carName);
+    this.addCarPreview(this._contentBoundaries.width *0.5, this.title.y + 250);
+
+    if(props.car) {
+      this.addCarNetworkPreview(
+        this._contentBoundaries.width*0.5, 
+        65, 
+        props.car.neuralNet, 
+        props.car.genome,
+        props.progress >= 1 ? 0x8888ff : 0xff8800
+      );
+      this.networkPreview.x -= this.networkPreview.canvasWidth*0.5
+      this.addLabel(
+        this._contentBoundaries.width*0.5,
+        180, 
+        "NEURAL NETWORK", 
+        {
+          fontSize: 10,
+          fill: 0xffffff,
+          align: 'center',
+        }
+      );
+      this.addArrow(this._contentBoundaries.width*0.5, 230);
+    }
     
     this.statsInfo = new PIXI.Text()
     this.statsInfo.style = {
@@ -24,7 +49,7 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
 
     this.statsInfo.anchor.set(0, 0);
     this.statsInfo.x = 30
-    this.statsInfo.y = 310;
+    this.statsInfo.y = 360;
     this.masterContainer.addChild(this.statsInfo);
   }
 

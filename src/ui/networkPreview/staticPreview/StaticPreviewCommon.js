@@ -8,7 +8,9 @@ export const STATIC_PREVIEW_CONFIG = {
   CONNECTION_WIDTH_MIN: 0.5,
   CONNECTION_TOP_K: 3,
   MAX_EDGES_PER_LAYER: 10,
-  HIDE_INACTIVE_NEURONS: true,
+  // Alpha for neurons that have no currently-rendered edges.
+  // Set to 0 to effectively "hide" inactive neurons.
+  INACTIVE_NEURONS_ALPHA: 0.3,
 };
 
 export function getConnectionWidthMax(nodeRadius = STATIC_PREVIEW_CONFIG.NODE_RADIUS) {
@@ -169,9 +171,22 @@ export function buildLayersFromWeights({
 }
 
 export class NetworkDiagramRenderer {
-  constructor(canvas, { hideInactiveNeurons = STATIC_PREVIEW_CONFIG.HIDE_INACTIVE_NEURONS } = {}) {
+  constructor(
+    canvas,
+    {
+      inactiveNeuronsAlpha = STATIC_PREVIEW_CONFIG.INACTIVE_NEURONS_ALPHA,
+      // Backward-compat: old boolean option.
+      hideInactiveNeurons,
+    } = {}
+  ) {
     this.canvas = canvas;
-    this.hideInactiveNeurons = hideInactiveNeurons;
+
+    if (typeof hideInactiveNeurons === 'boolean') {
+      inactiveNeuronsAlpha = hideInactiveNeurons ? 0 : 1;
+    }
+
+    // Clamp to [0,1] to avoid surprising rendering issues.
+    this.inactiveNeuronsAlpha = Math.min(1, Math.max(0, inactiveNeuronsAlpha));
   }
 
   drawCurvedConnection(x1, y1, x2, y2, style) {
@@ -222,10 +237,11 @@ export class NetworkDiagramRenderer {
     for (let l = 0; l < sizes.length; l++) {
       const { xs, ys } = positions[l];
       for (let i = 0; i < ys.length; i++) {
-        if (this.hideInactiveNeurons && !isActive[l][i]) continue;
+        const alpha = isActive[l][i] ? 1 : this.inactiveNeuronsAlpha;
+        if (alpha <= 0) continue;
         const color = nodeColors?.[l]?.[i] ?? fallbackNodeColor;
         this.canvas.circle(xs[i], ys[i], nodeRadius);
-        this.canvas.fill({ color, alpha: 1 });
+        this.canvas.fill({ color, alpha });
       }
     }
   }
