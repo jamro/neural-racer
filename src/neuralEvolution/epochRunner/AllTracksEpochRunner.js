@@ -129,6 +129,8 @@ export default class AllTracksEpochRunner extends EpochRunner {
       consolidatedStats.push({
         progress: allStats.reduce((acc, stats) => acc + stats[i].progress, 0) / allStats.length,
         averageSpeed: allStats.reduce((acc, stats) => acc + stats[i].averageSpeed, 0) / allStats.length,
+        topSpeed: allStats.reduce((acc, stats) => Math.max(acc, stats[i].topSpeed), 0),
+        lifetimeSeconds: allStats.reduce((acc, stats) => acc + stats[i].lifetimeSeconds, 0),
       })
     }
     const consolidatedScores = []
