@@ -31,7 +31,7 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
         "NEURAL NETWORK", 
         {
           fontSize: 10,
-          fill: 0xffffff,
+          fill: 0x888888,
           align: 'center',
         }
       );

@@ -172,19 +172,34 @@ class EvolutionScreen extends PIXI.Container {
         lapTimeSec: this.selectedObject.lapTimeSec,
       });
     } else {
-
       let parents = []
+      let source = 'unknown' // possible values: unknown, offspring, elite, hallOfFame, random
       if(this.genealogy) {
         parents = this.genealogy.getParents(genomeId)
-          .map(id => this.generation.getCarDetailsByGenomeId(id))
+          .map(id => {
+            let result = this.generation.getCarDetailsByGenomeId(id)
+            if(result) return result;
+
+            // check in hall of fame
+            // {car, score, stats}
+            const hofEntry = this.hallOfFame.getByGenomeId(id);
+            if(hofEntry) return {car: hofEntry.car, score: null, stats: {}};
+
+            return null
+          })
           .filter(parent => parent);
+
+        source = this.genealogy.getChildType(genomeId);
       }
+
+      this.hallOfFame.getByGenomeId(genomeId);
       
       this.carPreviewPanel.showPanel(ChildCarPreviewPanel, {
         car: this.selectedObject.car,
         carName: this.selectedObject.carName,
         type: this.selectedObject.particleType,
         parents: parents,
+        source: source,
       });
     }
 

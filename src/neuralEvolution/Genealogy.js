@@ -29,6 +29,10 @@ class Genealogy {
     return this.parentMap.get(childGenomeId) || [];
   }
 
+  getChildType(genomeId) {
+    return this.records.find(record => record.child === genomeId).type;
+  }
+
   sortRecordsByType(typesOrder = ['offspring', 'elite', 'hallOfFame']) {
     const typeOrderMap = {}
     for(let i = 0; i < typesOrder.length; i++) {

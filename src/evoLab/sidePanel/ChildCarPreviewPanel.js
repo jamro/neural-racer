@@ -11,6 +11,7 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
   constructor(props = {
     parents: [],
     carName: '????',
+    source: 'unknown',
   }) {
     super(props);
 
@@ -67,6 +68,41 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
     this.addCarNameLabel(this._contentBoundaries.width*0.5, 470, props.carName);
 
     // parent networks
+    if(props.parents.length  === 2) {
+      this.addParentNetworkPreview(props);
+    } else {
+      this.addLabel(
+        this._contentBoundaries.width*0.5,
+        100, 
+        "SOURCE", 
+        {
+          fontSize: 10,
+          fill: 0x888888,
+          align: 'center',
+        }
+      )
+      const sourceText = {
+        'offspring': 'OFFSPRING',
+        'elite': 'ELITE',
+        'hallOfFame': 'HALL OF FAME',
+        'random': 'RANDOM',
+        'unknown': 'UNKNOWN',
+      }
+      this.addLabel(
+        this._contentBoundaries.width*0.5,
+        115, 
+        sourceText[props.source] || 'UNKNOWN', 
+        {
+          fontSize: 32,
+          fill: 0x888888,
+          align: 'center',
+        }
+      )
+    }
+    
+  }
+
+  addParentNetworkPreview(props) {
     const colors = [0xFF6600, 0x6666FF];
     for(let i = 0; i < props.parents.length; i++) {
       const parent = props.parents[i];
@@ -104,6 +140,7 @@ class ChildCarPreviewPanel extends CarPreviewPanel {
       );
 
     }
+
   }
 
 }

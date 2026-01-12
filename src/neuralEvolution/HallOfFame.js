@@ -170,6 +170,10 @@ export default class HallOfFame {
     console.log(debug);
   }
 
+  getByGenomeId(genomeId) {
+    return this.genomeMap.get(genomeId);
+  }
+
   _addEntry(entry) {
     this.trackData[entry.trackName].push(entry);
     this.genomeMap.set(entry.genomeId, entry);
