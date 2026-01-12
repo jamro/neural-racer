@@ -9,13 +9,18 @@ import ChildCarPreviewPanel from './sidePanel/ChildCarPreviewPanel';
 import SidePanelController from './sidePanel/SidePanelController';
 import EmptyPanel from './sidePanel/EmptyPanel';
 import NeuralLab from '../neuralLab/NeuralLab';
+import Simulation from '../sim/Simulation';
+import {Generation} from '../neuralEvolution/Generation';
 
 const EVOLVE_ANIMATION_DELAY = 1200;
 const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
 
 class EvolutionScreen extends PIXI.Container {
-  constructor(generation, hallOfFame, config) {
+  constructor(generation, hallOfFame, config, tracks, pixiApp) {
     super();
+
+    this.pixiApp = pixiApp;
+    this.tracks = tracks;
 
     this.nextGeneration = null;
     this.neuralLab = null;
@@ -88,7 +93,7 @@ class EvolutionScreen extends PIXI.Container {
     }
     this.bottomBar.evolveButton.enabled = false;
     const genealogy = new Genealogy();
-    const newGeneration = this.generation.evolve(this.hallOfFame, this.config, genealogy);
+    const newGeneration = this.generation.evolve(this.hallOfFame, this.config.evolve, genealogy);
     let delay = EVOLVE_ANIMATION_DELAY
     genealogy.sortRecordsByType(['offspring', 'elite', 'hallOfFame']);
     this.genealogy = genealogy;
@@ -232,7 +237,32 @@ class EvolutionScreen extends PIXI.Container {
   }
 
   startTestDrive(genome) {
-    console.log("Start Test Drive", genome);
+    const { 
+      simulationStep = 0.05, 
+      simulationSpeed = 1, 
+      graphicsQuality = "low", 
+      scoreWeights = { trackDistance: 1 },
+    } = this.config;
+    const simulation = new Simulation(this.pixiApp, false);
+    simulation.scaleView(this.screenWidth, this.screenHeight);
+    this.pixiApp.stage.addChild(simulation.view);
+
+    const track = this.tracks[Math.floor(Math.random() * this.tracks.length)];
+    const testDriveGeneration = new Generation();
+    testDriveGeneration.setPopulation([genome.clone()]);
+    testDriveGeneration.epoch = 1;
+    testDriveGeneration.trackName = track.name;
+
+    simulation.simulationSpeedMultiplier = 1
+    simulation.setTrack(track); 
+    simulation.addGeneration(testDriveGeneration);
+    simulation.view.epochDescription = "Test Drive";
+    simulation.start(testDriveGeneration.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop
+    simulation.onComplete = () => {
+      this.pixiApp.stage.removeChild(simulation.view);
+      simulation.removeAndDispose();
+    };
+    simulation.startRender(); // Start render loop
   }
 }
 

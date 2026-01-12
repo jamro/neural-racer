@@ -8,7 +8,7 @@ const SLOW_CAMERA_SNAP_FACTOR = 0.01;
 const FAST_CAMERA_SNAP_FACTOR = 0.5;
 
 class Simulation {
-    constructor(app = null) {
+    constructor(app = null, allowSettings = true) {
 
         this.simulationStep = 0.05;
         this.simulationSpeed = 1;
@@ -17,7 +17,7 @@ class Simulation {
         this.renderRunning = false;
         this.app = app;
         this.simulationSpeedMultiplier = getSimulationSpeedSetting() || 1;
-        this.view = new SimulationView(); 
+        this.view = new SimulationView(allowSettings); 
         this.view.on('speedChanged', (speed) => this.changeSimulationSpeed(speed));
         this.view.simulationSpeed = this.simulationSpeedMultiplier;
         this.leaderCar = null;

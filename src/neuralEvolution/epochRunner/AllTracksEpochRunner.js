@@ -1,7 +1,7 @@
 import EpochRunner from './EpochRunner';
 import {Generation} from '../Generation';
 
-const ALL_TRACKS_NAME = 'All Tracks';
+export const ALL_TRACKS_NAME = 'All Tracks';
 
 
 function consolidateScores(carScores, consolidatedStats, k=0.3) {

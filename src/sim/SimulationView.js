@@ -3,12 +3,12 @@ import SimulationDetailsView from './SimulationDetailsView';
 import { metersToPixels } from './unitConversion'; // @TODO avoid conversion in view class
 
 class SimulationView extends PIXI.Container {
-    constructor() {
+    constructor(allowSettings = true) {
         super();
         this.masterContainer = new PIXI.Container();
         this.addChild(this.masterContainer);
 
-        this.simulationDetailsView = new SimulationDetailsView();
+        this.simulationDetailsView = new SimulationDetailsView(allowSettings);
         this.simulationDetailsView.on('speedChanged', (speed) => this.emit('speedChanged', speed));
         this.simulationDetailsView.on('evolutionModeChanged', (autoMode) => this.emit('evolutionModeChanged', autoMode));
         this.addChild(this.simulationDetailsView);

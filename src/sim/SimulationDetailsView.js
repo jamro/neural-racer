@@ -17,7 +17,7 @@ const WIDGET_BOTTOM_PADDING = 10;
 
 class SimulationDetailsView extends PIXI.Container {
 
-  constructor() {
+  constructor(allowSettings = true) {
     super();
 
     this.bottomContainer = new PIXI.Container();
@@ -90,7 +90,7 @@ class SimulationDetailsView extends PIXI.Container {
     stagnationWarningText.x = 22;
     stagnationWarningText.anchor.set(0, 0.5);
 
-    this.topContainer = new Frame(180, 180);
+    this.topContainer = new Frame(180, allowSettings ? 180 : 70);
     this.addChild(this.topContainer);
 
     const trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
@@ -132,7 +132,9 @@ class SimulationDetailsView extends PIXI.Container {
     this.epochLabel.x = 7;
     this.epochLabel.y = 45;
 
-    this.topContainer.addHorizontalLine(70, 'Speed:');
+    if(allowSettings) {
+      this.topContainer.addHorizontalLine(70, 'Speed:');
+    }
 
     this.speedButton = new SpeedSelector();
     this.speedButton.on('valueChanged', (value) => {
@@ -142,14 +144,18 @@ class SimulationDetailsView extends PIXI.Container {
     this.topContainer.addChild(this.speedButton);
     this.speedButton.x = 15;
     this.speedButton.y = 90;
+    this.speedButton.visible = allowSettings;
 
-    this.topContainer.addHorizontalLine(130, 'Evolution:');
+    if(allowSettings) {
+      this.topContainer.addHorizontalLine(130, 'Evolution:');
+    }
 
     this.evolutionButton = new EvolutionModeButton();
     this.topContainer.addChild(this.evolutionButton);
     this.evolutionButton.x = 15;
     this.evolutionButton.y = 148;
     this.evolutionButton.buttonWidth = 151
+    this.evolutionButton.visible = allowSettings;
     this.evolutionButton.on('change', (autoMode) => {
       this.emit('evolutionModeChanged', autoMode);
     });

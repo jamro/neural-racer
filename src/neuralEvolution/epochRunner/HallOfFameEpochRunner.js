@@ -45,7 +45,7 @@ export default class HallOfFameEpochRunner extends EpochRunner {
     // run new simulation 
     this.simulation = simulation;
     this.simulation.setTrack(track); 
-    this.simulation.addGeneration(hofGeneration); // @TODO: use Hall of Fame cars and create new generation to not alter the lates one
+    this.simulation.addGeneration(hofGeneration);
     this.simulation.view.setEvolutionHistory(this.evolution.history, track.name);
     this.simulation.view.epochDescription = "Hall of Fame evaluation";
     this.simulation.start(hofGeneration.epoch, simulationStep, simulationSpeed, graphicsQuality, scoreWeights); // Start simulation loop

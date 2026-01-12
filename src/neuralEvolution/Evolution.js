@@ -9,6 +9,7 @@ import HallOfFameEpochRunner from './epochRunner/HallOfFameEpochRunner';
 import AllTracksEpochRunner from './epochRunner/AllTracksEpochRunner';
 import EvoLab from '../evoLab/EvoLab';
 import { getAutoEvolveSetting, setAutoEvolveSetting } from '../loaders/settings';
+import { ALL_TRACKS_NAME } from './epochRunner/AllTracksEpochRunner';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';
 
@@ -50,7 +51,8 @@ class Evolution {
     if(this.autoEvolve) {
       return generation.evolve(this.hallOfFame, this.config.evolve);
     } else {
-      return await this.evoLab.evolve(generation, this.hallOfFame, this.config.evolve);
+      const tracks = generation.trackName === ALL_TRACKS_NAME ? this.tracks : this.tracks.filter(track => track.name === generation.trackName)
+      return await this.evoLab.evolve(generation, this.hallOfFame, this.config, tracks, this.pixiApp);
     }
   }
 

@@ -11,7 +11,7 @@ class EvoLab extends PIXI.Container {
     this.screenHeight = 100;
   }
 
-  async evolve(generation, hallOfFame, config) {
+  async evolve(generation, hallOfFame, config, tracks, pixiApp) {
     if(!this.parent)  {
       throw new Error('EvoLab must be added to the stage');
     }
@@ -19,7 +19,7 @@ class EvoLab extends PIXI.Container {
     if(this.evoScreen) {
       this.removeChild(this.evoScreen);
     }
-    this.evoScreen = new EvolutionScreen(generation, hallOfFame, config);
+    this.evoScreen = new EvolutionScreen(generation, hallOfFame, config, tracks, pixiApp);
     this.addChild(this.evoScreen);
     this.evoScreen.scaleView(this.screenWidth, this.screenHeight);
     await this.evoScreen.initialize(generation);
