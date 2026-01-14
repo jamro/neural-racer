@@ -155,11 +155,43 @@ export function getTexture(textureKey) {
  * @param {string[]} textureKeys - Array of texture keys from TEXTURE_REGISTRY
  * @returns {Promise<Object<string, PIXI.Texture>>} - Object mapping keys to textures
  */
-export async function loadTextures(textureKeys) {
-    const promises = textureKeys.map(key => 
-        loadTexture(key).then(texture => ({ key, texture }))
+export async function loadTextures(textureKeys, onProgress = (progressPercent, statusText) => {}) {
+    const report = (pct, text) => {
+        try {
+            onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);
+        } catch {
+            // ignore progress callback errors
+        }
+    };
+
+    const keys = Array.isArray(textureKeys) ? Array.from(new Set(textureKeys)) : [];
+    const total = keys.length;
+
+    if (total === 0) {
+        report(100, 'No textures to load');
+        return {};
+    }
+
+    let completed = 0;
+    report(0, `Loading textures (0/${total})`);
+
+    const promises = keys.map(key =>
+        loadTexture(key)
+            .then(texture => {
+                completed += 1;
+                report((completed / total) * 100, `Loaded "${key}" (${completed}/${total})`);
+                return { key, texture };
+            })
+            .catch(err => {
+                completed += 1;
+                report((completed / total) * 100, `Failed "${key}" (${completed}/${total})`);
+                throw err;
+            })
     );
+
     const results = await Promise.all(promises);
+    report(100, `Textures loaded (${total}/${total})`);
+
     return results.reduce((acc, { key, texture }) => {
         acc[key] = texture;
         return acc;

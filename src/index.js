@@ -3,76 +3,99 @@ import * as PIXI from 'pixi.js';
 import Evolution from './neuralEvolution/Evolution';
 import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
-import { loadTextures, getTextureKeys } from './loaders/AssetLoader';
-import waitForFonts from './loaders/waitForFonts';
-import RichNetworkPreview from './ui/RichNetworkPreview';
-import CarSensorPreview from './ui/CarSensorPreview';
+import Preloader from './loaders/Preloader';
 
 let app = null;
 let evolution = null;
 let resizeHandler = null;
+const preloader = new Preloader(document);
 
 /**
  * Initialize the application
  * This function can be called multiple times for HMR
  */
 async function initApp() {
-    // Wait for fonts to be fully loaded
-    await waitForFonts();
+    try {
+        // Show DOM loading overlay immediately
+        preloader.show();
+        preloader.setProgress(0, 'Starting');
 
-    // Create and initialize the application
-    app = new PIXI.Application();
+        // Load core assets (fonts + textures)
+        await preloader.load();
 
-    await app.init({
-        resizeTo: window,
-        backgroundColor: 0xa19a41,
-        antialias: true,
-        resolution: window.devicePixelRatio || 1,
-        autoDensity: true,
-    });
+        // Create and initialize the application
+        preloader.setProgress(86, 'Initializing renderer');
+        app = new PIXI.Application();
 
-    // Add the canvas to the DOM
-    const appContainer = document.getElementById('app');
-    if (appContainer.firstChild) {
-        appContainer.replaceChild(app.canvas, appContainer.firstChild);
-    } else {
-        appContainer.appendChild(app.canvas);
+        await app.init({
+            resizeTo: window,
+            backgroundColor: 0xa19a41,
+            antialias: true,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true,
+        });
+
+        // Add the canvas to the DOM
+        const appContainer = document.getElementById('app');
+        if (appContainer.firstChild) {
+            appContainer.replaceChild(app.canvas, appContainer.firstChild);
+        } else {
+            appContainer.appendChild(app.canvas);
+        }
+
+        // Load tracks (with progress)
+        const tracksData = [
+            { url: 'assets/tracks/lesson_001.svg' },
+            { url: 'assets/tracks/lesson_002.svg' },
+            { url: 'assets/tracks/lesson_003.svg' },
+            { url: 'assets/tracks/lesson_004.svg' },
+            { url: 'assets/tracks/lesson_005.svg' },
+            { url: 'assets/tracks/lesson_006.svg' },
+        ];
+
+        preloader.setProgress(90, `Loading tracks (0/${tracksData.length})`);
+        let tracksLoaded = 0;
+        const tracks = await Promise.all(
+            tracksData.map(({ url }) =>
+                SvgTrackLoader.load(url).then(track => {
+                    tracksLoaded += 1;
+                    const pct = 90 + (tracksLoaded / tracksData.length) * 6; // 90..96
+                    preloader.setProgress(pct, `Loaded track (${tracksLoaded}/${tracksData.length})`);
+                    return track;
+                })
+            )
+        );
+
+        // Initialize evolution
+        preloader.setProgress(96, 'Initializing evolution');
+        evolution = new Evolution(app, tracks);
+
+        const config = new Config();
+        PIXI.Ticker.shared.maxFPS = config.frameRate || 30;
+        config.setStandardMode();
+
+        await evolution.initialize(config);
+        preloader.setProgress(100, 'Ready');
+
+        // Hide loader before entering the long-running loop.
+        preloader.hide();
+
+        // Handle window resize
+        resizeHandler = () => {
+            if (app && app.resize) {
+                app.resize(window.innerWidth, window.innerHeight);
+                evolution.scaleView(window.innerWidth, window.innerHeight);
+            }
+        };
+        window.addEventListener('resize', resizeHandler);
+
+        await evolution.runInLoop();
+    } catch (err) {
+        console.error('Failed to initialize app:', err);
+        preloader.show();
+        preloader.setProgress(100, 'Load failed — check console for details');
+        throw err;
     }
-
-    // Load all textures in bulk
-    await loadTextures(getTextureKeys());
-
-    // Load assets
-    const tracksData = [
-        {url:'assets/tracks/lesson_001.svg'},
-        {url:'assets/tracks/lesson_002.svg'},
-        {url:'assets/tracks/lesson_003.svg'},
-        {url:'assets/tracks/lesson_004.svg'},
-        {url:'assets/tracks/lesson_005.svg'},
-        {url:'assets/tracks/lesson_006.svg'},
-    ];
-    const tracks = await Promise.all(tracksData.map(t => SvgTrackLoader.load(t.url)));
-
-    evolution = new Evolution(app, tracks);
-
-    const config = new Config();
-    PIXI.Ticker.shared.maxFPS = config.frameRate || 30;
-    config.setStandardMode();
-
-    await evolution.initialize(config);
-
-    console.log('PixiJS application initialized with fonts loaded!');
-
-    // Handle window resize
-    resizeHandler = () => {
-      if(app && app.resize) {
-        app.resize(window.innerWidth, window.innerHeight);
-        evolution.scaleView(window.innerWidth, window.innerHeight);
-      }
-    };
-    window.addEventListener('resize', resizeHandler);
-
-    await evolution.runInLoop();
 }
 
 /**
@@ -99,6 +122,9 @@ function cleanup() {
         });
         app = null;
     }
+
+    // Ensure loading overlay doesn't linger across hot reloads
+    preloader.hide({ remove: true });
 }
 
 // Initialize the application
