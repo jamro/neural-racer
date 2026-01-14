@@ -317,6 +317,54 @@ class RichNetworkPreview extends PIXI.Container {
       alpha,
     });
   }
+
+  destroy(options) {
+    // Clear Graphics objects first to free drawing resources
+    if (this.canvas) {
+      this.canvas.clear();
+    }
+    if (this.debugCanvas) {
+      this.debugCanvas.clear();
+    }
+
+    // Destroy complex children with their own destroy methods (they're in masterContainer)
+    if (this.netDiagram) {
+      this.netDiagram.destroy(options);
+      this.netDiagram = null;
+    }
+    if (this.carSensorPreview) {
+      this.carSensorPreview.destroy(options);
+      this.carSensorPreview = null;
+    }
+
+    // Destroy Sprite icons (they're in masterContainer)
+    if (this.turnIcon) {
+      this.turnIcon.destroy(options);
+      this.turnIcon = null;
+    }
+    if (this.throttleIcon) {
+      this.throttleIcon.destroy(options);
+      this.throttleIcon = null;
+    }
+
+    // Destroy masterContainer (will destroy canvas and remaining children like text labels)
+    if (this.masterContainer) {
+      this.masterContainer.destroy(options);
+      this.masterContainer = null;
+    }
+
+    // Destroy debugCanvas (it's a direct child, not in masterContainer)
+    if (this.debugCanvas) {
+      this.debugCanvas.destroy(options);
+      this.debugCanvas = null;
+    }
+
+    // Clear canvas reference (already destroyed by masterContainer)
+    this.canvas = null;
+
+    // Call parent destroy
+    super.destroy(options);
+  }
 }
 
 export default RichNetworkPreview;

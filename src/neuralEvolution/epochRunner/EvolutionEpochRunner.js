@@ -102,7 +102,7 @@ export default class EvolutionEpochRunner extends EpochRunner {
     }
     const hallOfFameResults = latestGeneration.getHallOfFameCarsAndScores(this.evolution.hallOfFame);
     for(const result of hallOfFameResults) {
-      this.evolution.hallOfFame.updateCar(result.car, result.score, this.currentTrack.name);
+      this.evolution.hallOfFame.updateCar(result.car.genome, result.score, this.currentTrack.name);
     }
 
     // store and trim generation history

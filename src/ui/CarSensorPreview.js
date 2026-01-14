@@ -291,4 +291,36 @@ export default class CarSensorPreview extends PIXI.Container {
     drawPuffs(rearLeft)
     drawPuffs(rearRight)
   }
+
+  destroy(options) {
+    // Clear and destroy Graphics objects
+    if (this.radarCanvas) {
+      this.radarCanvas.clear();
+      this.radarCanvas.destroy(options);
+      this.radarCanvas = null;
+    }
+    if (this.tiresCanvas) {
+      this.tiresCanvas.clear();
+      this.tiresCanvas.destroy(options);
+      this.tiresCanvas = null;
+    }
+    if (this.smokeCanvas) {
+      this.smokeCanvas.clear();
+      this.smokeCanvas.destroy(options);
+      this.smokeCanvas = null;
+    }
+
+    // Destroy Sprite objects
+    if (this.carShadow) {
+      this.carShadow.destroy(options);
+      this.carShadow = null;
+    }
+    if (this.car) {
+      this.car.destroy(options);
+      this.car = null;
+    }
+
+    // Call parent destroy
+    super.destroy(options);
+  }
 }

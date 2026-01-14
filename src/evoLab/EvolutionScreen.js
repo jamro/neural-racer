@@ -11,6 +11,7 @@ import EmptyPanel from './sidePanel/EmptyPanel';
 import NeuralLab from '../neuralLab/NeuralLab';
 import Simulation from '../sim/Simulation';
 import {Generation} from '../neuralEvolution/Generation';
+import NeuralCarObject from '../sim/car/NeuralCarObject';
 
 const EVOLVE_ANIMATION_DELAY = 1200;
 const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
@@ -196,7 +197,7 @@ class EvolutionScreen extends PIXI.Container {
             // check in hall of fame
             // {car, score, stats}
             const hofEntry = this.hallOfFame.getByGenomeId(id);
-            if(hofEntry) return {car: hofEntry.car, score: null, stats: {}};
+            if(hofEntry) return {car: new NeuralCarObject(hofEntry.genome.clone()), score: null, stats: {}};
 
             return null
           })

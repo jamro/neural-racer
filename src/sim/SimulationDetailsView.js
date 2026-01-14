@@ -36,8 +36,6 @@ class SimulationDetailsView extends PIXI.Container {
     this.bottomContainer.addChild(this.historyChart);
 
     PIXI.Ticker.shared.add(this.onTick, this);
-    this.fpsCounter = 0;
-    this.fps = 0;
 
     this.networkPreview = new RichNetworkPreview();
     this.bottomContainer.addChild(this.networkPreview);
@@ -125,7 +123,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.epochLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
-      fill: 0xdedede,
+    fill: 0xdedede,
     };
     this.epochLabel.text = 'Epoch: ???';
     this.topContainer.addChild(this.epochLabel);
@@ -161,10 +159,6 @@ class SimulationDetailsView extends PIXI.Container {
     });
 
     this.scaleView(500, 200);
-    setInterval(() => {
-      this.fps = this.fpsCounter;
-      this.fpsCounter = 0;
-    }, 1000);
   }
 
   set simulationSpeed(speed) {
@@ -177,19 +171,6 @@ class SimulationDetailsView extends PIXI.Container {
 
   update(simulation, leaderCar, scoreWeights) {
     // be sure that memory is supported
-    let usedJSHeapSize = 0;
-    let jsHeapSizeLimit = 0;
-    if(performance.memory) {
-      usedJSHeapSize = performance.memory.usedJSHeapSize;
-      jsHeapSizeLimit = performance.memory.jsHeapSizeLimit;
-    }
-
-    //"FPS: " + (this.fps || '???') + "\n" + 
-    //"Memory: " + ((usedJSHeapSize / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB / " + (jsHeapSizeLimit / 1024 / 1024 / 1024).toFixed(2).padStart(4, ' ') + "GB") + "\n\n" +
-    //"Epoch: " + simulation.epoch + "\n" +
-    //"Track: " + simulation.track.name + "\n" +
-    //"Size: ✕ " + crashedCars + ", ▶ " + (totalCars - crashedCars - finishedCars) + ", ✓ " + finishedCars + " (" + totalCars + ")" + "\n\n\n"
-
 
     this.trackLabel.text = simulation.track.name;
     this.epochLabel.text = 'Epoch: ' + simulation.epoch;
@@ -285,17 +266,18 @@ class SimulationDetailsView extends PIXI.Container {
   }
 
   onTick(delta) {
-    this.fpsCounter += 1;
     this.stagnationWarning.alpha = Math.cos(performance.now()/100)*0.4+0.6;
   }
 
-  destroy() {
+  destroy(options) {
+    this.networkPreview.destroy(options);
+    this.networkPreview = null;
+    this.historyChart.destroy(options);
     this.sortedScores = null;
     PIXI.Ticker.shared.remove(this.onTick, this);
     this.evolutionButton.off('change');
     this.speedButton.off('valueChanged');
-    console.log('SimulationDetailsView destroyed');
-    super.destroy();
+    super.destroy(options);
   }
 
 }

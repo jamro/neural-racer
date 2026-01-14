@@ -162,7 +162,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
     for(const result of hallOfFameResults) {
       const hofEvaluations = allScoresMap[result.car.genome.genomeId];
       hofEvaluations.forEach(evaluation => this.evolution.hallOfFame.updateCar(
-        result.car, 
+        result.car.genome, 
         evaluation.score, 
         evaluation.trackName
       ));

@@ -95,6 +95,32 @@ class NetworkPreview extends PIXI.Container {
             }
         });
     }
+
+    /**
+     * Clean up resources to prevent memory leaks.
+     * Should be called when this NetworkPreview is no longer needed.
+     */
+    destroy(options) {
+      console.log('NetworkPreview destroying');
+        // Clean up renderer (which clears edgeFadeState Map)
+        if (this.renderer) {
+            this.renderer.destroy();
+            this.renderer = null;
+        }
+
+        // Destroy Graphics object to free internal resources
+        if (this.canvas) {
+            this.canvas.clear();
+            this.canvas.destroy(options);
+            this.canvas = null;
+        }
+
+        // Clean up position calculator
+        this.positionCalculator = null;
+
+        // Call parent destroy
+        super.destroy(options);
+    }
 }
 
 export default NetworkPreview;

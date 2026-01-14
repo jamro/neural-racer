@@ -89,8 +89,11 @@ class CarView extends PIXI.Container {
 
     renderRadar(beamsLengths, safeDirection) {
         if (!this.radar.visible || !DEBUG_RADAR_BEAMS) return;
+        
+        // Clear before drawing to prevent geometry accumulation
         this.radar.clear();
 
+        // Build all paths first, then stroke once to minimize GraphicsPath creation
         for (let i = 0; i < this.radarBeamAngles.length; i++) {
           const angle = this.radarBeamAngles[i];
           const length = beamsLengths[i];
@@ -99,9 +102,13 @@ class CarView extends PIXI.Container {
             length * Math.cos(angle),
             length * Math.sin(angle)
           );
+        }
+        // Single stroke call for all beams (same style)
+        if (this.radarBeamAngles.length > 0) {
           this.radar.stroke({ color: 0xffffff, width: 3, alpha: 0.3 });
         }
 
+        // Safe direction arrow (separate path with different style)
         this.radar.moveTo(0, 0);
         this.radar.lineTo(
           100 * Math.cos(safeDirection),

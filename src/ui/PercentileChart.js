@@ -240,4 +240,22 @@ export default class PercentileChart extends PIXI.Container {
   }
 
 
+  destroy(options) {
+    this.canvas.clear();
+    this.canvas.destroy(options);
+    this.currentPopulationBar.clear();
+    this.currentPopulationBar.destroy(options);
+    this.scaleShape.clear();
+    this.scaleShape.destroy(options);
+    this.scaleOverlay.clear();
+    this.scaleOverlay.destroy(options);
+    this.top25Label.destroy(options);
+    this.timeLabel.destroy(options);
+    this.passLabel.destroy(options);
+    this.scoreLabel.destroy(options);
+    this.data = [];
+    this.masterContainer.destroy(options);
+    super.destroy(options);
+  }
+
 }

@@ -221,7 +221,7 @@ class Generation {
         if(Math.random() < hallOfFameSelectionProbability) {
           hofCandidates = hallOfFame.pickRandom(1);
           if(hofCandidates.length > 0) {
-            parent1 = hofCandidates[0];
+            parent1 = new NeuralCarObject(hofCandidates[0].clone(true));
           }
         }
 
@@ -321,7 +321,8 @@ class Generation {
       }
 
       // Get elite genomes from hall of fame
-      const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(car => car.genome.clone(true));
+      const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(genome => genome.clone(true));
+      console.log()
       eliteGenomes.push(...hofEliteGenomes);
       for(let i = 0; i < hofEliteGenomes.length; i++) {
         genealogy.add(

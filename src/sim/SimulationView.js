@@ -142,7 +142,7 @@ class SimulationView extends PIXI.Container {
     destroy() {
       this.simulationDetailsView.off('speedChanged');
       this.simulationDetailsView.off('evolutionModeChanged');
-      this.simulationDetailsView.destroy();
+      this.simulationDetailsView.destroy({ children: true, texture: false, baseTexture: false });
       super.destroy();
     }
 }

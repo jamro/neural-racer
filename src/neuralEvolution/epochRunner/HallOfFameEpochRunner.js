@@ -61,7 +61,7 @@ export default class HallOfFameEpochRunner extends EpochRunner {
 
     const hallOfFameResults = hofGeneration.getHallOfFameCarsAndScores(this.evolution.hallOfFame);
     for(const result of hallOfFameResults) {
-      this.evolution.hallOfFame.updateCar(result.car, result.score, track.name);
+      this.evolution.hallOfFame.updateCar(result.car.genome, result.score, track.name);
     }
 
     this.evolution.store();

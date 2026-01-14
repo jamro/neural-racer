@@ -10,6 +10,8 @@ export class NetworkRenderer {
         this.positionCalculator = positionCalculator;
         // Persistent across render calls so we can fade edges out instead of hiding instantly.
         this.edgeFadeState = new Map();
+        // Track network structure to detect changes and clean up stale fade states
+        this.lastNetworkSizes = null;
     }
 
     /**
@@ -32,6 +34,15 @@ export class NetworkRenderer {
         const inputLayout = layout?.inputLayout ?? null;
 
         if (!sizes?.length || !numLayers) return;
+
+        // Detect network structure changes and clean up stale fade states
+        // This prevents memory leaks when network structure changes
+        const sizesKey = sizes.join(',');
+        if (this.lastNetworkSizes !== sizesKey) {
+            // Network structure changed - clear all fade states to prevent memory leak
+            this.edgeFadeState.clear();
+            this.lastNetworkSizes = sizesKey;
+        }
 
         // Render connections first (so they appear behind nodes)
         if (weights) {
@@ -62,5 +73,16 @@ export class NetworkRenderer {
             inputLayout,
             weights
         });
+    }
+
+    /**
+     * Clean up resources. Should be called when NetworkPreview is destroyed.
+     */
+    destroy() {
+        this.edgeFadeState.clear();
+        this.edgeFadeState = null;
+        this.canvas = null;
+        this.positionCalculator = null;
+        this.lastNetworkSizes = null;
     }
 }

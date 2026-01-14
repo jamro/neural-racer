@@ -3,9 +3,9 @@ import NeuralCarObject from '../sim/car/NeuralCarObject';
 import { deserializeGenome } from './Genome';
 
 class HallOfFameEntry {
-  constructor(car, score, trackName) {
-    this.genomeId = car.genome.genomeId;
-    this.car = car;
+  constructor(genome, score, trackName) {
+    this.genomeId = genome.genomeId;
+    this.genome = genome;
     this.score = score;
     this.trackName = trackName;
     this.isGeneralist = false;
@@ -41,7 +41,7 @@ class HallOfFameEntry {
   serialize() {
     return {
       isGeneralist: this.isGeneralist,
-      genome: serializeGenome(this.car.genome),
+      genome: serializeGenome(this.genome),
       globalScore: this.globalScore,
       bestTrackName: this.trackName,
       scoreOnBestTrack: this.score,
@@ -162,7 +162,7 @@ export default class HallOfFame {
       }
       const allTracksEvaluation = hofEntry.allTracksEvaluation
       for(const trackEvaluation of allTracksEvaluation) {
-        this.updateCar(car, trackEvaluation.bestScore, trackEvaluation.trackName);
+        this.updateCar(car.genome, trackEvaluation.bestScore, trackEvaluation.trackName);
       }
       debug.push({globalScore: hofEntry.globalScore, count: hofEntry.allTracksEvaluation.length, ...hofEntry});
     }
@@ -214,11 +214,11 @@ export default class HallOfFame {
     }
 
     // Create and add the new entry
-    const newEntry = new HallOfFameEntry(car, score, trackName);
+    const newEntry = new HallOfFameEntry(car.genome, score, trackName);
     this._addEntry(newEntry);
     
     // add to list of all tracks too
-    extraEvaluations.forEach(evaluation => this.updateCar(car, evaluation.score, evaluation.trackName));
+    extraEvaluations.forEach(evaluation => this.updateCar(car.genome, evaluation.score, evaluation.trackName));
     
     // Sort by globalScore descending (highest first)
     trackEntries.sort((a, b) => b.globalScore - a.globalScore);
@@ -239,8 +239,8 @@ export default class HallOfFame {
     return wasAdded;
   }
 
-  updateCar(car, score, trackName) {
-    const genomeId = car.genome.genomeId;
+  updateCar(genome, score, trackName) {
+    const genomeId = genome.genomeId;
     const entry = this.genomeMap.get(genomeId);
     if(!entry) {
       console.warn(`Car with genomeId ${genomeId} not found in hall of fame`);
@@ -329,7 +329,7 @@ export default class HallOfFame {
     const remainingPool = [...specialists, ...generalists].filter(e => !pickedGenomeIds.has(e.genomeId));
     const pickedRemainder = sampleWeightedWithoutReplacement(remainingPool, count - pickedGeneralists.length);
 
-    return [...pickedGeneralists, ...pickedRemainder].map(entry => entry.car);
+    return [...pickedGeneralists, ...pickedRemainder].map(entry => entry.genome);
   }
 
   getAllGenomeIds() {
@@ -338,7 +338,7 @@ export default class HallOfFame {
     for(const track of tracks) {
       const trackEntries = this.trackData[track];
       for(const entry of trackEntries) {
-        allEntries.push(entry.car.genome.genomeId);
+        allEntries.push(entry.genome.genomeId);
       }
     }
     return allEntries;
@@ -379,7 +379,7 @@ export default class HallOfFame {
     
     return {
       trackName: leastSaturatedTrack,
-      candidates: allTrackEntries.slice(0, populationMax).map(entry => entry.car.genome)
+      candidates: allTrackEntries.slice(0, populationMax).map(entry => entry.genome)
     }
   }
 }

@@ -222,7 +222,9 @@ class CarObject {
       this.view.rotation = this.model.direction;
       this.view.crashed = this._isCrashed;
 
-      if (!this._isCrashed && !this._isFinished) {  // only render radar if the car is not crashed or finished
+      // Only call renderRadar if DEBUG_RADAR_BEAMS is enabled to avoid unnecessary method calls
+      // (renderRadar has its own early return, but avoiding the call entirely is more efficient)
+      if (!this._isCrashed && !this._isFinished && this.view.radar.visible) {
         const beamMaxLength = 100 // for rendering only
         this.view.renderRadar(
           this.radarBeams.map(beam => metersToPixels(beam !== null ? beam : beamMaxLength)),
