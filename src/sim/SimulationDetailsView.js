@@ -290,6 +290,7 @@ class SimulationDetailsView extends PIXI.Container {
   }
 
   destroy() {
+    this.sortedScores = null;
     PIXI.Ticker.shared.remove(this.onTick, this);
     this.evolutionButton.off('change');
     this.speedButton.off('valueChanged');

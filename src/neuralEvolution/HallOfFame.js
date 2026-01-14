@@ -54,7 +54,7 @@ class HallOfFameEntry {
     }
   }
 
-  update(car, score, trackName) {
+  update(score, trackName) {
     if(trackName === this.trackName && score > this.score) {
       this.score = score;
     }
@@ -246,7 +246,7 @@ export default class HallOfFame {
       console.warn(`Car with genomeId ${genomeId} not found in hall of fame`);
       return;
     }
-    entry.update(car, score, trackName);
+    entry.update(score, trackName);
     if(!this._trackEvaluationCount[trackName]) {
       this._trackEvaluationCount[trackName] = 0;
     }
@@ -316,7 +316,6 @@ export default class HallOfFame {
         picked.push(available[selectedIndex]);
         available.splice(selectedIndex, 1);
       }
-
       return picked;
     };
 
