@@ -5,6 +5,8 @@ import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
 import { loadTextures, getTextureKeys } from './loaders/AssetLoader';
 import waitForFonts from './loaders/waitForFonts';
+import RichNetworkPreview from './ui/RichNetworkPreview';
+import CarSensorPreview from './ui/CarSensorPreview';
 
 let app = null;
 let evolution = null;
@@ -92,6 +94,8 @@ function cleanup() {
             children: true,
             texture: true,
             baseTexture: true,
+            // Pixi v8: ensure GraphicsContext is destroyed for any Graphics on stage
+            context: true,
         });
         app = null;
     }

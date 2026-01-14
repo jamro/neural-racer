@@ -246,7 +246,8 @@ class Simulation {
         if(this.view) {
           this.view.off('speedChanged');
           this.view.off('evolutionModeChanged');
-          this.view.destroy({children: true, texture: false, baseTexture: false});
+          // Pixi v8: ensure GraphicsContext is destroyed (prevents _gpuContextHash growth)
+          this.view.destroy({children: true, texture: false, baseTexture: false, context: true});
         }
         this.view = null;
     }

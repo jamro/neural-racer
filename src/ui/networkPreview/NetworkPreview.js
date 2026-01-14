@@ -101,17 +101,25 @@ class NetworkPreview extends PIXI.Container {
      * Should be called when this NetworkPreview is no longer needed.
      */
     destroy(options) {
-      console.log('NetworkPreview destroying');
-        // Clean up renderer (which clears edgeFadeState Map)
-        if (this.renderer) {
-            this.renderer.destroy();
-            this.renderer = null;
-        }
+        // Pixi v8 nuance: `Graphics.destroy({...})` will NOT destroy its GraphicsContext
+        // unless you pass `{ context: true }` (or call destroy() with no options).
+        // When we pass Container-style options from the parent (children/texture/baseTexture),
+        // the internal GraphicsContext can stay alive and be retained by the renderer
+        // (`GraphicsContextSystem._gpuContextHash`), which looks like a leak.
+        const graphicsDestroyOptions =
+            options && typeof options === 'object'
+              ? { ...options, context: true }
+              : { context: true };
+                // Clean up renderer (which clears edgeFadeState Map)
+                if (this.renderer) {
+                    this.renderer.destroy();
+                    this.renderer = null;
+                }
 
         // Destroy Graphics object to free internal resources
         if (this.canvas) {
             this.canvas.clear();
-            this.canvas.destroy(options);
+            this.canvas.destroy(graphicsDestroyOptions);
             this.canvas = null;
         }
 

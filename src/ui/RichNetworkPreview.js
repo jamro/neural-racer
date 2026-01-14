@@ -63,7 +63,6 @@ class RichNetworkPreview extends PIXI.Container {
     super();
     this.masterContainer = new PIXI.Container();
     this.canvas = new PIXI.Graphics();
-    this.debugCanvas = new PIXI.Graphics();
 
     this.setupNetworkDiagram();
     this.setupIcons();
@@ -75,7 +74,6 @@ class RichNetworkPreview extends PIXI.Container {
     this.masterContainer.addChild(this.canvas);
     this.setupIconLabels();
 
-    this.addChild(this.debugCanvas);
     this.addChild(this.masterContainer);
   }
 
@@ -319,12 +317,20 @@ class RichNetworkPreview extends PIXI.Container {
   }
 
   destroy(options) {
+    // Pixi v8 nuance: `Graphics.destroy({...})` will NOT destroy its GraphicsContext
+    // unless you pass `{ context: true }` (or call destroy() with no options).
+    // When we pass Container-style options from the parent (children/texture/baseTexture),
+    // the internal GraphicsContext can stay alive and be retained by the renderer
+    // (`GraphicsContextSystem._gpuContextHash`), which looks like a leak.
+    const graphicsDestroyOptions =
+      options && typeof options === 'object'
+        ? { ...options, context: true }
+        : { context: true };
+
     // Clear Graphics objects first to free drawing resources
     if (this.canvas) {
-      this.canvas.clear();
-    }
-    if (this.debugCanvas) {
-      this.debugCanvas.clear();
+      this.canvas.destroy(graphicsDestroyOptions);
+      this.canvas = null;
     }
 
     // Destroy complex children with their own destroy methods (they're in masterContainer)
@@ -351,12 +357,6 @@ class RichNetworkPreview extends PIXI.Container {
     if (this.masterContainer) {
       this.masterContainer.destroy(options);
       this.masterContainer = null;
-    }
-
-    // Destroy debugCanvas (it's a direct child, not in masterContainer)
-    if (this.debugCanvas) {
-      this.debugCanvas.destroy(options);
-      this.debugCanvas = null;
     }
 
     // Clear canvas reference (already destroyed by masterContainer)

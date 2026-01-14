@@ -24,6 +24,7 @@ export default class CarSensorPreview extends PIXI.Container {
     this.carShadow.rotation = this.car.rotation;
     this.addChild(this.car);
 
+
     if(this.showRadar) {
       this.drawRadar()
     }
@@ -34,6 +35,7 @@ export default class CarSensorPreview extends PIXI.Container {
   }
 
   drawRadar() {
+    this.radarCanvas.clear();
     const radarBeamAngles = [
       -75 * Math.PI / 180,
       -60 * Math.PI / 180,
@@ -51,9 +53,9 @@ export default class CarSensorPreview extends PIXI.Container {
     const radarY = 0 * Math.sin(this.car.rotation)
 
     const beamLength = 120;
-    
     for (let i=1; i<radarBeamAngles.length-1; i++) {
       const angle = radarBeamAngles[i]
+      this.radarCanvas.beginPath();
       this.radarCanvas.moveTo(radarX, radarY);
       this.radarCanvas.lineTo(
         radarX + Math.cos(angle + this.car.rotation) * beamLength, 
@@ -72,6 +74,9 @@ export default class CarSensorPreview extends PIXI.Container {
       const radius = i * beamLength / steps
       const startAngle = radarBeamAngles[0] + this.car.rotation
       const endAngle = radarBeamAngles[radarBeamAngles.length - 1] + this.car.rotation
+
+      // Fill pass
+      this.radarCanvas.beginPath();
       this.radarCanvas.moveTo(
         radarX + radius * Math.cos(startAngle), 
         radarY + radius * Math.sin(startAngle)
@@ -83,6 +88,8 @@ export default class CarSensorPreview extends PIXI.Container {
         alpha: 0.04
       });
 
+      // Stroke pass
+      this.radarCanvas.beginPath();
       this.radarCanvas.moveTo(
         radarX + radius * Math.cos(startAngle), 
         radarY + radius * Math.sin(startAngle)
@@ -293,29 +300,44 @@ export default class CarSensorPreview extends PIXI.Container {
   }
 
   destroy(options) {
+    // Pixi v8 nuance: `Graphics.destroy({...})` will NOT destroy its GraphicsContext
+    // unless you pass `{ context: true }` (or call destroy() with no options).
+    // When we pass Container-style options from the parent (children/texture/baseTexture),
+    // the internal GraphicsContext can stay alive and be retained by the renderer
+    // (`GraphicsContextSystem._gpuContextHash`), which looks like a leak.
+    const graphicsDestroyOptions =
+      options && typeof options === 'object'
+        ? { ...options, context: true }
+        : { context: true };
+
     // Clear and destroy Graphics objects
     if (this.radarCanvas) {
+      this.removeChild(this.radarCanvas);
       this.radarCanvas.clear();
-      this.radarCanvas.destroy(options);
+      this.radarCanvas.destroy(graphicsDestroyOptions);
       this.radarCanvas = null;
     }
     if (this.tiresCanvas) {
+      this.removeChild(this.tiresCanvas);
       this.tiresCanvas.clear();
-      this.tiresCanvas.destroy(options);
+      this.tiresCanvas.destroy(graphicsDestroyOptions);
       this.tiresCanvas = null;
     }
     if (this.smokeCanvas) {
+      this.removeChild(this.smokeCanvas);
       this.smokeCanvas.clear();
-      this.smokeCanvas.destroy(options);
+      this.smokeCanvas.destroy(graphicsDestroyOptions);
       this.smokeCanvas = null;
     }
 
     // Destroy Sprite objects
     if (this.carShadow) {
+      this.removeChild(this.carShadow);
       this.carShadow.destroy(options);
       this.carShadow = null;
     }
     if (this.car) {
+      this.removeChild(this.car);
       this.car.destroy(options);
       this.car = null;
     }

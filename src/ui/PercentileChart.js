@@ -241,14 +241,26 @@ export default class PercentileChart extends PIXI.Container {
 
 
   destroy(options) {
+
+    // Pixi v8 nuance: `Graphics.destroy({...})` will NOT destroy its GraphicsContext
+    // unless you pass `{ context: true }` (or call destroy() with no options).
+    // When we pass Container-style options from the parent (children/texture/baseTexture),
+    // the internal GraphicsContext can stay alive and be retained by the renderer
+    // (`GraphicsContextSystem._gpuContextHash`), which looks like a leak.
+    const graphicsDestroyOptions =
+      options && typeof options === 'object'
+        ? { ...options, context: true }
+        : { context: true };
+
+
     this.canvas.clear();
-    this.canvas.destroy(options);
+    this.canvas.destroy(graphicsDestroyOptions);
     this.currentPopulationBar.clear();
-    this.currentPopulationBar.destroy(options);
+    this.currentPopulationBar.destroy(graphicsDestroyOptions);
     this.scaleShape.clear();
-    this.scaleShape.destroy(options);
+    this.scaleShape.destroy(graphicsDestroyOptions);
     this.scaleOverlay.clear();
-    this.scaleOverlay.destroy(options);
+    this.scaleOverlay.destroy(graphicsDestroyOptions);
     this.top25Label.destroy(options);
     this.timeLabel.destroy(options);
     this.passLabel.destroy(options);

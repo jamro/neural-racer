@@ -379,6 +379,11 @@ class GenerationPreview extends PIXI.Container {
   };
 
   destroy(options) {
+    const destroyOptions =
+      options && typeof options === 'object'
+        ? { ...options, context: true }
+        : options;
+
     this.layout?.destroy();
     if (this._blinkTickerAdded) {
       this._blinkTickerAdded = false;
@@ -391,7 +396,7 @@ class GenerationPreview extends PIXI.Container {
     this.interaction?.destroy();
     this._blinksByGenomeId.clear();
     this._scaleAnimationsByGenomeId.clear();
-    super.destroy(options);
+    super.destroy(destroyOptions);
   }
 }
 

@@ -270,14 +270,19 @@ class SimulationDetailsView extends PIXI.Container {
   }
 
   destroy(options) {
-    this.networkPreview.destroy(options);
+    const destroyOptions =
+      options && typeof options === 'object'
+        ? { ...options, context: true }
+        : options;
+
+    this.networkPreview.destroy(destroyOptions);
     this.networkPreview = null;
-    this.historyChart.destroy(options);
+    this.historyChart.destroy(destroyOptions);
     this.sortedScores = null;
     PIXI.Ticker.shared.remove(this.onTick, this);
     this.evolutionButton.off('change');
     this.speedButton.off('valueChanged');
-    super.destroy(options);
+    super.destroy(destroyOptions);
   }
 
 }

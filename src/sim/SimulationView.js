@@ -142,7 +142,8 @@ class SimulationView extends PIXI.Container {
     destroy() {
       this.simulationDetailsView.off('speedChanged');
       this.simulationDetailsView.off('evolutionModeChanged');
-      this.simulationDetailsView.destroy({ children: true, texture: false, baseTexture: false });
+      // Pixi v8: ensure GraphicsContext is destroyed (prevents _gpuContextHash growth)
+      this.simulationDetailsView.destroy({ children: true, texture: false, baseTexture: false, context: true });
       super.destroy();
     }
 }
