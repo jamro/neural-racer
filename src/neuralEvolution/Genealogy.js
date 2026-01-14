@@ -3,6 +3,15 @@ class Genealogy {
     this.records = [];
     this.childMap = new Map();
     this.parentMap = new Map();
+    this.extraGenomes = [];
+  }
+
+  storeExtraGenome(genome) {
+    this.extraGenomes.push(genome);
+  }
+
+  getExtraGenome(genomeId) {
+    return this.extraGenomes.find(genome => genome.genomeId === genomeId);
   }
 
   add(childGenomeId, parentGenomeIds, type) {

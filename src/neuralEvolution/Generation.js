@@ -199,7 +199,7 @@ class Generation {
       return indexedCars;
     }
 
-    riseOffsprings(count, crossoverConfig, mutationConfig, hallOfFame, genealogy) {
+    riseOffsprings(count, crossoverConfig, mutationConfig, hallOfFame, genealogy, eliminationRate = 0) {
       const { 
         blendRatio = 0.7, 
         selectionTournamentSize = 5,
@@ -223,6 +223,14 @@ class Generation {
           if(hofCandidates.length > 0) {
             parent1 = new NeuralCarObject(hofCandidates[0].clone(true));
           }
+        } else if(eliminationRate > 0 && Math.random() < eliminationRate) {
+          const randomGenome = new Genome(
+            this.cars[0].genome.genes.length
+          );
+          randomGenome.randomize();
+          parent1 = new NeuralCarObject(randomGenome);
+          genealogy.storeExtraGenome(randomGenome);
+          console.log('Random genome injected as parent');
         }
 
         // Select two different parents using tournament selection
@@ -278,19 +286,6 @@ class Generation {
       return offsprings;
     }
 
-    createRandomGenomes(count) {
-      if(this.cars.length === 0) throw new Error('No cars in generation to create random genomes from. Unknown genome length.');
-      const randomGenomes = [];
-      for (let i = 0; i < count; i++) {
-        const randomGenome = new Genome(
-          this.cars[0].genome.genes.length
-        );
-        randomGenome.randomize();
-        randomGenomes.push(randomGenome);
-      }
-      return randomGenomes;
-    }
-
     evolve(hallOfFame, config = {}, genealogy = new Genealogy()) {
       const { 
         eliteRatio = 0.02, 
@@ -322,7 +317,6 @@ class Generation {
 
       // Get elite genomes from hall of fame
       const hofEliteGenomes = hallOfFame.pickRandom(hofEliteCount).map(genome => genome.clone(true));
-      console.log()
       eliteGenomes.push(...hofEliteGenomes);
       for(let i = 0; i < hofEliteGenomes.length; i++) {
         genealogy.add(
@@ -334,28 +328,10 @@ class Generation {
       
       // Fill the rest of the population with crossover offspring
       const newGenomes = [...eliteGenomes];
-      let remainingCount = populationSize - eliteGenomes.length - hofEliteGenomes.length;
+      let remainingCount = populationSize - eliteGenomes.length
 
-      if (this.epoch > 0 && this.epoch % eliminationEpochs === 0) {
-        console.log(`Eliminating ${(100*eliminationRate).toFixed(2)}% of genomes`);
-        remainingCount -= Math.ceil(remainingCount * eliminationRate);
-      }
-      
-      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig, hallOfFame, genealogy);
+      const offsprings = this.riseOffsprings(remainingCount, crossoverConfig, mutationConfig, hallOfFame, genealogy, this.epoch % eliminationEpochs === 0 ? eliminationRate : 0);
       newGenomes.push(...offsprings);
-
-      // Fill the rest of the population with random genomes
-      if (newGenomes.length < populationSize) {
-        const randomGenomes = this.createRandomGenomes(populationSize - newGenomes.length);
-        newGenomes.push(...randomGenomes);        
-        for(let i = 0; i < randomGenomes.length; i++) {
-          genealogy.add(
-            randomGenomes[i].genomeId,
-            [],
-            'random'
-          );
-        }
-      }
       
       const newGeneration = new Generation();
       newGeneration.cars = newGenomes.map(genome => new NeuralCarObject(genome));

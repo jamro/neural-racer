@@ -199,6 +199,10 @@ class EvolutionScreen extends PIXI.Container {
             const hofEntry = this.hallOfFame.getByGenomeId(id);
             if(hofEntry) return {car: new NeuralCarObject(hofEntry.genome.clone()), score: null, stats: {}};
 
+            // check in extra genomes
+            const extraGenome = this.genealogy.getExtraGenome(id);
+            if(extraGenome) return {car: new NeuralCarObject(extraGenome.clone()), score: null, stats: {}};
+
             return null
           })
           .filter(parent => parent);
