@@ -13,7 +13,7 @@ const TEXTURE_REGISTRY = {
     tire_mark: 'assets/img/tire_mark.png',
     
     // Track textures
-    grass: 'assets/img/grass.png',
+    grass: 'assets/img/grass.jpg',
     dust: 'assets/img/dust.png',
     trackBg001: 'assets/img/track_bg_001.png',
     trackBg002: 'assets/img/track_bg_002.png',
