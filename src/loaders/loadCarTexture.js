@@ -5,10 +5,10 @@
 
 // Re-export all car texture functions from AssetLoader
 export {
-    loadCarTexture,
-    getCarTexture,
-    loadGhostTexture,
-    getGhostTexture,
-    loadShadowTexture,
-    getShadowTexture
+  loadCarTexture,
+  getCarTexture,
+  loadGhostTexture,
+  getGhostTexture,
+  loadShadowTexture,
+  getShadowTexture
 } from './AssetLoader';

@@ -6,112 +6,112 @@ import * as PIXI from 'pixi.js';
  * Textures are automatically loaded and cached by PIXI.Assets.
  */
 const TEXTURE_REGISTRY = {
-    // Car textures
-    car: 'assets/img/car_small.png',
-    ghost: 'assets/img/ghost_small.png',
-    shadow: 'assets/img/shadow_small.png',
-    tire_mark: 'assets/img/tire_mark.png',
+  // Car textures
+  car: 'assets/img/car_small.png',
+  ghost: 'assets/img/ghost_small.png',
+  shadow: 'assets/img/shadow_small.png',
+  tire_mark: 'assets/img/tire_mark.png',
     
-    // Track textures
-    grass: 'assets/img/grass.jpg',
-    dust: 'assets/img/dust.png',
-    trackBg001: 'assets/img/track_bg_001.png',
-    trackBg002: 'assets/img/track_bg_002.png',
-    trackBg003: 'assets/img/track_bg_003.png',
-    trackBg004: 'assets/img/track_bg_004.png',
-    trackBg005: 'assets/img/track_bg_005.png',
+  // Track textures
+  grass: 'assets/img/grass.jpg',
+  dust: 'assets/img/dust.png',
+  trackBg001: 'assets/img/track_bg_001.png',
+  trackBg002: 'assets/img/track_bg_002.png',
+  trackBg003: 'assets/img/track_bg_003.png',
+  trackBg004: 'assets/img/track_bg_004.png',
+  trackBg005: 'assets/img/track_bg_005.png',
     
-    // Tires textures
-    tires001: 'assets/img/tires001.png',
-    tires002: 'assets/img/tires002.png',
-    tires003: 'assets/img/tires003.png',
-    tires004: 'assets/img/tires004.png',
-    tires005: 'assets/img/tires005.png',
-    tires006: 'assets/img/tires006.png',
-    tires007: 'assets/img/tires007.png',
-    tires008: 'assets/img/tires008.png',
-    tires009: 'assets/img/tires009.png',
-    tires010: 'assets/img/tires010.png',
-    tires011: 'assets/img/tires011.png',
-    tires012: 'assets/img/tires012.png',
-    tires013: 'assets/img/tires013.png',
-    tires014: 'assets/img/tires014.png',
-    tires015: 'assets/img/tires015.png',
-    tires016: 'assets/img/tires016.png',
+  // Tires textures
+  tires001: 'assets/img/tires001.png',
+  tires002: 'assets/img/tires002.png',
+  tires003: 'assets/img/tires003.png',
+  tires004: 'assets/img/tires004.png',
+  tires005: 'assets/img/tires005.png',
+  tires006: 'assets/img/tires006.png',
+  tires007: 'assets/img/tires007.png',
+  tires008: 'assets/img/tires008.png',
+  tires009: 'assets/img/tires009.png',
+  tires010: 'assets/img/tires010.png',
+  tires011: 'assets/img/tires011.png',
+  tires012: 'assets/img/tires012.png',
+  tires013: 'assets/img/tires013.png',
+  tires014: 'assets/img/tires014.png',
+  tires015: 'assets/img/tires015.png',
+  tires016: 'assets/img/tires016.png',
     
-    // Bush textures
-    bush001: 'assets/img/bush001.png',
-    bush002: 'assets/img/bush002.png',
-    bush003: 'assets/img/bush003.png',
-    bush004: 'assets/img/bush004.png',
-    bush005: 'assets/img/bush005.png',
-    bush006: 'assets/img/bush006.png',
-    bush007: 'assets/img/bush007.png',
-    bush008: 'assets/img/bush008.png',
-    bush009: 'assets/img/bush009.png',
+  // Bush textures
+  bush001: 'assets/img/bush001.png',
+  bush002: 'assets/img/bush002.png',
+  bush003: 'assets/img/bush003.png',
+  bush004: 'assets/img/bush004.png',
+  bush005: 'assets/img/bush005.png',
+  bush006: 'assets/img/bush006.png',
+  bush007: 'assets/img/bush007.png',
+  bush008: 'assets/img/bush008.png',
+  bush009: 'assets/img/bush009.png',
 
-    // ruin
-    ruin001: 'assets/img/ruin001.png',
-    ruin002: 'assets/img/ruin002.png',
-    ruin003: 'assets/img/ruin003.png',
-    ruin004: 'assets/img/ruin004.png',
-    ruin005: 'assets/img/ruin005.png',
+  // ruin
+  ruin001: 'assets/img/ruin001.png',
+  ruin002: 'assets/img/ruin002.png',
+  ruin003: 'assets/img/ruin003.png',
+  ruin004: 'assets/img/ruin004.png',
+  ruin005: 'assets/img/ruin005.png',
     
-    // Edge textures
-    edge001: 'assets/img/edge001.png',
-    edge002: 'assets/img/edge002.png',
-    edge003: 'assets/img/edge003.png',
-    edge004: 'assets/img/edge004.png',
-    edge005: 'assets/img/edge005.png',
-    edge006: 'assets/img/edge006.png',
-    edge007: 'assets/img/edge007.png',
-    edge008: 'assets/img/edge008.png',
-    edge009: 'assets/img/edge009.png',
-    edge010: 'assets/img/edge010.png',
-    edge011: 'assets/img/edge011.png',
-    edge012: 'assets/img/edge012.png',
-    edge013: 'assets/img/edge013.png',
-    edge014: 'assets/img/edge014.png',
-    edge015: 'assets/img/edge015.png',
-    edge016: 'assets/img/edge016.png',
-    edge017: 'assets/img/edge017.png',
-    edge018: 'assets/img/edge018.png',
-    edge019: 'assets/img/edge019.png',
-    edge020: 'assets/img/edge020.png',
-    edge021: 'assets/img/edge021.png',
-    edge022: 'assets/img/edge022.png',
+  // Edge textures
+  edge001: 'assets/img/edge001.png',
+  edge002: 'assets/img/edge002.png',
+  edge003: 'assets/img/edge003.png',
+  edge004: 'assets/img/edge004.png',
+  edge005: 'assets/img/edge005.png',
+  edge006: 'assets/img/edge006.png',
+  edge007: 'assets/img/edge007.png',
+  edge008: 'assets/img/edge008.png',
+  edge009: 'assets/img/edge009.png',
+  edge010: 'assets/img/edge010.png',
+  edge011: 'assets/img/edge011.png',
+  edge012: 'assets/img/edge012.png',
+  edge013: 'assets/img/edge013.png',
+  edge014: 'assets/img/edge014.png',
+  edge015: 'assets/img/edge015.png',
+  edge016: 'assets/img/edge016.png',
+  edge017: 'assets/img/edge017.png',
+  edge018: 'assets/img/edge018.png',
+  edge019: 'assets/img/edge019.png',
+  edge020: 'assets/img/edge020.png',
+  edge021: 'assets/img/edge021.png',
+  edge022: 'assets/img/edge022.png',
 
-    crates_001: 'assets/img/crates_001.png',
-    crates_002: 'assets/img/crates_002.png',
-    crates_003: 'assets/img/crates_003.png',
-    crates_004: 'assets/img/crates_004.png',
-    crates_005: 'assets/img/crates_005.png',
-    crates_006: 'assets/img/crates_006.png',
-    crates_007: 'assets/img/crates_007.png',
-    crates_008: 'assets/img/crates_008.png',
+  crates_001: 'assets/img/crates_001.png',
+  crates_002: 'assets/img/crates_002.png',
+  crates_003: 'assets/img/crates_003.png',
+  crates_004: 'assets/img/crates_004.png',
+  crates_005: 'assets/img/crates_005.png',
+  crates_006: 'assets/img/crates_006.png',
+  crates_007: 'assets/img/crates_007.png',
+  crates_008: 'assets/img/crates_008.png',
 
-    // Finishline textures
-    finishline001: 'assets/img/finishline001.png',
+  // Finishline textures
+  finishline001: 'assets/img/finishline001.png',
 
-    // User Interface textures
-    ui_turn_icon: 'assets/img/turn_icon.png',
-    ui_throttle_icon: 'assets/img/throttle_icon.png',
-    ui_slip_icon: 'assets/img/slip_icon.png',
-    ui_frame_horizontal_line: 'assets/img/hr.png',
-    ui_frame_corner: 'assets/img/hr_corner.png',
-    button_bg_off_middle: 'assets/img/button_bg_off_middle.png',
-    button_bg_off_side: 'assets/img/button_bg_off_side.png',
-    button_bg_on_middle: 'assets/img/button_bg_on_middle.png',
-    button_bg_on_side: 'assets/img/button_bg_on_side.png',
+  // User Interface textures
+  ui_turn_icon: 'assets/img/turn_icon.png',
+  ui_throttle_icon: 'assets/img/throttle_icon.png',
+  ui_slip_icon: 'assets/img/slip_icon.png',
+  ui_frame_horizontal_line: 'assets/img/hr.png',
+  ui_frame_corner: 'assets/img/hr_corner.png',
+  button_bg_off_middle: 'assets/img/button_bg_off_middle.png',
+  button_bg_off_side: 'assets/img/button_bg_off_side.png',
+  button_bg_on_middle: 'assets/img/button_bg_on_middle.png',
+  button_bg_on_side: 'assets/img/button_bg_on_side.png',
 
-    ui_speed_slow: 'assets/img/ui_speed_slow.png',
-    ui_speed_normal: 'assets/img/ui_speed_normal.png',
-    ui_speed_fast: 'assets/img/ui_speed_fast.png',
-    ui_speed_super_fast: 'assets/img/ui_speed_super_fast.png',
-    ui_track_icon: 'assets/img/ui_track_icon.png',
-    ui_warning_icon: 'assets/img/ui_warn_icon.png',
-    ui_evo_auto: 'assets/img/ui_evo_auto.png',
-    ui_evo_manual: 'assets/img/ui_evo_manual.png',
+  ui_speed_slow: 'assets/img/ui_speed_slow.png',
+  ui_speed_normal: 'assets/img/ui_speed_normal.png',
+  ui_speed_fast: 'assets/img/ui_speed_fast.png',
+  ui_speed_super_fast: 'assets/img/ui_speed_super_fast.png',
+  ui_track_icon: 'assets/img/ui_track_icon.png',
+  ui_warning_icon: 'assets/img/ui_warn_icon.png',
+  ui_evo_auto: 'assets/img/ui_evo_auto.png',
+  ui_evo_manual: 'assets/img/ui_evo_manual.png',
 };
 
 // Promise cache to prevent duplicate concurrent loads
@@ -125,15 +125,15 @@ const texturePromises = {};
  * @returns {Promise<PIXI.Texture>}
  */
 export async function loadTexture(textureKey) {
-    const url = TEXTURE_REGISTRY[textureKey];
-    if (!url) {
-        throw new Error(`Texture key "${textureKey}" not found in registry`);
-    }
+  const url = TEXTURE_REGISTRY[textureKey];
+  if (!url) {
+    throw new Error(`Texture key "${textureKey}" not found in registry`);
+  }
     
-    if (!texturePromises[textureKey]) {
-        texturePromises[textureKey] = PIXI.Assets.load(url);
-    }
-    return await texturePromises[textureKey];
+  if (!texturePromises[textureKey]) {
+    texturePromises[textureKey] = PIXI.Assets.load(url);
+  }
+  return await texturePromises[textureKey];
 }
 
 /**
@@ -143,11 +143,11 @@ export async function loadTexture(textureKey) {
  * @returns {PIXI.Texture|null}
  */
 export function getTexture(textureKey) {
-    const url = TEXTURE_REGISTRY[textureKey];
-    if (!url) {
-        return null;
-    }
-    return PIXI.Assets.get(url) || null;
+  const url = TEXTURE_REGISTRY[textureKey];
+  if (!url) {
+    return null;
+  }
+  return PIXI.Assets.get(url) || null;
 }
 
 /**
@@ -156,46 +156,46 @@ export function getTexture(textureKey) {
  * @returns {Promise<Object<string, PIXI.Texture>>} - Object mapping keys to textures
  */
 export async function loadTextures(textureKeys, onProgress = () => {}) {
-    const report = (pct, text) => {
-        try {
-            onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);
-        } catch {
-            // ignore progress callback errors
-        }
-    };
-
-    const keys = Array.isArray(textureKeys) ? Array.from(new Set(textureKeys)) : [];
-    const total = keys.length;
-
-    if (total === 0) {
-        report(100, 'No textures to load');
-        return {};
+  const report = (pct, text) => {
+    try {
+      onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);
+    } catch {
+      // ignore progress callback errors
     }
+  };
 
-    let completed = 0;
-    report(0, `Loading textures (0/${total})`);
+  const keys = Array.isArray(textureKeys) ? Array.from(new Set(textureKeys)) : [];
+  const total = keys.length;
 
-    const promises = keys.map(key =>
-        loadTexture(key)
-            .then(texture => {
-                completed += 1;
-                report((completed / total) * 100, `Loaded "${key}" (${completed}/${total})`);
-                return { key, texture };
-            })
-            .catch(err => {
-                completed += 1;
-                report((completed / total) * 100, `Failed "${key}" (${completed}/${total})`);
-                throw err;
-            })
-    );
+  if (total === 0) {
+    report(100, 'No textures to load');
+    return {};
+  }
 
-    const results = await Promise.all(promises);
-    report(100, `Textures loaded (${total}/${total})`);
+  let completed = 0;
+  report(0, `Loading textures (0/${total})`);
 
-    return results.reduce((acc, { key, texture }) => {
-        acc[key] = texture;
-        return acc;
-    }, {});
+  const promises = keys.map(key =>
+    loadTexture(key)
+      .then(texture => {
+        completed += 1;
+        report((completed / total) * 100, `Loaded "${key}" (${completed}/${total})`);
+        return { key, texture };
+      })
+      .catch(err => {
+        completed += 1;
+        report((completed / total) * 100, `Failed "${key}" (${completed}/${total})`);
+        throw err;
+      })
+  );
+
+  const results = await Promise.all(promises);
+  report(100, `Textures loaded (${total}/${total})`);
+
+  return results.reduce((acc, { key, texture }) => {
+    acc[key] = texture;
+    return acc;
+  }, {});
 }
 
 /**
@@ -203,7 +203,7 @@ export async function loadTextures(textureKeys, onProgress = () => {}) {
  * @returns {string[]}
  */
 export function getTextureKeys() {
-    return Object.keys(TEXTURE_REGISTRY);
+  return Object.keys(TEXTURE_REGISTRY);
 }
 
 // Car textures exports

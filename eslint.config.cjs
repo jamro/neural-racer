@@ -16,7 +16,9 @@ module.exports = [
       }
     },
     rules: {
-      ...js.configs.recommended.rules
+      ...js.configs.recommended.rules,
+      indent: ['error', 2, { SwitchCase: 1 }],
+      'no-mixed-spaces-and-tabs': 'error'
     }
   },
   {
@@ -29,7 +31,9 @@ module.exports = [
       }
     },
     rules: {
-      ...js.configs.recommended.rules
+      ...js.configs.recommended.rules,
+      indent: ['error', 2, { SwitchCase: 1 }],
+      'no-mixed-spaces-and-tabs': 'error'
     }
   }
 ];

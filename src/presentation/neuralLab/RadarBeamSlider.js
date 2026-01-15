@@ -464,7 +464,7 @@ class RadarBeamSlider extends PIXI.Container {
       }
     }
 
-      // Draw beams
+    // Draw beams
     for (let i = 0; i < this.radarBeamAngles.length; i++) {
       const angle = this.radarBeamAngles[i];
       const value = this.values[i];

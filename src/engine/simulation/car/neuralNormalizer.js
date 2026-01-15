@@ -127,26 +127,26 @@ export function calculateTimeToCollision(radarBeams, speed, carLength) {
 }
 
 export function calculateSafeDirection(radarBeams, radarBeamAngles, prevSafeDirection=null) {
-    // find safe direction
-    let safeAngle = 0;
-    let safeDistance = 0;
-    for (let index = 0; index < radarBeams.length; index++) {
-      const angle = radarBeamAngles[index]
-      const distance = radarBeams[index]
-      if (distance === null || distance > safeDistance) {
-        safeAngle = angle;
-        safeDistance = distance;
-      }
+  // find safe direction
+  let safeAngle = 0;
+  let safeDistance = 0;
+  for (let index = 0; index < radarBeams.length; index++) {
+    const angle = radarBeamAngles[index]
+    const distance = radarBeams[index]
+    if (distance === null || distance > safeDistance) {
+      safeAngle = angle;
+      safeDistance = distance;
     }
-    const centralBeamIndex = Math.floor(radarBeams.length / 2);
-    if(radarBeams[centralBeamIndex] === null) {
-      safeAngle = 0;
-    }
-    if (prevSafeDirection === null) { // kip EMA
-      return safeAngle;
-    } else {
-      return prevSafeDirection + (safeAngle - prevSafeDirection) * 0.15;
-    }
+  }
+  const centralBeamIndex = Math.floor(radarBeams.length / 2);
+  if(radarBeams[centralBeamIndex] === null) {
+    safeAngle = 0;
+  }
+  if (prevSafeDirection === null) { // kip EMA
+    return safeAngle;
+  } else {
+    return prevSafeDirection + (safeAngle - prevSafeDirection) * 0.15;
+  }
 }
 
 export function calculateLeftRightBalance(radarBeams, balanceEMA=null) {

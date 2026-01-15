@@ -123,7 +123,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.epochLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
-    fill: 0xdedede,
+      fill: 0xdedede,
     };
     this.epochLabel.text = 'Epoch: ???';
     this.topContainer.addChild(this.epochLabel);
@@ -219,8 +219,8 @@ class SimulationDetailsView extends PIXI.Container {
       trackName,
       ['minScore', 'percentile25Score', 'medianScore', 'percentile75Score', 'maxScore']
     )
-    .slice(-50)
-    .map(h => [h.minScore, h.percentile25Score, h.medianScore, h.percentile75Score, h.maxScore]);
+      .slice(-50)
+      .map(h => [h.minScore, h.percentile25Score, h.medianScore, h.percentile75Score, h.maxScore]);
 
     this.historyChart.updateHistory(history);
 

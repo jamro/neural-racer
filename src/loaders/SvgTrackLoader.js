@@ -210,19 +210,19 @@ class SvgTrackLoader {
 
     for (const trackGraphic of trackGraphics) {
       if (trackGraphic.type === 'image') {
-          track.addTrackGraphic(
-            trackGraphic.filename, 
-            trackGraphic.x, 
-            trackGraphic.y, 
-            trackGraphic.width,
-            trackGraphic.height,
-            trackGraphic.rotation, 
-            trackGraphic.scaleX, 
-            trackGraphic.scaleY
-          );
-        } else if (trackGraphic.type === 'path') {
-          track.addTrackShape(trackGraphic.segments);
-        }
+        track.addTrackGraphic(
+          trackGraphic.filename, 
+          trackGraphic.x, 
+          trackGraphic.y, 
+          trackGraphic.width,
+          trackGraphic.height,
+          trackGraphic.rotation, 
+          trackGraphic.scaleX, 
+          trackGraphic.scaleY
+        );
+      } else if (trackGraphic.type === 'path') {
+        track.addTrackShape(trackGraphic.segments);
+      }
     }
     const trackName = url.split('/').pop().split('.').shift();
     track.name = trackName;

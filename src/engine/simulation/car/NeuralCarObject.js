@@ -33,55 +33,55 @@ import { NeuralNormalizer } from './neuralNormalizer';
  */
 
 class NeuralCarObject extends CarObject {
-    constructor(genome=null) {
-        super();
+  constructor(genome=null) {
+    super();
 
-        this.neuralNet = new NeuralNet(
-          [18, 32, 32, 2],
-          ["leaky_relu", "leaky_relu", "tanh"],
-          genome
-        );
-        this.genome = this.neuralNet.genome;
+    this.neuralNet = new NeuralNet(
+      [18, 32, 32, 2],
+      ["leaky_relu", "leaky_relu", "tanh"],
+      genome
+    );
+    this.genome = this.neuralNet.genome;
 
-        this.inputsNormalizer = new NeuralNormalizer(
-          this.radarBeamAngles, 
-          this.length, 
-          this.maxSpeed, 
-          this.model.yawRateMax,
-          0.5
-        )
-        this.prevTurnControl = 0
-        this.prevThrottleControl = 0
-    }
+    this.inputsNormalizer = new NeuralNormalizer(
+      this.radarBeamAngles, 
+      this.length, 
+      this.maxSpeed, 
+      this.model.yawRateMax,
+      0.5
+    )
+    this.prevTurnControl = 0
+    this.prevThrottleControl = 0
+  }
 
   control() {
-      if (this.isCrashed || this.isFinished) {
-        return;
-      }
-
-      const inputs = this.inputsNormalizer.normalize(
-        this.radarBeams, 
-        this.speed, 
-        this.prevTurnControl, 
-        this.prevThrottleControl, 
-        this.model.yawRate, 
-        this.model.slipRatio
-      )
-
-      const outputs = this.neuralNet.forward(inputs);
-      
-      const turnOutput = outputs[0];
-      const throttleOutput = outputs[1];
-
-      if (throttleOutput > 0) {
-        this.throttle(throttleOutput);
-      } else {
-        this.breakCar(-throttleOutput);
-      }
-      this.turn(turnOutput);
-      this.prevTurnControl = turnOutput;
-      this.prevThrottleControl = throttleOutput;
+    if (this.isCrashed || this.isFinished) {
+      return;
     }
+
+    const inputs = this.inputsNormalizer.normalize(
+      this.radarBeams, 
+      this.speed, 
+      this.prevTurnControl, 
+      this.prevThrottleControl, 
+      this.model.yawRate, 
+      this.model.slipRatio
+    )
+
+    const outputs = this.neuralNet.forward(inputs);
+      
+    const turnOutput = outputs[0];
+    const throttleOutput = outputs[1];
+
+    if (throttleOutput > 0) {
+      this.throttle(throttleOutput);
+    } else {
+      this.breakCar(-throttleOutput);
+    }
+    this.turn(turnOutput);
+    this.prevTurnControl = turnOutput;
+    this.prevThrottleControl = throttleOutput;
+  }
 }
 
 export default NeuralCarObject;
