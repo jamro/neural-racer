@@ -68,6 +68,9 @@ npm test
 - `src/presentation` – UI overlays (evo lab, previews, controls).
 - `public/tracks/*.svg` – sample tracks loaded at startup.
 
+## Development guide
+See `docs/dev_guide.md` for workflows (tracks, assets, config, testing, performance).
+
 ## Tech stack
 - PixiJS 8 for rendering
 - Webpack 5 + Webpack Dev Server for bundling and HMR
