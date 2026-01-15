@@ -1,11 +1,11 @@
-import * as PIXI from 'pixi.js';
+import { Container } from 'pixi.js';
 import SimulationDetailsView from './ui/SimulationDetailsView';
 import { metersToPixels } from './unitConversion'; // @TODO avoid conversion in view class
 
-class SimulationView extends PIXI.Container {
+class SimulationView extends Container {
   constructor(allowSettings = true) {
     super();
-    this.masterContainer = new PIXI.Container();
+    this.masterContainer = new Container();
     this.addChild(this.masterContainer);
 
     this.simulationDetailsView = new SimulationDetailsView(allowSettings);

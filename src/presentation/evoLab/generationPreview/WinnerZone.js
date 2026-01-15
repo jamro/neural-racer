@@ -1,9 +1,9 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 
-class WinnerZone extends PIXI.Container {
+class WinnerZone extends Container {
   constructor(width, height) {
     super();
-    this.canvas = new PIXI.Graphics();
+    this.canvas = new Graphics();
     this.addChild(this.canvas);
 
     const cornerLength = 20;
@@ -27,7 +27,7 @@ class WinnerZone extends PIXI.Container {
     this.canvas.stroke({ color: 0x333333, width: 1.3 });
 
 
-    const label = new PIXI.Text();
+    const label = new Text();
     label.text = "WINNER ZONE";
     label.style = { fontFamily: 'Exo2', fontSize: 10, fill: 0x666666 };
     label.x = 0;

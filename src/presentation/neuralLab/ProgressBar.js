@@ -1,10 +1,10 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 
-class ProgressBar extends PIXI.Container {
+class ProgressBar extends Container {
   constructor() {
     super();
     this._controlWidth = 200;
-    this.bg = new PIXI.Graphics();
+    this.bg = new Graphics();
     this.addChild(this.bg);
 
     this._colors = [0xffffff, 0xff0000, 0x6666ff, 0xffff00];
@@ -12,7 +12,7 @@ class ProgressBar extends PIXI.Container {
     this._max = 100;
     this._values = [0];
 
-    this.labelTextField = new PIXI.Text();
+    this.labelTextField = new Text();
     this.labelTextField.style = {
       fontFamily: 'Courier New',
       fontSize: 12,
@@ -22,7 +22,7 @@ class ProgressBar extends PIXI.Container {
     this.addChild(this.labelTextField);
     this.labelTextField.text = "";
 
-    this.valueTextField = new PIXI.Text();
+    this.valueTextField = new Text();
     this.valueTextField.style = {
       fontFamily: 'Courier New',
       fontSize: 12,

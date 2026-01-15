@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Ticker } from 'pixi.js';
 
 const MIN_DIST_EPS2 = 1e-6; // avoid division by zero
 
@@ -267,13 +267,13 @@ export class ParticleLayoutController {
   start() {
     if (this._tickerAdded) return;
     this._tickerAdded = true;
-    PIXI.Ticker.shared.add(this._onTick);
+    Ticker.shared.add(this._onTick);
   }
 
   stop() {
     if (!this._tickerAdded) return;
     this._tickerAdded = false;
-    PIXI.Ticker.shared.remove(this._onTick);
+    Ticker.shared.remove(this._onTick);
   }
 
   destroy() {

@@ -1,8 +1,8 @@
-import * as PIXI from 'pixi.js';
+import { Graphics, Ticker, Container } from 'pixi.js';
 
 const CONNECTION_DEFAULT_COLOR = 0xffff66;
 
-export class Connection extends PIXI.Graphics {
+export class Connection extends Graphics {
   constructor(x1, y1, x2, y2, color1 = CONNECTION_DEFAULT_COLOR, color2 = CONNECTION_DEFAULT_COLOR) {
     super();
     // Calculate distances
@@ -84,12 +84,12 @@ export class Connection extends PIXI.Graphics {
         this.parent.removeChild(this);
       }
       this.destroy();
-      PIXI.Ticker.shared.remove(this.fadeOutStep, this);
+      Ticker.shared.remove(this.fadeOutStep, this);
     }
   }
 
   fadeOut() {
-    PIXI.Ticker.shared.add(this.fadeOutStep, this);
+    Ticker.shared.add(this.fadeOutStep, this);
   }
 }
 
@@ -111,7 +111,7 @@ export class ConnectionGroup {
   }
 }
 
-class ParticleNetwork extends PIXI.Container {
+class ParticleNetwork extends Container {
 
   constructor() {
     super();

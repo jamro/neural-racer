@@ -1,17 +1,17 @@
-import * as PIXI from 'pixi.js';
+import { Container, Rectangle, Graphics, Text } from 'pixi.js';
 
 
 const DEBUG_CULLING = false;
 
-class CullingContainer extends PIXI.Container {
+class CullingContainer extends Container {
   constructor() {
     super();
-    this.renderRect = new PIXI.Rectangle(0, 0, 0, 0);
+    this.renderRect = new Rectangle(0, 0, 0, 0);
 
     if(DEBUG_CULLING) {
-      this.debugRect = new PIXI.Graphics();
+      this.debugRect = new Graphics();
       this.addChild(this.debugRect);
-      this.debugTextField = new PIXI.Text();
+      this.debugTextField = new Text();
       this.addChild(this.debugTextField);
       this.debugTextField.style = {
         fontFamily: 'Arial',
@@ -42,13 +42,13 @@ class CullingContainer extends PIXI.Container {
       if(DEBUG_CULLING && (child == this.debugRect || child == this.debugTextField)) continue
         
       if(!child.boundsRect && child.constructor.name == 'Graphics') {
-        child.boundsRect = new PIXI.Rectangle(0, 0, 0, 0);
+        child.boundsRect = new Rectangle(0, 0, 0, 0);
         child.boundsRect.x = child.x + child.bounds.minX
         child.boundsRect.y = child.y + child.bounds.minY
         child.boundsRect.width = child.bounds.maxX - child.bounds.minX
         child.boundsRect.height = child.bounds.maxY - child.bounds.minY
       } else if(!child.boundsRect && child.constructor.name == 'Sprite') {
-        child.boundsRect = new PIXI.Rectangle(0, 0, 0, 0);
+        child.boundsRect = new Rectangle(0, 0, 0, 0);
           
         // Calculate bounding rect for rotated sprite
         if (child.rotation !== 0) {

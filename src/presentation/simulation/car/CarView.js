@@ -1,46 +1,46 @@
-import * as PIXI from 'pixi.js';
+import { Container, Sprite, Graphics, Texture } from 'pixi.js';
 import { getCarTexture, getGhostTexture, getShadowTexture } from '../../../loaders/loadCarTexture';
 
 const DEBUG_RADAR_BEAMS = false;
 
-class CarView extends PIXI.Container {
+class CarView extends Container {
   constructor(w, h, radarBeamAngles) {
     super();
         
     this.radarBeamAngles = radarBeamAngles;
 
     // Get textures from module (should be preloaded)
-    const texture = getCarTexture() || PIXI.Texture.EMPTY;
-    const ghostTexture = getGhostTexture() || PIXI.Texture.EMPTY;
-    const shadowTexture = getShadowTexture() || PIXI.Texture.EMPTY;
+    const texture = getCarTexture() || Texture.EMPTY;
+    const ghostTexture = getGhostTexture() || Texture.EMPTY;
+    const shadowTexture = getShadowTexture() || Texture.EMPTY;
 
     // shadow - placed under the body, scaled proportionally to body
-    this.shadow = new PIXI.Sprite(shadowTexture);
+    this.shadow = new Sprite(shadowTexture);
     this.shadow.anchor.set(0.5, 0.5);
-    if (shadowTexture && shadowTexture !== PIXI.Texture.EMPTY && texture && texture !== PIXI.Texture.EMPTY) {
+    if (shadowTexture && shadowTexture !== Texture.EMPTY && texture && texture !== Texture.EMPTY) {
       // Scale shadow proportionally to body dimensions
       this.shadow.scale.set(w / shadowTexture.width, h / shadowTexture.height);
     }
     this.addChild(this.shadow);
 
     // body
-    this.body = new PIXI.Sprite(texture);
+    this.body = new Sprite(texture);
     this.body.anchor.set(0.5, 0.5);
-    if (texture && texture !== PIXI.Texture.EMPTY) {
+    if (texture && texture !== Texture.EMPTY) {
       this.body.scale.set(w / texture.width, h / texture.height);
     }
     this.addChild(this.body);
 
     // ghost - get texture from module (should be preloaded)
-    this.ghost = new PIXI.Sprite(ghostTexture);
+    this.ghost = new Sprite(ghostTexture);
     this.ghost.alpha = 0.9;
     this.ghost.anchor.set(0.5, 0.5);
-    if (ghostTexture && ghostTexture !== PIXI.Texture.EMPTY) {
+    if (ghostTexture && ghostTexture !== Texture.EMPTY) {
       this.ghost.scale.set(w / ghostTexture.width, h / ghostTexture.height);
     }
     this.addChild(this.ghost);
 
-    this.radar = new PIXI.Graphics();
+    this.radar = new Graphics();
     this.radar.scale.set(w / 50, h / 25);
     this.radar.moveTo(0, 0);
     this.addChild(this.radar);

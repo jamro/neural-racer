@@ -3,7 +3,7 @@ import {
   getUiEvoAutoTexture,
   getUiEvoManualTexture,
 } from '../../../loaders/AssetLoader';
-import * as PIXI from 'pixi.js';
+import { Sprite } from 'pixi.js';
 
 
 class EvolutionModeButton extends TextButton {
@@ -15,7 +15,7 @@ class EvolutionModeButton extends TextButton {
       this.refreshEvolutionAppearance();
     });
 
-    this.autoIcon = new PIXI.Sprite(getUiEvoAutoTexture());
+    this.autoIcon = new Sprite(getUiEvoAutoTexture());
     this.autoIcon.anchor.set(0.5, 0.5);
     this.autoIcon.scale.set(0.2)
     this.autoIcon.y = this.buttonHeight / 2;
@@ -24,7 +24,7 @@ class EvolutionModeButton extends TextButton {
     this.autoIcon.visible = false;
 
 
-    this.manualIcon = new PIXI.Sprite(getUiEvoManualTexture());
+    this.manualIcon = new Sprite(getUiEvoManualTexture());
     this.manualIcon.anchor.set(0.5, 0.5);
     this.manualIcon.scale.set(0.2)
     this.manualIcon.y = this.buttonHeight / 2;

@@ -1,24 +1,24 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import { getCarTexture, getShadowTexture } from '../../loaders/AssetLoader';
 
-export default class CarSensorPreview extends PIXI.Container {
+export default class CarSensorPreview extends Container {
   constructor(options = {}) {
     super();
 
     this.showRadar = options.showRadar !== undefined ? options.showRadar : true;
     this.showTires = options.showTires !== undefined ? options.showTires : true;
 
-    this.radarCanvas = new PIXI.Graphics();
+    this.radarCanvas = new Graphics();
     this.addChild(this.radarCanvas);
-    this.tiresCanvas = new PIXI.Graphics();
+    this.tiresCanvas = new Graphics();
     this.addChild(this.tiresCanvas);
-    this.smokeCanvas = new PIXI.Graphics();
+    this.smokeCanvas = new Graphics();
     this.addChild(this.smokeCanvas);
 
-    this.carShadow = new PIXI.Sprite(getShadowTexture());
+    this.carShadow = new Sprite(getShadowTexture());
     this.carShadow.anchor.set(0.5, 0.5);
     this.addChild(this.carShadow);
-    this.car = new PIXI.Sprite(getCarTexture());
+    this.car = new Sprite(getCarTexture());
     this.car.anchor.set(0.5, 0.5);
     this.car.rotation = -Math.PI *0.6;
     this.carShadow.rotation = this.car.rotation;

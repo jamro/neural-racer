@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import GenerationPreview from './GenerationPreview';
 import TiledBackground from '../simulation/track/TiledBackground';
 import TopBar from './TopBar';
@@ -16,7 +16,7 @@ import NeuralCarObject from '../../engine/simulation/car/NeuralCarObject';
 const EVOLVE_ANIMATION_DELAY = 1200;
 const EVOLVE_ANIMATION_DELAY_DECAY = 0.7;
 
-class EvolutionScreen extends PIXI.Container {
+class EvolutionScreen extends Container {
   constructor(generation, hallOfFame, config, tracks, pixiApp) {
     super();
 
@@ -35,7 +35,7 @@ class EvolutionScreen extends PIXI.Container {
     this.tiles = new TiledBackground()
     this.addChild(this.tiles);
 
-    this.background = new PIXI.Graphics();
+    this.background = new Graphics();
     this.background.rect(0, 0, 100, 100);
     this.background.fill({ color: 0x000000 });
     this.addChild(this.background);

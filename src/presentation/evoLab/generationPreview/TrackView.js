@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 
 const LABEL_STYLE = {
   fontFamily: 'Exo2',
@@ -10,7 +10,7 @@ const LABEL_STYLE = {
 
 const MAIN_COLOR = 0x333333;
 
-export default class TrackView extends PIXI.Container {
+export default class TrackView extends Container {
   constructor(maxScore, trackLength, trackWidth, unitRadius) {
     super();
     this.maxScore = maxScore;
@@ -31,7 +31,7 @@ export default class TrackView extends PIXI.Container {
       this.drawScaleLine(x, height, boxSize, `${i*10}%`);
     }
 
-    const label = new PIXI.Text();
+    const label = new Text();
     label.text = "RACE TRACK PROGRESS";
     label.style = {...LABEL_STYLE, fontSize: 12, fill: 0x666666 };
     label.x = (startX + finishX)/2;
@@ -41,7 +41,7 @@ export default class TrackView extends PIXI.Container {
   }
 
   drawScaleLine(x, height, boxSize = 10, labelText = '') {
-    const linesGraphics = new PIXI.Graphics();
+    const linesGraphics = new Graphics();
     linesGraphics.moveTo(x, +height/2-boxSize*2);
     linesGraphics.lineTo(x, +height/2);
     linesGraphics.moveTo(x, -height/2+boxSize*2);
@@ -50,7 +50,7 @@ export default class TrackView extends PIXI.Container {
     this.addChild(linesGraphics);
 
     if(labelText) {
-      const label = new PIXI.Text()
+      const label = new Text()
       label.text = labelText;
       label.style = LABEL_STYLE;
       label.x = x;
@@ -61,7 +61,7 @@ export default class TrackView extends PIXI.Container {
   }
 
   drawFinishLine(x, height, boxSize = 10, labelText = '') {
-    const linesGraphics = new PIXI.Graphics();
+    const linesGraphics = new Graphics();
 
     for(let y=-height/2; y<=height/2; y+=boxSize*2) {
       linesGraphics.rect(x, y, boxSize, Math.min(boxSize, height/2-y));
@@ -77,7 +77,7 @@ export default class TrackView extends PIXI.Container {
     this.addChild(linesGraphics);
 
     if(labelText) {
-      const label = new PIXI.Text()
+      const label = new Text()
       label.text = labelText;
       label.style = LABEL_STYLE;
       label.x = x + boxSize*2.5 - boxSize*1.25

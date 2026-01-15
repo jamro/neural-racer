@@ -1,6 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Container } from 'pixi.js';
 
-class SidePanelController extends PIXI.Container {
+class SidePanelController extends Container {
   constructor() {
     super();
     this.currentPanel = null;

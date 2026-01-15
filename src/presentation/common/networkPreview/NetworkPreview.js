@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from './NetworkPreviewConstants.js';
 import { extractWeights, getSignals, calculateWeightedInputSums } from './utils.js';
 import { NodePositionCalculator } from './NodePositionCalculator.js';
@@ -7,7 +7,7 @@ import { NetworkRenderer } from './NetworkRenderer.js';
 /**
  * Main class for rendering neural network previews
  */
-class NetworkPreview extends PIXI.Container {
+class NetworkPreview extends Container {
   /**
      * @param {Array<Object>} inputConfig "segments" config for the artificial input layer.
      *   - { range: [start, end], group: true }  // outlines this range as a group, no other change
@@ -33,7 +33,7 @@ class NetworkPreview extends PIXI.Container {
      */
   constructor(inputConfig = []) {
     super();
-    this.canvas = new PIXI.Graphics();
+    this.canvas = new Graphics();
     this.inputConfig = inputConfig;
     this.addChild(this.canvas);
         

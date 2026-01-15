@@ -1,9 +1,9 @@
-import * as PIXI from 'pixi.js';
+import { Text } from 'pixi.js';
 import Button from './Button';
 
 class TextButton extends Button {
   constructor(text = '', sidePadding = 20, toggleMode = false, inverted = false) {
-    const label = new PIXI.Text()
+    const label = new Text()
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 12,

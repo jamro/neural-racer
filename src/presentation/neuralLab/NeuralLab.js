@@ -1,19 +1,19 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text, Ticker } from 'pixi.js';
 import RichNetworkPreview from '../common/RichNetworkPreview';
 import InputController from './InputController';
 import NeuralCarObject from '../../engine/simulation/car/NeuralCarObject';
 
 const WIDGETS_V_PADDING = 25;
 
-class NeuralLab extends PIXI.Container {
+class NeuralLab extends Container {
   constructor(genome) {
     super();
     this.car = new NeuralCarObject(genome);
 
-    this.background = new PIXI.Graphics();
+    this.background = new Graphics();
     this.addChild(this.background);
 
-    this.masterContainer = new PIXI.Container();
+    this.masterContainer = new Container();
     this.addChild(this.masterContainer);
 
     this.inputController = new InputController(this.car.radarBeamAngles);
@@ -33,7 +33,7 @@ class NeuralLab extends PIXI.Container {
       this.inputController.x = (this.networkPreview.canvasWidth - this.inputController.canvasWidth) / 2;
     }
 
-    this.closeButton = new PIXI.Container();
+    this.closeButton = new Container();
     this.closeButton.interactive = true;
     this.closeButton.cursor = 'pointer';
     this.closeButton.on('click', () => {
@@ -42,7 +42,7 @@ class NeuralLab extends PIXI.Container {
         this.parent.removeChild(this);
       }
     });
-    const cross = new PIXI.Graphics();
+    const cross = new Graphics();
     cross.rect(-80, -15, 100, 30);
     cross.fill({ color: 0, alpha: 0 });
     cross.moveTo(-10, -10);
@@ -52,7 +52,7 @@ class NeuralLab extends PIXI.Container {
     cross.stroke({ color: 0xffffff });
     this.closeButton.addChild(cross);
     this.addChild(this.closeButton);
-    const closeLabel = new PIXI.Text()
+    const closeLabel = new Text()
     closeLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 16,
@@ -113,11 +113,11 @@ class NeuralLab extends PIXI.Container {
     this.renderLoop = () => {
       this.redrawNetworkPreview()
     }
-    PIXI.Ticker.shared.add(this.renderLoop);
+    Ticker.shared.add(this.renderLoop);
   }
 
   stopRenderLoop() {
-    PIXI.Ticker.shared.remove(this.renderLoop);
+    Ticker.shared.remove(this.renderLoop);
   }
 }
 

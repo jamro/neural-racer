@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { extractWeights, extractBiases } from '../utils';
 import {
   STATIC_PREVIEW_CONFIG,
@@ -160,7 +160,7 @@ class NetworkGraphBuilder {
   }
 }
 
-class EvoNetworkPreview extends PIXI.Container {
+class EvoNetworkPreview extends Container {
   constructor(
     width,
     height,
@@ -191,7 +191,7 @@ class EvoNetworkPreview extends PIXI.Container {
     this.parentGenome2 = parentGenome2;
     this.parentColor2 = parentColor2;
 
-    this.canvas = new PIXI.Graphics();
+    this.canvas = new Graphics();
     this.addChild(this.canvas);
 
     this.builder = new NetworkGraphBuilder();

@@ -1,25 +1,25 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { getUiFrameHorizontalLineTexture, getUiTrackIconTexture } from '../../loaders/AssetLoader';
 import TextButton from '../common/TextButton';
 import AutoPlayButton from './AutoPlayButton';
 
-class BottomBar extends PIXI.Container {
+class BottomBar extends Container {
   constructor() {
     super();
 
-    this.background = new PIXI.Graphics();
+    this.background = new Graphics();
     this.addChild(this.background);
 
-    this.edge = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.edge = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(this.edge);
 
-    this.trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
+    this.trackIcon = new Sprite(getUiTrackIconTexture());
     this.addChild(this.trackIcon);
     
     this.trackIcon.anchor.set(0.5, 0.5);
     this.trackIcon.scale.set(0.55);
 
-    this.trackLabel = new PIXI.Text();
+    this.trackLabel = new Text();
     this.trackLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 16,
@@ -29,7 +29,7 @@ class BottomBar extends PIXI.Container {
     this.trackLabel.anchor.set(0, 0.5);
     this.addChild(this.trackLabel);
 
-    this.populationLabel = new PIXI.Text();
+    this.populationLabel = new Text();
     this.populationLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
@@ -39,7 +39,7 @@ class BottomBar extends PIXI.Container {
     this.populationLabel.anchor.set(0, 0.5);
     this.addChild(this.populationLabel);
 
-    this.statsLabel = new PIXI.Text();
+    this.statsLabel = new Text();
     this.statsLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 12,

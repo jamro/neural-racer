@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 
 const CHART_AREA_PADDING = 10;
 const CURRENT_POPULATION_BAR_WIDTH = 30;
@@ -10,13 +10,13 @@ const RIGHT_PADDING = 10;
 const SCALE_MIN_DEFAULT = 0;
 const SCALE_MAX_DEFAULT = 1.3;
 
-export default class PercentileChart extends PIXI.Container {
+export default class PercentileChart extends Container {
   constructor(width, height) {
     super();
     this.data = []
     this.currentPopulationMax = 0;
     this.currentPopulationP70 = 0;
-    this.masterContainer = new PIXI.Container();
+    this.masterContainer = new Container();
     this.addChild(this.masterContainer);
     this.masterContainer.x = LEFT_PADDING;
     this.masterContainer.y = height + CHART_AREA_PADDING + TOP_PADDING;
@@ -24,15 +24,15 @@ export default class PercentileChart extends PIXI.Container {
     this.chartColor = 0x7777ff;
     this.areaWidth = width;
     this.areaHeight = height;
-    this.scaleShape = new PIXI.Graphics();
+    this.scaleShape = new Graphics();
 
     this.vScaleMin = SCALE_MIN_DEFAULT;
     this.vScaleMax = SCALE_MAX_DEFAULT;
-    this.canvas = new PIXI.Graphics();
-    this.currentPopulationBar = new PIXI.Graphics();
-    this.scaleOverlay = new PIXI.Graphics();
+    this.canvas = new Graphics();
+    this.currentPopulationBar = new Graphics();
+    this.scaleOverlay = new Graphics();
 
-    this.top25Label = new PIXI.Text()
+    this.top25Label = new Text()
     this.top25Label.style = {
       fontFamily: 'Exo2',
       fontSize: 9,
@@ -41,7 +41,7 @@ export default class PercentileChart extends PIXI.Container {
     this.top25Label.text = 'TOP\n25%';
     this.top25Label.anchor.set(0.5, 0);
 
-    this.timeLabel = new PIXI.Text()
+    this.timeLabel = new Text()
     this.timeLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 9,
@@ -51,7 +51,7 @@ export default class PercentileChart extends PIXI.Container {
     this.timeLabel.anchor.set(0.5, 0);
 
 
-    this.passLabel = new PIXI.Text()
+    this.passLabel = new Text()
     this.passLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 9,
@@ -60,7 +60,7 @@ export default class PercentileChart extends PIXI.Container {
     this.passLabel.text = 'PASS\nZONE';
     this.passLabel.anchor.set(1, 0.5);
 
-    this.scoreLabel = new PIXI.Text()
+    this.scoreLabel = new Text()
     this.scoreLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 9,

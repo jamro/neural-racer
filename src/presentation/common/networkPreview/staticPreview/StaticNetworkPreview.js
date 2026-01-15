@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics } from 'pixi.js';
 import { extractWeights } from '../utils';
 import {
   STATIC_PREVIEW_CONFIG,
@@ -7,7 +7,7 @@ import {
   buildLayersFromWeights,
 } from './StaticPreviewCommon';
 
-class StaticNetworkPreview extends PIXI.Container {
+class StaticNetworkPreview extends Container {
   constructor(width, height, neuralNetwork, genome, color = 0xffffff) {
     super();
     this.neuralNetwork = neuralNetwork;
@@ -16,7 +16,7 @@ class StaticNetworkPreview extends PIXI.Container {
     this.canvasHeight = height;
     this.color = color;
 
-    this.canvas = new PIXI.Graphics();
+    this.canvas = new Graphics();
     this.addChild(this.canvas);
     this.renderer = new NetworkDiagramRenderer(this.canvas);
 

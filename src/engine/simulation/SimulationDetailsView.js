@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite, Text, Ticker } from 'pixi.js';
 import RichNetworkPreview from '../../presentation/common/RichNetworkPreview';
 import PercentileChart from '../../presentation/simulation/ui/PercentileChart';
 import { calculateScore } from '../../evolution/fitness';
@@ -15,34 +15,34 @@ const TITLES_HEIGHT = 30;
 const WIDGET_HEIGHT = 210;
 const WIDGET_BOTTOM_PADDING = 10;
 
-class SimulationDetailsView extends PIXI.Container {
+class SimulationDetailsView extends Container {
 
   constructor(allowSettings = true) {
     super();
 
-    this.bottomContainer = new PIXI.Container();
+    this.bottomContainer = new Container();
     this.addChild(this.bottomContainer);
 
-    this.bg = new PIXI.Graphics();
+    this.bg = new Graphics();
     this.bottomContainer.addChild(this.bg);
 
-    this.topHr = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.topHr = new Sprite(getUiFrameHorizontalLineTexture());
     this.bottomContainer.addChild(this.topHr);
 
-    this.bottomHr = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.bottomHr = new Sprite(getUiFrameHorizontalLineTexture());
     this.bottomContainer.addChild(this.bottomHr);
 
     this.historyChart = new PercentileChart(500, 120);
     this.bottomContainer.addChild(this.historyChart);
 
-    PIXI.Ticker.shared.add(this.onTick, this);
+    Ticker.shared.add(this.onTick, this);
 
     this.networkPreview = new RichNetworkPreview();
     this.bottomContainer.addChild(this.networkPreview);
 
     this.sortedScores = null
 
-    this.scoresTitle = new PIXI.Text();
+    this.scoresTitle = new Text();
     this.scoresTitle.style = {
       fontFamily: 'Exo2',
       fontSize: 16,
@@ -52,7 +52,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.scoresTitle.anchor.set(0.5, 0.5);
     this.bottomContainer.addChild(this.scoresTitle);
 
-    this.neuralTitle = new PIXI.Text();
+    this.neuralTitle = new Text();
     this.neuralTitle.style = {
       fontFamily: 'Exo2',
       fontSize: 16,
@@ -62,22 +62,22 @@ class SimulationDetailsView extends PIXI.Container {
     this.neuralTitle.anchor.set(0.5, 0.5);
     this.bottomContainer.addChild(this.neuralTitle);
 
-    this.stagnationWarning = new PIXI.Container();
+    this.stagnationWarning = new Container();
     this.stagnationWarning.visible = false;
-    const stagnationBg = new PIXI.Graphics();
+    const stagnationBg = new Graphics();
     this.stagnationWarning.addChild(stagnationBg);
     stagnationBg.rect(-2, -12, 100, 22);
     stagnationBg.fill({
       color: 0x000000,
       alpha: 0.3
     });
-    const warningIcon = new PIXI.Sprite(getUiWarningIconTexture());
+    const warningIcon = new Sprite(getUiWarningIconTexture());
     this.stagnationWarning.addChild(warningIcon);
     warningIcon.x = 10;
     warningIcon.anchor.set(0.5, 0.5);
     warningIcon.scale.set(0.18);
     this.bottomContainer.addChild(this.stagnationWarning);
-    const stagnationWarningText = new PIXI.Text();
+    const stagnationWarningText = new Text();
     stagnationWarningText.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
@@ -91,14 +91,14 @@ class SimulationDetailsView extends PIXI.Container {
     this.topContainer = new Frame(180, allowSettings ? 180 : 70);
     this.addChild(this.topContainer);
 
-    const trackIcon = new PIXI.Sprite(getUiTrackIconTexture());
+    const trackIcon = new Sprite(getUiTrackIconTexture());
     this.topContainer.addChild(trackIcon);
     trackIcon.x = 22;
     trackIcon.y = 22;
     trackIcon.anchor.set(0.5, 0.5);
     trackIcon.scale.set(0.3);
 
-    this.trackLabel = new PIXI.Text();
+    this.trackLabel = new Text();
     this.trackLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 14,
@@ -109,7 +109,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.trackLabel.x = 48;
     this.trackLabel.y = 10;
 
-    this.epochDescriptionLabel = new PIXI.Text();
+    this.epochDescriptionLabel = new Text();
     this.epochDescriptionLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 10,
@@ -119,7 +119,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.epochDescriptionLabel.x = this.trackLabel.x+1;
     this.epochDescriptionLabel.y = 25;
 
-    this.epochLabel = new PIXI.Text();
+    this.epochLabel = new Text();
     this.epochLabel.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
@@ -279,7 +279,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.networkPreview = null;
     this.historyChart.destroy(destroyOptions);
     this.sortedScores = null;
-    PIXI.Ticker.shared.remove(this.onTick, this);
+    Ticker.shared.remove(this.onTick, this);
     this.evolutionButton.off('change');
     this.speedButton.off('valueChanged');
     super.destroy(destroyOptions);

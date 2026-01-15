@@ -1,11 +1,11 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import TiledBackground from './TiledBackground';
 import { getTexture } from '../../../loaders/AssetLoader';
 import CullingContainer from './CullingContainer';
 import DriftMarks from './DriftMarks';
 import DustContainer from './DustContainer';
 
-class TrackView extends PIXI.Container {
+class TrackView extends Container {
   constructor(wallWidth) {
     super();
     this._pixiApp = null;
@@ -50,11 +50,11 @@ class TrackView extends PIXI.Container {
 
     this.graphicsContainer = new CullingContainer();
         
-    this.canvas = new PIXI.Graphics();
+    this.canvas = new Graphics();
     this.driftMarks = new DriftMarks(this.pixiApp);
     this.dustContainer = new DustContainer();
 
-    this.carsContainer = new PIXI.Container();
+    this.carsContainer = new Container();
     this.addChild(this.carsContainer);
         
     this._graphicsQuality = "low";
@@ -104,7 +104,7 @@ class TrackView extends PIXI.Container {
   }
 
   addTrackShape(shape, color = 0xc39d75) {
-    const graphics = new PIXI.Graphics();
+    const graphics = new Graphics();
     graphics.moveTo(shape[0].ax, shape[0].ay);
     for (const segment of shape) {
       graphics.lineTo(segment.bx, segment.by);
@@ -118,7 +118,7 @@ class TrackView extends PIXI.Container {
     if (!trackBgTexture) {
       throw new Error(`Track texture "${filename}" not found`);
     }
-    const sprite = new PIXI.Sprite(trackBgTexture);
+    const sprite = new Sprite(trackBgTexture);
       
     sprite.x = x;
     sprite.y = y;

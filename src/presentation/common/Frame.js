@@ -1,20 +1,20 @@
-import * as PIXI from 'pixi.js';
+import { Container, Sprite, Graphics, Text } from 'pixi.js';
 import { getUiFrameHorizontalLineTexture, getUiFrameCornerTexture } from '../../loaders/AssetLoader';
 
-export default class Frame extends PIXI.Container {
+export default class Frame extends Container {
   constructor(width, height) {
     super();
     this.frameWidth = width;
     this.frameHeight = height;
 
-    const topLine = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    const topLine = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(topLine);
     topLine.x = 0;
     topLine.y = 0
     topLine.width = width;
     topLine.anchor.set(0, 1);
 
-    const bottomLine = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    const bottomLine = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(bottomLine);
     bottomLine.x = 0;
     bottomLine.y = height
@@ -22,7 +22,7 @@ export default class Frame extends PIXI.Container {
     bottomLine.anchor.set(0, 1);
     bottomLine.scale.y = -1;
 
-    const leftLine = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    const leftLine = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(leftLine);
     leftLine.x = 0;
     leftLine.y = 0
@@ -31,7 +31,7 @@ export default class Frame extends PIXI.Container {
     leftLine.scale.y = -1;
     leftLine.rotation = Math.PI/2;
 
-    const rightLine = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    const rightLine = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(rightLine);
     rightLine.x = width;
     rightLine.y = 0
@@ -40,27 +40,27 @@ export default class Frame extends PIXI.Container {
     rightLine.scale.y = -1;
     rightLine.rotation = -Math.PI/2;
 
-    const cornerTL = new PIXI.Sprite(getUiFrameCornerTexture());
+    const cornerTL = new Sprite(getUiFrameCornerTexture());
     this.addChild(cornerTL);
     cornerTL.x = 0;
     cornerTL.y = 0;
     cornerTL.anchor.set(1, 1);
 
-    const cornerTR = new PIXI.Sprite(getUiFrameCornerTexture());
+    const cornerTR = new Sprite(getUiFrameCornerTexture());
     this.addChild(cornerTR);
     cornerTR.x = width;
     cornerTR.y = 0;
     cornerTR.anchor.set(1, 1);
     cornerTR.scale.x = -1;
 
-    const cornerBL = new PIXI.Sprite(getUiFrameCornerTexture());
+    const cornerBL = new Sprite(getUiFrameCornerTexture());
     this.addChild(cornerBL);
     cornerBL.x = 0;
     cornerBL.y = height;
     cornerBL.anchor.set(1, 1);
     cornerBL.scale.y = -1;
 
-    const cornerBR = new PIXI.Sprite(getUiFrameCornerTexture());
+    const cornerBR = new Sprite(getUiFrameCornerTexture());
     this.addChild(cornerBR);
     cornerBR.x = width;
     cornerBR.y = height;
@@ -69,7 +69,7 @@ export default class Frame extends PIXI.Container {
     cornerBR.scale.y = -1;
 
 
-    const bg = new PIXI.Graphics();
+    const bg = new Graphics();
     this.addChild(bg);
     bg.rect(0, 0, width, height);
     bg.fill({
@@ -80,8 +80,8 @@ export default class Frame extends PIXI.Container {
   }
 
   addHorizontalLine(y, text = "") {
-    const container = new PIXI.Container();
-    const label = new PIXI.Text();
+    const container = new Container();
+    const label = new Text();
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 10,
@@ -97,7 +97,7 @@ export default class Frame extends PIXI.Container {
     label.anchor.set(0, 0.5);
 
     const leftLineWidth = 12;
-    const line = new PIXI.Graphics();
+    const line = new Graphics();
     this.addChild(line);
     line.moveTo(1, y-1);
     line.lineTo(leftLineWidth, y-1);

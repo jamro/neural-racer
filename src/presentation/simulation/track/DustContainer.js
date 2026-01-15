@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { ParticleContainer, Particle } from 'pixi.js';
 import { getDustTexture } from '../../../loaders/AssetLoader';
 
 
@@ -10,7 +10,7 @@ const DUST_COLORS = [
   0xf6d3c5
 ]
 
-class DustContainer extends PIXI.ParticleContainer {
+class DustContainer extends ParticleContainer {
   constructor() {
     super({
       dynamicProperties: {
@@ -64,7 +64,7 @@ class DustContainer extends PIXI.ParticleContainer {
   }
 
   createDustParticle(x, y, vx, vy, amount) {
-    let particle = new PIXI.Particle({
+    let particle = new Particle({
       texture: this.dustTexture,
       x: x + Math.random() * 4 - 2,
       y: y + Math.random() * 4 - 2,

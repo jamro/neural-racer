@@ -1,9 +1,9 @@
-import * as PIXI from 'pixi.js';
+import { Assets } from 'pixi.js';
 
 /**
  * Unified texture registry configuration.
  * All texture assets are defined here with their asset URLs.
- * Textures are automatically loaded and cached by PIXI.Assets.
+ * Textures are automatically loaded and cached by Assets.
  */
 const TEXTURE_REGISTRY = {
   // Car textures
@@ -120,9 +120,9 @@ const texturePromises = {};
 /**
  * Generic function to load a texture by key.
  * Returns a promise that resolves to the texture.
- * The texture is cached internally by PIXI.Assets.load().
+ * The texture is cached internally by Assets.load().
  * @param {string} textureKey - The key from TEXTURE_REGISTRY
- * @returns {Promise<PIXI.Texture>}
+ * @returns {Promise<Texture>}
  */
 export async function loadTexture(textureKey) {
   const url = TEXTURE_REGISTRY[textureKey];
@@ -131,7 +131,7 @@ export async function loadTexture(textureKey) {
   }
     
   if (!texturePromises[textureKey]) {
-    texturePromises[textureKey] = PIXI.Assets.load(url);
+    texturePromises[textureKey] = Assets.load(url);
   }
   return await texturePromises[textureKey];
 }
@@ -140,20 +140,20 @@ export async function loadTexture(textureKey) {
  * Generic function to get a texture by key if it's already loaded, otherwise returns null.
  * Use this if you need synchronous access (texture must be preloaded).
  * @param {string} textureKey - The key from TEXTURE_REGISTRY
- * @returns {PIXI.Texture|null}
+ * @returns {Texture|null}
  */
 export function getTexture(textureKey) {
   const url = TEXTURE_REGISTRY[textureKey];
   if (!url) {
     return null;
   }
-  return PIXI.Assets.get(url) || null;
+  return Assets.get(url) || null;
 }
 
 /**
  * Load multiple textures by their keys.
  * @param {string[]} textureKeys - Array of texture keys from TEXTURE_REGISTRY
- * @returns {Promise<Object<string, PIXI.Texture>>} - Object mapping keys to textures
+ * @returns {Promise<Object<string, Texture>>} - Object mapping keys to textures
  */
 export async function loadTextures(textureKeys, onProgress = () => {}) {
   const report = (pct, text) => {

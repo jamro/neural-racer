@@ -1,14 +1,14 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import { getUiFrameHorizontalLineTexture } from '../../../loaders/AssetLoader';
 import TextButton from '../../../presentation/common/TextButton';
 
-class SidePanel extends PIXI.Container {
+class SidePanel extends Container {
   constructor() {
     super();
-    this.background = new PIXI.Graphics();
+    this.background = new Graphics();
     this.addChild(this.background);
 
-    this.edge = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.edge = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(this.edge);
     this.edge.anchor.set(1, 1);
     this.edge.rotation = -Math.PI/2;
@@ -19,7 +19,7 @@ class SidePanel extends PIXI.Container {
       width: 100,
       height: 100
     }
-    this.masterContainer = new PIXI.Container();
+    this.masterContainer = new Container();
     this.addChild(this.masterContainer);
 
     this.neuralTestButton = new TextButton("Neural Test", 16, false);

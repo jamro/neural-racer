@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Rectangle, Point } from 'pixi.js';
 
 /**
  * Handles pointer interactions for GenerationPreview particles.
@@ -43,7 +43,7 @@ export class ParticleInteractionController {
 
     const halfWidth = trackLength / 2 + leftPadding;
     const halfHeight = trackWidth / 2 + trackCenterYOffset + this.unitRadius * 8;
-    this.container.hitArea = new PIXI.Rectangle(
+    this.container.hitArea = new Rectangle(
       -halfWidth,
       -halfHeight,
       halfWidth * 2,
@@ -100,7 +100,7 @@ export class ParticleInteractionController {
   }
 
   _getLocalPoint(event) {
-    const globalPoint = event?.global ?? new PIXI.Point(event.globalX, event.globalY);
+    const globalPoint = event?.global ?? new Point(event.globalX, event.globalY);
     return this.container.toLocal(globalPoint);
   }
 }

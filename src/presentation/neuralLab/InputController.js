@@ -1,9 +1,9 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import Slider from './Slider';
 import RadarBeamSlider from './RadarBeamSlider';
 import { getUiTurnIconTexture, getUiThrottleIconTexture, getUiSlipIconTexture } from '../../loaders/AssetLoader';
 
-export default class InputController extends PIXI.Container {
+export default class InputController extends Container {
   constructor(radarBeamAngles) {
     super();
 
@@ -16,7 +16,7 @@ export default class InputController extends PIXI.Container {
     const SLIDER_SPACING = 50; // spacing between sliders in a group
     const SLIP_ICON_OFFSET = 25; // offset for slip icon relative to slider
 
-    this.background = new PIXI.Graphics();
+    this.background = new Graphics();
     this.addChild(this.background);
 
     this.radarBeamSlider = new RadarBeamSlider(radarBeamAngles);
@@ -117,7 +117,7 @@ export default class InputController extends PIXI.Container {
     this.turnSlider.y = Y_POS_YAW_TURN_GROUP + SLIDER_SPACING;
 
 
-    this.throttleIcon = new PIXI.Sprite(
+    this.throttleIcon = new Sprite(
       getUiThrottleIconTexture()
     );
     this.addChild(this.throttleIcon);
@@ -126,7 +126,7 @@ export default class InputController extends PIXI.Container {
     this.throttleIcon.x = 50;
     this.throttleIcon.y = Y_POS_SPEED_THROTTLE_GROUP + SLIDER_SPACING;
 
-    this.turnIcon = new PIXI.Sprite(
+    this.turnIcon = new Sprite(
       getUiTurnIconTexture()
     );
     this.addChild(this.turnIcon);
@@ -135,7 +135,7 @@ export default class InputController extends PIXI.Container {
     this.turnIcon.x = 50;
     this.turnIcon.y = Y_POS_YAW_TURN_GROUP + SLIDER_SPACING;
 
-    this.slipIcon = new PIXI.Sprite(
+    this.slipIcon = new Sprite(
       getUiSlipIconTexture()
     );
     this.addChild(this.slipIcon);

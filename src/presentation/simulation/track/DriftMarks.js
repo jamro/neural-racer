@@ -1,21 +1,21 @@
-import * as PIXI from 'pixi.js';
+import { Container, Sprite, Texture, RenderTexture } from 'pixi.js';
 import { getTireMarkTexture } from '../../../loaders/AssetLoader';
 
 const TEXTURE_MARGIN = 32;
 const TEXTURE_SIZE = 2048
 const CELL_SIZE = TEXTURE_SIZE - TEXTURE_MARGIN * 2;
 
-class DriftMarks extends PIXI.Container {
+class DriftMarks extends Container {
   constructor(pixiApp) {
     super();
 
     this.pixiApp = pixiApp;
-    const brushTexture = getTireMarkTexture() || PIXI.Texture.EMPTY;
+    const brushTexture = getTireMarkTexture() || Texture.EMPTY;
 
     this.brushLength = brushTexture.width * 0.75; // allow overlap of the brush
 
     this.renderCanvas = []
-    this.brush = new PIXI.Sprite(brushTexture);
+    this.brush = new Sprite(brushTexture);
     this.brush.anchor.set(0.5);
     this.brushAlphaMin = 0.05;
     this.brushAlphaMax = 0.5;
@@ -31,12 +31,12 @@ class DriftMarks extends PIXI.Container {
       this.renderCanvas[indexX] = [];
     }
     if(!this.renderCanvas[indexX][indexY]) {
-      const texture = PIXI.RenderTexture.create({
+      const texture = RenderTexture.create({
         width: TEXTURE_SIZE,
         height: TEXTURE_SIZE,
         resolution: 1,
       });
-      const sprite = new PIXI.Sprite(texture);
+      const sprite = new Sprite(texture);
       this.addChild(sprite);
       sprite.position.set(
         indexX * CELL_SIZE - TEXTURE_MARGIN, 

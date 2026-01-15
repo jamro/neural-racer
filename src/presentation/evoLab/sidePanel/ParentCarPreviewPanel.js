@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Text } from 'pixi.js';
 import CarPreviewPanel from './CarPreviewPanel';
 import { formatTime } from '../../../presentation/common/formatters';
 
@@ -40,7 +40,7 @@ class ParentCarPreviewPanel extends CarPreviewPanel {
       this.addArrow(this._contentBoundaries.width*0.5, 230);
     }
     
-    this.statsInfo = new PIXI.Text()
+    this.statsInfo = new Text()
     this.statsInfo.style = {
       fontFamily: 'Exo2',
       fontSize: 14,

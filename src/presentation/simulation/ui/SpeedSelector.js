@@ -1,15 +1,15 @@
 import ToggleButtonGroup from '../../common/ToggleButtonGroup';
 import Button from '../../common/Button';
-import * as PIXI from 'pixi.js';
+import { Sprite } from 'pixi.js';
 import { getUiSpeedSlowTexture, getUiSpeedNormalTexture, getUiSpeedFastTexture, getUiSpeedSuperFastTexture } from '../../../loaders/AssetLoader';
 
 class SpeedSelector extends ToggleButtonGroup {
   constructor() {
     super();
-    const slowGraphic = new PIXI.Sprite(getUiSpeedSlowTexture());
-    const normalGraphic = new PIXI.Sprite(getUiSpeedNormalTexture());
-    const fastGraphic = new PIXI.Sprite(getUiSpeedFastTexture());
-    const superFastGraphic = new PIXI.Sprite(getUiSpeedSuperFastTexture());
+    const slowGraphic = new Sprite(getUiSpeedSlowTexture());
+    const normalGraphic = new Sprite(getUiSpeedNormalTexture());
+    const fastGraphic = new Sprite(getUiSpeedFastTexture());
+    const superFastGraphic = new Sprite(getUiSpeedSuperFastTexture());
     slowGraphic.anchor.set(0.5, 0.45);
     normalGraphic.anchor.set(0.5, 0.45);
     fastGraphic.anchor.set(0.5, 0.45);

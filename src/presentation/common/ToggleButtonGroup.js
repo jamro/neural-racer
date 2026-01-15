@@ -1,6 +1,6 @@
-import * as PIXI from 'pixi.js';
+import { Container } from 'pixi.js';
 
-class ToggleButtonGroup extends PIXI.Container {
+class ToggleButtonGroup extends Container {
   constructor(spacing = 5) {
     super();
     

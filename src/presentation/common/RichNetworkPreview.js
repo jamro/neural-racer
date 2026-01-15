@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import NetworkPreview from './networkPreview/NetworkPreview';
 import { getUiTurnIconTexture, getUiThrottleIconTexture } from '../../loaders/AssetLoader';
 import { COLOR_POSITIVE, COLOR_NEGATIVE } from './networkPreview/NetworkPreviewConstants';
@@ -58,11 +58,11 @@ const NETWORK_CONFIG = [
   { index: 17 },
 ];
 
-class RichNetworkPreview extends PIXI.Container {
+class RichNetworkPreview extends Container {
   constructor() {
     super();
-    this.masterContainer = new PIXI.Container();
-    this.canvas = new PIXI.Graphics();
+    this.masterContainer = new Container();
+    this.canvas = new Graphics();
 
     this.setupNetworkDiagram();
     this.setupIcons();
@@ -104,7 +104,7 @@ class RichNetworkPreview extends PIXI.Container {
   }
 
   createIcon(texture) {
-    const icon = new PIXI.Sprite(texture);
+    const icon = new Sprite(texture);
     icon.anchor.set(0, 0.5);
     icon.alpha = ICON_CONFIG.ALPHA;
     return icon;
@@ -223,7 +223,7 @@ class RichNetworkPreview extends PIXI.Container {
 
   // Helper methods
   addLabel(text, props = {}) {
-    const label = new PIXI.Text();
+    const label = new Text();
     this.masterContainer.addChild(label);
     label.style = {
       fontFamily: 'Exo2',

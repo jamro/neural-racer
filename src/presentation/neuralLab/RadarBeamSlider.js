@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Circle, Sprite, Text } from 'pixi.js';
 import { getShadowTexture, getCarTexture } from '../../loaders/AssetLoader';
 
 const RADIUS_PIXELS = 250; // Radius of radar beams in pixels
@@ -39,7 +39,7 @@ const SCALE_LABEL_OFFSET = 0; // pixels outward from the arc (0 => bottom edge s
 const SCALE_ANCHOR_PAIR_INDEX = 1;
 const TAU = Math.PI * 2;
 
-class RadarBeamSlider extends PIXI.Container {
+class RadarBeamSlider extends Container {
   /**
    * @param {number[]} radarBeamAngles - Array of angles in radians
    */
@@ -83,11 +83,11 @@ class RadarBeamSlider extends PIXI.Container {
     this._pointerId = null;
 
     // Create graphics for rings, labels, beams and knobs
-    this.ringsGraphics = new PIXI.Graphics();
-    this.scaleLabels = new PIXI.Container();
+    this.ringsGraphics = new Graphics();
+    this.scaleLabels = new Container();
     this._scaleLabelPool = [];
-    this.beamsGraphics = new PIXI.Graphics();
-    this.knobsGraphics = new PIXI.Graphics();
+    this.beamsGraphics = new Graphics();
+    this.knobsGraphics = new Graphics();
     this.addChild(this.ringsGraphics);
     this.addChild(this.scaleLabels);
     this.addChild(this.beamsGraphics);
@@ -101,7 +101,7 @@ class RadarBeamSlider extends PIXI.Container {
     // This keeps circles from extending above/below +/- HEIGHT_MAX/2.
     const clipW = (RADIUS_PIXELS + HIT_AREA_PADDING) * 2;
     const clipH = HEIGHT_MAX;
-    this._clipMask = new PIXI.Graphics();
+    this._clipMask = new Graphics();
     this._clipMask.rect(-clipW / 2, -clipH / 2, clipW, clipH);
     this._clipMask.fill({ color: 0xffffff, alpha: 1 });
     // Mask affects only rendering; it doesn't block pointer events (hitArea handles that).
@@ -114,7 +114,7 @@ class RadarBeamSlider extends PIXI.Container {
       ? Math.max(...this.beamEffectiveRadii, RADIUS_PIXELS)
       : RADIUS_PIXELS;
     const hitAreaSize = maxEffectiveRadius + HIT_AREA_PADDING;
-    this.hitArea = new PIXI.Circle(0, 0, hitAreaSize);
+    this.hitArea = new Circle(0, 0, hitAreaSize);
 
     // Event listeners
     this.on('pointerdown', this._onPointerDown, this);
@@ -124,10 +124,10 @@ class RadarBeamSlider extends PIXI.Container {
 
 
     // add car graphic
-    this.carShadow = new PIXI.Sprite(getShadowTexture());
+    this.carShadow = new Sprite(getShadowTexture());
     this.carShadow.anchor.set(0.5, 0.5);
     this.addChild(this.carShadow);
-    this.car = new PIXI.Sprite(getCarTexture());
+    this.car = new Sprite(getCarTexture());
     this.car.anchor.set(0.5, 0.5);
     this.car.x = 0
     this.carShadow.x = this.car.x;
@@ -346,7 +346,7 @@ class RadarBeamSlider extends PIXI.Container {
 
   _getScaleLabel(idx) {
     while (this._scaleLabelPool.length <= idx) {
-      const t = new PIXI.Text();
+      const t = new Text();
       t.style = {
         fontFamily: 'Exo2',
         fontSize: SCALE_LABEL_FONT_SIZE,

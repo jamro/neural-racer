@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 
 const MAIN_COLOR = 0x333333;
 const LABEL_STYLE = {
@@ -9,11 +9,11 @@ const LABEL_STYLE = {
   align: 'center',
 };
 
-class NewGenArea extends PIXI.Container {
+class NewGenArea extends Container {
   constructor(width, height) {
     super();
 
-    const label = new PIXI.Text();
+    const label = new Text();
     label.text = "NEXT GENERATION";
     label.style = LABEL_STYLE;
     label.x = width/2;
@@ -23,7 +23,7 @@ class NewGenArea extends PIXI.Container {
 
     const cornerLength = 10;
 
-    this.canvas = new PIXI.Graphics();
+    this.canvas = new Graphics();
     this.addChild(this.canvas);
 
     this.canvas.moveTo(0, -height/2);

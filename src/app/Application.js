@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Application as PixiApplication, Ticker } from 'pixi.js';
 import Evolution from '../engine/evolution/Evolution';
 import Config from '../Config';
 import Preloader from '../loaders/Preloader';
@@ -67,7 +67,7 @@ class Application {
   async initializeRenderer() {
     this.preloader.setProgress(86, 'Initializing renderer');
 
-    this.app = new PIXI.Application();
+    this.app = new PixiApplication();
     await this.app.init({
       resizeTo: this.window,
       backgroundColor: 0xa19a41,
@@ -82,7 +82,7 @@ class Application {
   async initializeEvolution(tracks) {
     this.preloader.setProgress(96, 'Initializing evolution');
 
-    PIXI.Ticker.shared.maxFPS = this.config.frameRate || 30;
+    Ticker.shared.maxFPS = this.config.frameRate || 30;
     this.config.setStandardMode();
 
     this.evolution = new Evolution(this.app, tracks);

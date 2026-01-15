@@ -1,7 +1,7 @@
-import * as PIXI from 'pixi.js';
+import { Container, TilingSprite, Texture } from 'pixi.js';
 import { getGrassTexture } from '../../../loaders/loadTrackTexture';
 
-class TiledBackground extends PIXI.Container {
+class TiledBackground extends Container {
   constructor(texture) {
     super();
     this.tilingSprite = null;
@@ -21,13 +21,13 @@ class TiledBackground extends PIXI.Container {
         this._cachedTexture = this.texture;
       } else {
         // Get texture from module (should be preloaded)
-        this._cachedTexture = getGrassTexture() || PIXI.Texture.EMPTY;
+        this._cachedTexture = getGrassTexture() || Texture.EMPTY;
       }
     }
 
     // Create tiling sprite if it doesn't exist
     if (!this.tilingSprite) {
-      this.tilingSprite = new PIXI.TilingSprite({
+      this.tilingSprite = new TilingSprite({
         texture: this._cachedTexture,
         width: width,
         height: height,
@@ -71,8 +71,8 @@ class TiledBackground extends PIXI.Container {
         this._cachedTexture = this.texture;
       } else {
         // Get texture from module (should be preloaded)
-        this._cachedTexture = getGrassTexture() || PIXI.Texture.EMPTY;
-        if (!this._cachedTexture || this._cachedTexture === PIXI.Texture.EMPTY) {
+        this._cachedTexture = getGrassTexture() || Texture.EMPTY;
+        if (!this._cachedTexture || this._cachedTexture === Texture.EMPTY) {
           // Texture not loaded yet, can't render synchronously
           return;
         }
@@ -81,7 +81,7 @@ class TiledBackground extends PIXI.Container {
 
     // Create tiling sprite if it doesn't exist
     if (!this.tilingSprite) {
-      this.tilingSprite = new PIXI.TilingSprite({
+      this.tilingSprite = new TilingSprite({
         texture: this._cachedTexture,
         width: width,
         height: height,

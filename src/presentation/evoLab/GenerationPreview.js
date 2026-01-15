@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, ParticleContainer, Particle, Ticker } from 'pixi.js';
 import { createCircleParticleTexture } from './generationPreview/createCircleParticleTexture';
 import { ParticleLayoutController } from './generationPreview/ParticleLayoutController';
 import TrackView from './generationPreview/TrackView';
@@ -30,7 +30,7 @@ const randPow3 = () => {
   return r * r * r;
 };
 
-class GenerationPreview extends PIXI.Container {
+class GenerationPreview extends Container {
   constructor() {
     super();
 
@@ -74,7 +74,7 @@ class GenerationPreview extends PIXI.Container {
     this.addChild(this.particleNetwork);
 
     // Create particle container
-    this.particleContainer = new PIXI.ParticleContainer({
+    this.particleContainer = new ParticleContainer({
       dynamicProperties: {
         position: true,
         color: true,
@@ -204,7 +204,7 @@ class GenerationPreview extends PIXI.Container {
   }
 
   _createParticle(x, y, tint, genomeId, particleType = 'parent') {
-    const particle = new PIXI.Particle({
+    const particle = new Particle({
       texture: this.particleTexture,
       x,
       y,
@@ -265,7 +265,7 @@ class GenerationPreview extends PIXI.Container {
 
     if (!this._blinkTickerAdded) {
       this._blinkTickerAdded = true;
-      PIXI.Ticker.shared.add(this._onBlinkTick);
+      Ticker.shared.add(this._onBlinkTick);
     }
   }
 
@@ -325,7 +325,7 @@ class GenerationPreview extends PIXI.Container {
 
     if (this._blinksByGenomeId.size === 0 && this._blinkTickerAdded) {
       this._blinkTickerAdded = false;
-      PIXI.Ticker.shared.remove(this._onBlinkTick);
+      Ticker.shared.remove(this._onBlinkTick);
     }
   };
 
@@ -356,7 +356,7 @@ class GenerationPreview extends PIXI.Container {
 
     if (!this._scaleTickerAdded) {
       this._scaleTickerAdded = true;
-      PIXI.Ticker.shared.add(this._onScaleTick);
+      Ticker.shared.add(this._onScaleTick);
     }
   }
 
@@ -387,7 +387,7 @@ class GenerationPreview extends PIXI.Container {
 
     if (this._scaleAnimationsByGenomeId.size === 0 && this._scaleTickerAdded) {
       this._scaleTickerAdded = false;
-      PIXI.Ticker.shared.remove(this._onScaleTick);
+      Ticker.shared.remove(this._onScaleTick);
     }
   };
 
@@ -400,11 +400,11 @@ class GenerationPreview extends PIXI.Container {
     this.layout?.destroy();
     if (this._blinkTickerAdded) {
       this._blinkTickerAdded = false;
-      PIXI.Ticker.shared.remove(this._onBlinkTick);
+      Ticker.shared.remove(this._onBlinkTick);
     }
     if (this._scaleTickerAdded) {
       this._scaleTickerAdded = false;
-      PIXI.Ticker.shared.remove(this._onScaleTick);
+      Ticker.shared.remove(this._onScaleTick);
     }
     this.interaction?.destroy();
     this._blinksByGenomeId.clear();

@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Text, Rectangle } from 'pixi.js';
 
 // Visual style shared with RadarBeamSlider
 const KNOB_STROKE_COLOR = 0xffffff;
@@ -30,7 +30,7 @@ const SCALE_LABEL_PADDING_TOP_PX = -8;
  * Events:
  * - 'change' (value: number): fired whenever the value changes (dragging or click).
  */
-class Slider extends PIXI.Container {
+class Slider extends Container {
   /**
    * @param {object} opts
    * @param {number} [opts.min=0]
@@ -116,7 +116,7 @@ class Slider extends PIXI.Container {
     this._textLineHeight = 16;
     this._scaleTextLineHeight = SCALE_LABEL_LINE_HEIGHT;
 
-    this.labelTextField = new PIXI.Text();
+    this.labelTextField = new Text();
     this.labelTextField.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
@@ -128,7 +128,7 @@ class Slider extends PIXI.Container {
     if (this.labelTextField.anchor?.set) this.labelTextField.anchor.set(0, 0);
     this.addChild(this.labelTextField);
 
-    this.valueTextField = new PIXI.Text();
+    this.valueTextField = new Text();
     this.valueTextField.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
@@ -142,12 +142,12 @@ class Slider extends PIXI.Container {
     this.addChild(this.valueTextField);
 
     // Masks to ensure text never renders outside the track width.
-    this._textMask = new PIXI.Graphics();
+    this._textMask = new Graphics();
     this.addChild(this._textMask);
     this.labelTextField.mask = this._textMask;
     this.valueTextField.mask = this._textMask;
 
-    this.leftScaleLabelTextField = new PIXI.Text();
+    this.leftScaleLabelTextField = new Text();
     this.leftScaleLabelTextField.style = {
       fontFamily: 'Exo2',
       fontSize: SCALE_LABEL_FONT_SIZE,
@@ -159,7 +159,7 @@ class Slider extends PIXI.Container {
     if (this.leftScaleLabelTextField.anchor?.set) this.leftScaleLabelTextField.anchor.set(0, 0);
     this.addChild(this.leftScaleLabelTextField);
 
-    this.rightScaleLabelTextField = new PIXI.Text();
+    this.rightScaleLabelTextField = new Text();
     this.rightScaleLabelTextField.style = {
       fontFamily: 'Exo2',
       fontSize: SCALE_LABEL_FONT_SIZE,
@@ -172,14 +172,14 @@ class Slider extends PIXI.Container {
     if (this.rightScaleLabelTextField.anchor?.set) this.rightScaleLabelTextField.anchor.set(1, 0);
     this.addChild(this.rightScaleLabelTextField);
 
-    this._scaleTextMask = new PIXI.Graphics();
+    this._scaleTextMask = new Graphics();
     this.addChild(this._scaleTextMask);
     this.leftScaleLabelTextField.mask = this._scaleTextMask;
     this.rightScaleLabelTextField.mask = this._scaleTextMask;
 
-    this.trackBg = new PIXI.Graphics();
-    this.trackFill = new PIXI.Graphics();
-    this.knob = new PIXI.Graphics();
+    this.trackBg = new Graphics();
+    this.trackFill = new Graphics();
+    this.knob = new Graphics();
 
     this.addChild(this.trackBg);
     this.addChild(this.trackFill);
@@ -364,7 +364,7 @@ class Slider extends PIXI.Container {
     const trackY = topTextOffsetY + Math.round(h / 2 - trackH / 2);
 
     // Use a hitArea so the whole control is easily clickable (aligned with RadarBeamSlider padding feel).
-    this.hitArea = new PIXI.Rectangle(
+    this.hitArea = new Rectangle(
       -HIT_AREA_PADDING_PX,
       -HIT_AREA_PADDING_PX,
       w + HIT_AREA_PADDING_PX * 2,

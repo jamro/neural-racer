@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Text, Graphics } from 'pixi.js';
 import SidePanel from './SidePanel';
 import CarSensorPreview from '../../../presentation/common/CarSensorPreview';
 import StaticNetworkPreview from '../../../presentation/common/networkPreview/staticPreview/StaticNetworkPreview';
@@ -17,7 +17,7 @@ class CarPreviewPanel extends SidePanel {
 
     this.genome = props.car?.genome ?? null;
     
-    this.title = new PIXI.Text()
+    this.title = new Text()
     this.title.style = {
       fontFamily: 'Exo2',
       fontSize: 22,
@@ -31,7 +31,7 @@ class CarPreviewPanel extends SidePanel {
   }
 
   addLabel(x, y, text, style={}) {
-    const label = new PIXI.Text()
+    const label = new Text()
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 12,
@@ -80,7 +80,7 @@ class CarPreviewPanel extends SidePanel {
   }
   addArrow(x, y) {
     for(let i = 0; i < 2; i++) {
-      const arrow = new PIXI.Graphics();
+      const arrow = new Graphics();
       arrow.moveTo(0, 0);
       arrow.lineTo(10, -10);
       arrow.lineTo(5, -10);

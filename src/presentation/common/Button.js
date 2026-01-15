@@ -1,7 +1,7 @@
-import * as PIXI from 'pixi.js';
+import { Container, Sprite } from 'pixi.js';
 import { getButtonBgOffMiddleTexture, getButtonBgOffSideTexture, getButtonBgOnMiddleTexture, getButtonBgOnSideTexture } from '../../loaders/AssetLoader';
 
-class Button extends PIXI.Container {
+class Button extends Container {
   constructor(width = 30, content = null, toggleMode = false, inverted = false) {
     super();
 
@@ -13,12 +13,12 @@ class Button extends PIXI.Container {
     this._toggleMode = toggleMode;
     this._value = false;
     
-    this.bgMiddleOff = new PIXI.Sprite(getButtonBgOffMiddleTexture());
-    this.bgMiddleOn = new PIXI.Sprite(getButtonBgOnMiddleTexture());
-    this.bgLeftOff = new PIXI.Sprite(getButtonBgOffSideTexture());
-    this.bgLeftOn = new PIXI.Sprite(getButtonBgOnSideTexture());
-    this.bgRightOff = new PIXI.Sprite(getButtonBgOffSideTexture());
-    this.bgRightOn = new PIXI.Sprite(getButtonBgOnSideTexture());
+    this.bgMiddleOff = new Sprite(getButtonBgOffMiddleTexture());
+    this.bgMiddleOn = new Sprite(getButtonBgOnMiddleTexture());
+    this.bgLeftOff = new Sprite(getButtonBgOffSideTexture());
+    this.bgLeftOn = new Sprite(getButtonBgOnSideTexture());
+    this.bgRightOff = new Sprite(getButtonBgOffSideTexture());
+    this.bgRightOn = new Sprite(getButtonBgOnSideTexture());
 
     this.bgLeftOff.x = -8;
     this.bgLeftOn.x = -8;

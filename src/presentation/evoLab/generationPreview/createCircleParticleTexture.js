@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Texture } from 'pixi.js';
 
 /**
  * Creates a simple circle texture (fill + stroke) used by particles.
@@ -34,6 +34,6 @@ export function createCircleParticleTexture({
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
 
-  return PIXI.Texture.from(canvas);
+  return Texture.from(canvas);
 }
 

@@ -1,18 +1,18 @@
-import * as PIXI from 'pixi.js';
+import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import { getUiFrameHorizontalLineTexture } from '../../loaders/AssetLoader';
 
 
-class TopBar extends PIXI.Container {
+class TopBar extends Container {
   constructor() {
     super();
 
-    this.background = new PIXI.Graphics();
+    this.background = new Graphics();
     this.addChild(this.background);
 
-    this.edge = new PIXI.Sprite(getUiFrameHorizontalLineTexture());
+    this.edge = new Sprite(getUiFrameHorizontalLineTexture());
     this.addChild(this.edge);
 
-    this.title = new PIXI.Text()
+    this.title = new Text()
     this.title.text = "NEURAL EVOLUTION";
     this.title.style = {
       fontFamily: 'Exo2',
@@ -24,7 +24,7 @@ class TopBar extends PIXI.Container {
     this.addChild(this.title);
     this.title.anchor.set(0.5, 0.5);
 
-    this.subtitle = new PIXI.Text()
+    this.subtitle = new Text()
     this.subtitle.text = "GENERATION #? TO #?";
     this.subtitle.style = {
       fontFamily: 'Exo2',

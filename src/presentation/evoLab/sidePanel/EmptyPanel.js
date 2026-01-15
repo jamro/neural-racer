@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import { Graphics, BlurFilter, Container, Text } from 'pixi.js';
 import SidePanel from './SidePanel';
 
 class EmptyPanel extends SidePanel {
@@ -7,7 +7,7 @@ class EmptyPanel extends SidePanel {
     this._contentBoundaries = {x: 0, y: 0, width: 300, height: 320}
 
     const glowRadius = 80;
-    const carGlow = new PIXI.Graphics();
+    const carGlow = new Graphics();
     // Layered circles to emulate a sharper radial gradient (no blur, full alpha).
     carGlow.circle(0, 0, glowRadius);
     carGlow.fill({ color: 0x000000, alpha: 1 });
@@ -20,9 +20,9 @@ class EmptyPanel extends SidePanel {
     carGlow.x = this._contentBoundaries.width / 2;
     carGlow.y = 250;
     carGlow.scale.set(1, 0.1);
-    carGlow.filters = [new PIXI.BlurFilter({ strength: 6, resolution: 10 })];
+    carGlow.filters = [new BlurFilter({ strength: 6, resolution: 10 })];
 
-    const carSymbol = new PIXI.Graphics();
+    const carSymbol = new Graphics();
     carSymbol.circle(0, 0, 50);
     carSymbol.fill(0xf50000);
     carSymbol.circle(0, 0, 35);
@@ -31,7 +31,7 @@ class EmptyPanel extends SidePanel {
     carSymbol.y = 190;
     this.masterContainer.addChild(carGlow, carSymbol);
 
-    const arrow = new PIXI.Graphics();
+    const arrow = new Graphics();
     arrow.moveTo(0, 0);
     arrow.lineTo(20, -10);
     arrow.lineTo(-20, -10);
@@ -42,7 +42,7 @@ class EmptyPanel extends SidePanel {
     arrow.y = 130;
     this.masterContainer.addChild(arrow);
 
-    let label = new PIXI.Text()
+    let label = new Text()
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 22,
@@ -55,7 +55,7 @@ class EmptyPanel extends SidePanel {
     label.y = 20;
     this.masterContainer.addChild(label);
 
-    label = new PIXI.Text()
+    label = new Text()
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 28,
@@ -69,7 +69,7 @@ class EmptyPanel extends SidePanel {
     label.y = 45;
     this.masterContainer.addChild(label);
 
-    label = new PIXI.Text()
+    label = new Text()
     label.style = {
       fontFamily: 'Exo2',
       fontSize: 18,
@@ -84,7 +84,7 @@ class EmptyPanel extends SidePanel {
 
     if (showEvolveMessage) {
       // Split the final hint so "Evolve" stays white while the rest is muted.
-      const evolveLine = new PIXI.Container();
+      const evolveLine = new Container();
       const lineStyle = {
         fontFamily: 'Exo2',
         fontSize: 14,
@@ -92,13 +92,13 @@ class EmptyPanel extends SidePanel {
         align: 'center',
       };
 
-      const evolvePrefix = new PIXI.Text();
+      const evolvePrefix = new Text();
       evolvePrefix.text = '...or '
       evolvePrefix.style = lineStyle
       evolvePrefix.x = 0;
       evolveLine.addChild(evolvePrefix);
 
-      const evolveWord = new PIXI.Text();
+      const evolveWord = new Text();
       evolveWord.text = 'Evolve'
       evolveWord.style = {
         ...lineStyle,
@@ -108,7 +108,7 @@ class EmptyPanel extends SidePanel {
       evolveWord.x = evolvePrefix.width;
       evolveLine.addChild(evolveWord);
 
-      const evolveSuffix = new PIXI.Text();
+      const evolveSuffix = new Text();
       evolveSuffix.text = ' button to'
       evolveSuffix.style = lineStyle
       evolveSuffix.x = evolvePrefix.width + evolveWord.width;
@@ -118,7 +118,7 @@ class EmptyPanel extends SidePanel {
       evolveLine.y = 280;
       this.masterContainer.addChild(evolveLine);
 
-      label = new PIXI.Text();
+      label = new Text();
       label.text = 'improve driving skills.'
       label.style = {
         ...lineStyle,

@@ -1,8 +1,8 @@
-import * as PIXI from 'pixi.js';
+import { Container } from 'pixi.js';
 import EvolutionScreen from './EvolutionScreen';
 import { setAutoEvolveSetting } from '../../loaders/settings';
 
-class EvoLab extends PIXI.Container {
+class EvoLab extends Container {
   constructor() {
     super();
 
