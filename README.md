@@ -54,6 +54,12 @@ Apply auto-fixes where possible:
 npm run lint:fix
 ```
 
+## Tests
+Unit tests run with Jest:
+```bash
+npm test
+```
+
 ## Project layout (quick map)
 - `src/index.js` – entrypoint wiring the app and HMR.
 - `src/app/Application.js` – boot sequence: preload, renderer init, track load, evolution loop.
