@@ -1,7 +1,6 @@
 import CarPreviewPanel from './CarPreviewPanel';
 import StaticNetworkPreview from '../../../presentation/common/networkPreview/staticPreview/StaticNetworkPreview';
 import EvoNetworkPreview from '../../../presentation/common/networkPreview/staticPreview/EvoNetworkPreview';
-import * as PIXI from 'pixi.js';
 
 function numberToLetter(n) {
   return String.fromCharCode(64 + n);

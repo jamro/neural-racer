@@ -11,7 +11,7 @@ class EvolutionModeButton extends TextButton {
   constructor() {
     super('Manual', 30, true);
     
-    this.on('change', (autoMode) => {
+    this.on('change', () => {
       this.refreshEvolutionAppearance();
     });
 

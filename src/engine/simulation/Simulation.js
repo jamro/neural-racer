@@ -161,7 +161,7 @@ class Simulation {
         }
     }
 
-    simulationLoop = (currentTime) => {
+    simulationLoop = () => {
         this.frameCount++;
         if (!this.running) return;
 

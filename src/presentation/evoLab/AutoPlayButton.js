@@ -1,7 +1,6 @@
 import TextButton from '../common/TextButton';
 import {
   getUiEvoAutoTexture,
-  getUiEvoManualTexture,
 } from '../../loaders/AssetLoader';
 import * as PIXI from 'pixi.js';
 

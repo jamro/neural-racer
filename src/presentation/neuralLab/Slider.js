@@ -1,9 +1,6 @@
 import * as PIXI from 'pixi.js';
 
 // Visual style shared with RadarBeamSlider
-// Knob color depends on sign of current value (0 treated as positive)
-const KNOB_COLOR_POSITIVE = 0xFF6600;
-const KNOB_COLOR_NEGATIVE = 0x6666FF;
 const KNOB_STROKE_COLOR = 0xffffff;
 const KNOB_STROKE_WIDTH = 2;
 // Sizing aligned with RadarBeamSlider
@@ -482,7 +479,6 @@ class Slider extends PIXI.Container {
 
   _trackGeometry() {
     const w = Math.max(1, this._width);
-    const h = Math.max(1, this._height);
     const padding = TRACK_PADDING_PX;
     const trackX = padding;
     const trackW = Math.max(1, w - padding * 2);

@@ -265,7 +265,7 @@ class SimulationDetailsView extends PIXI.Container {
     this.stagnationWarning.y = this.historyChart.y + this.historyChart.canvasHeight - 42
   }
 
-  onTick(delta) {
+  onTick() {
     this.stagnationWarning.alpha = Math.cos(performance.now()/100)*0.4+0.6;
   }
 

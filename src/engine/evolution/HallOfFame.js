@@ -18,7 +18,6 @@ class HallOfFameEntry {
 
   _updateGlobalScore() {
     this.globalScore = this.allTracksEvaluation.reduce((sum, { bestScore }) => {
-      let result = 0
       if(bestScore < 1.0) {
         return sum + (-1 + 2 * bestScore);
       } else {

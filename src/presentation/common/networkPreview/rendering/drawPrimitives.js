@@ -76,8 +76,6 @@ export function drawOutputNode(canvas, pos, outputSignal, nodeColor, fillAlpha, 
   const centerY = pos.y;
   const radius = OUTPUT_T_VERTICAL_SCALE / 2;
   const arcCenterX = endX + radius;
-  const topY = centerY - radius;
-  const bottomY = centerY + radius;
 
   canvas.moveTo(startX, centerY);
   canvas.lineTo(endX, centerY);

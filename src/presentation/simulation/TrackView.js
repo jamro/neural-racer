@@ -5,8 +5,6 @@ import CullingContainer from './track/CullingContainer';
 import DriftMarks from './track/DriftMarks';
 import DustContainer from './track/DustContainer';
 
-const SHOW_TRACK_GEOMETRY = false;
-
 class TrackView extends PIXI.Container {
     constructor(wallWidth) {
         super();

@@ -59,7 +59,7 @@ export default class EpochRunner {
     }
   }
 
-  async run(generation, simulation) {
+  async run() {
     throw new Error('Not implemented! must return generation');
   }
 
@@ -67,7 +67,7 @@ export default class EpochRunner {
     throw new Error('Not implemented! must return serialized data');
   }
 
-  deserialize(data) {
+  deserialize() {
     throw new Error('Not implemented! must deserialize data');
   }
 
@@ -75,7 +75,7 @@ export default class EpochRunner {
 
   }
 
-  scaleView(width, height) {
+  scaleView() {
 
   }
 }

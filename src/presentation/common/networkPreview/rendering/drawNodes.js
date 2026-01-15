@@ -55,7 +55,6 @@ export function drawNodes({
         -1, actualIdx, inputSize, numLayers, totalNumColumns, columnSpacing, groupSizes, true
       );
       const outputSignal = inputSignals[actualIdx];
-      const weightedSum = 0;
 
       const absSignal = outputSignal !== undefined ? Math.abs(outputSignal) : 0;
       const normalizedOutput = outputSignal !== undefined ? clamp01(absSignal / sigNorm) : 0;

@@ -91,11 +91,9 @@ class SvgTrackLoader {
    * @param {string|null|undefined} transform - SVG transform attribute value
    * @param {number} x - Original x coordinate
    * @param {number} y - Original y coordinate
-   * @param {number} width - Element width
-   * @param {number} height - Element height
    * @returns {{x: number, y: number, scaleX: number, scaleY: number, rotation: number}} Parsed transform values with adjusted position
    */
-  static parseTransform(transform, x = 0, y = 0, width = 0, height = 0) {
+  static parseTransform(transform, x = 0, y = 0) {
     // Default values
     let scaleX = 1;
     let scaleY = 1;
@@ -118,9 +116,6 @@ class SvgTrackLoader {
     // We'll accumulate the transform and apply it to (x, y)
     let currentX = x;
     let currentY = y;
-    let totalRotation = 0;
-    let totalScaleX = 1;
-    let totalScaleY = 1;
 
     // Match all transform functions in the string using regex
     const transformRegex = /(\w+)\s*\(([^)]*)\)/g;
@@ -137,8 +132,6 @@ class SvgTrackLoader {
           const angleDegrees = parseFloat(params[0]);
           const angleRad = angleDegrees * (Math.PI / 180);
           rotation += angleRad;
-          totalRotation += angleRad;
-
           // Apply rotation around (0,0) to current position
           const cos = Math.cos(angleRad);
           const sin = Math.sin(angleRad);
@@ -154,9 +147,6 @@ class SvgTrackLoader {
           const sy = params.length >= 2 ? parseFloat(params[1]) : sx;
           scaleX *= sx;
           scaleY *= sy;
-          totalScaleX *= sx;
-          totalScaleY *= sy;
-
           // Apply scale to current position
           currentX *= sx;
           currentY *= sy;
@@ -179,13 +169,9 @@ class SvgTrackLoader {
           const matrixScaleY = Math.sqrt(c * c + d * d);
           scaleX *= matrixScaleX;
           scaleY *= matrixScaleY;
-          totalScaleX *= matrixScaleX;
-          totalScaleY *= matrixScaleY;
-
           // Extract rotation from matrix
           const matrixRotation = Math.atan2(b, a);
           rotation += matrixRotation;
-          totalRotation += matrixRotation;
 
           // Apply matrix transform to current position
           const newX = a * currentX + c * currentY + e;

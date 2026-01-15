@@ -88,7 +88,7 @@ class EvolutionScreen extends PIXI.Container {
     }
   }
 
-  async evolve(event) {
+  async evolve() {
     if(!this.selectedObject) {
       this.carPreviewPanel.showPanel(EmptyPanel, {showEvolveMessage: false});
     }

@@ -1,7 +1,7 @@
 /**
  * Wait for all fonts to be loaded before proceeding
  */
-export default async function waitForFonts(onProgress = (progressPercent, statusText) => {}) {
+export default async function waitForFonts(onProgress = () => {}) {
   const report = (pct, text) => {
     try {
       onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);

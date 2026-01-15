@@ -34,7 +34,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
     return {};
   }
 
-  deserialize(data) {
+  deserialize() {
     // nothing to do
   }
 
@@ -146,7 +146,7 @@ export default class AllTracksEpochRunner extends EpochRunner {
 
     // update history and hall of fame
     this.evolution.history.addGenerationInstance(initialGeneration, ALL_TRACKS_NAME);
-    const [leaders, leadersScores] = initialGeneration.getLeaders(candidatesPerGeneration);
+    const [leaders] = initialGeneration.getLeaders(candidatesPerGeneration);
     for(let i = 0; i < leaders.length; i++) {
       const leaderEvaluations = allScoresMap[leaders[i].genome.genomeId]; 
       const mainEvaluationIndex = Math.floor(Math.random() * leaderEvaluations.length);

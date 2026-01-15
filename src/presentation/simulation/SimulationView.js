@@ -81,7 +81,7 @@ class SimulationView extends PIXI.Container {
       this.simulationDetailsView.setEvolutionHistory(evolutionHistory, trackName);
     }
 
-    renderView(delta) {
+  renderView() {
         this.masterContainer.x = this.targetCameraPosition.x;
         this.masterContainer.y = this.targetCameraPosition.y;
         if(this.track) {

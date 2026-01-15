@@ -216,7 +216,7 @@ class CarObject {
       return this.speedSum / this.liftimeFrames;
     }
 
-    renderView(delta) { // delta is in seconds
+  renderView() { // delta is in seconds
       this.view.x = metersToPixels(this.model.x);
       this.view.y = metersToPixels(this.model.y);
       this.view.rotation = this.model.direction;

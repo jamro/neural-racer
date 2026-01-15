@@ -54,7 +54,7 @@ class NeuralCarObject extends CarObject {
         this.prevThrottleControl = 0
     }
 
-    control(delta) {
+  control() {
       if (this.isCrashed || this.isFinished) {
         return;
       }

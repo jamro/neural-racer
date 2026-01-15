@@ -49,8 +49,8 @@ class Genealogy {
     }
     
     this.records.sort((a, b) => {
-      const orderA = typeOrderMap.hasOwnProperty(a.type) ? typeOrderMap[a.type] : typesOrder.length;
-      const orderB = typeOrderMap.hasOwnProperty(b.type) ? typeOrderMap[b.type] : typesOrder.length;
+      const orderA = Object.prototype.hasOwnProperty.call(typeOrderMap, a.type) ? typeOrderMap[a.type] : typesOrder.length;
+      const orderB = Object.prototype.hasOwnProperty.call(typeOrderMap, b.type) ? typeOrderMap[b.type] : typesOrder.length;
       return orderA - orderB;
     });
   }

@@ -5,7 +5,6 @@ import {
   CONNECTION_KEEP_TOP_K_OUT,
   CONNECTION_KEEP_THRESHOLD_RATIO,
   CONNECTION_ALPHA_MAX,
-  CONNECTION_WIDTH_MIN,
   CONNECTION_WIDTH_MAX,
   ARTIFICIAL_INPUT_ALPHA_MIN,
   ARTIFICIAL_INPUT_WIDTH_MIN
@@ -50,7 +49,7 @@ function updateEdgeFadeState(edgeFadeState, key, { color, width, targetAlpha, ta
       currentAlpha: 0,
       currentWidth: width ?? 1,
       targetAlpha: targetAlpha,
-      targetWidth: width ?? 1
+      targetWidth: targetWidth ?? width ?? 1
     };
     edgeFadeState.set(key, st);
   }

@@ -10,7 +10,7 @@ export default class HallOfFameEpochRunner extends EpochRunner {
     return {}
   }
 
-  deserialize(data) {
+  deserialize() {
     return;
   }
 

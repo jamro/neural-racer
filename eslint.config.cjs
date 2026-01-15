@@ -16,9 +16,7 @@ module.exports = [
       }
     },
     rules: {
-      ...js.configs.recommended.rules,
-      'no-unused-vars': 'off',
-      'no-prototype-builtins': 'off'
+      ...js.configs.recommended.rules
     }
   },
   {
@@ -31,9 +29,7 @@ module.exports = [
       }
     },
     rules: {
-      ...js.configs.recommended.rules,
-      'no-unused-vars': 'off',
-      'no-prototype-builtins': 'off'
+      ...js.configs.recommended.rules
     }
   }
 ];

@@ -77,7 +77,7 @@ export class Connection extends PIXI.Graphics {
     }
   }
 
-  fadeOutStep(ticker) {
+  fadeOutStep() {
     this.alpha *= 0.95;
     if (this.alpha <= 0.1) {
       if (this.parent) {

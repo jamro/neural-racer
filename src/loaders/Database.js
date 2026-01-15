@@ -9,7 +9,7 @@ class Database {
 
   async _openDB() {
     return openDB(this.dbName, this.dbVersion, {
-      upgrade(db, oldVersion) {
+      upgrade(db) {
         if (!db.objectStoreNames.contains('evolution')) {
           db.createObjectStore('evolution');
         }
@@ -44,8 +44,8 @@ class Database {
     // Compress old generations by removing "cars" field and setting compress flag
     await Promise.all(
       toCompress.map(gen => {
-        const { cars, ...compressedGen } = gen;
-        const compressedData = { ...compressedGen, compress: true };
+        const compressedData = { ...gen, compress: true };
+        delete compressedData.cars;
         return store.put(compressedData, gen.generationId);
       })
     );

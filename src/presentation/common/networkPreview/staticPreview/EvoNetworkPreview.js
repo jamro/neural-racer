@@ -73,7 +73,6 @@ class NetworkGraphBuilder {
     if (!childNetwork?.sizes?.length) return null;
 
     const { sizes } = childNetwork;
-    const layerCount = sizes.length;
 
     // Extract matrices/vectors (note: child selection is based on child weights)
     const wC = childGenome ? extractWeights(childNetwork, childGenome) : null;

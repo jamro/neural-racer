@@ -155,7 +155,7 @@ export function getTexture(textureKey) {
  * @param {string[]} textureKeys - Array of texture keys from TEXTURE_REGISTRY
  * @returns {Promise<Object<string, PIXI.Texture>>} - Object mapping keys to textures
  */
-export async function loadTextures(textureKeys, onProgress = (progressPercent, statusText) => {}) {
+export async function loadTextures(textureKeys, onProgress = () => {}) {
     const report = (pct, text) => {
         try {
             onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);

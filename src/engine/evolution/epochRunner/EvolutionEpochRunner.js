@@ -48,7 +48,6 @@ export default class EvolutionEpochRunner extends EpochRunner {
     // adjust evolve config if stagnation detected
     if(!isReplay) {
       const isStagnated = this.evolution.history.isPopulationStagnated(this.currentTrack.name);
-      let newConfigMode
       if(isStagnated) {
         const history = this.evolution.history.getScoreHistoryForTrack(this.currentTrack.name);
         const lastEpoch = history[history.length - 1];
