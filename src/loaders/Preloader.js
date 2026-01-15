@@ -191,15 +191,48 @@ class Preloader {
     return start + (p / 100) * (end - start);
   }
 
+  /**
+   * Returns a mapper that projects a local 0-100 range into the given start/end
+   * and applies it to the preloader progress with the provided status text.
+   * Ensures consistent progress handling across asset types.
+   */
+  createRangeReporter(start, end, initialStatus = '') {
+    this.setProgress(start, initialStatus);
+    return (localPercent, statusText = '') => {
+      const mapped = this.mapProgress(localPercent, start, end);
+      this.setProgress(mapped, statusText);
+    };
+  }
+
+  /**
+   * Specialized reporter for track loading. Accepts a total count and returns
+   * a function that is called with the number of completed tracks.
+   */
+  createTrackReporter(total, { start = 90, end = 96 } = {}) {
+    if (!total || total <= 0) {
+      return null;
+    }
+
+    const reportRange = this.createRangeReporter(start, end, `Loading tracks (0/${total})`);
+    return completed => {
+      const safeCompleted = Math.max(0, Math.min(total, completed));
+      const localPercent = (safeCompleted / total) * 100;
+      const statusText = `Loaded track (${safeCompleted}/${total})`;
+      reportRange(localPercent, statusText);
+    };
+  }
+
   async load() {
     this.show();
     this.setProgress(0, 'Starting');
 
     // Fonts: 0..35
-    await waitForFonts((pct, text) => this.setProgress(this.mapProgress(pct, 0, 35), text));
+    const reportFonts = this.createRangeReporter(0, 35, 'Loading fonts');
+    await waitForFonts((pct, text) => reportFonts(pct, text));
 
     // Textures: 35..85
-    await loadTextures(getTextureKeys(), (pct, text) => this.setProgress(this.mapProgress(pct, 35, 85), text));
+    const reportTextures = this.createRangeReporter(35, 85, 'Loading textures');
+    await loadTextures(getTextureKeys(), (pct, text) => reportTextures(pct, text));
 
     this.setProgress(85, 'Core assets loaded');
   }
