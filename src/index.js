@@ -1,6 +1,6 @@
 import './index.css';
 import * as PIXI from 'pixi.js';
-import Evolution from './neuralEvolution/Evolution';
+import Evolution from './engine/evolution/Evolution';
 import SvgTrackLoader from './loaders/SvgTrackLoader';
 import Config from './Config';
 import Preloader from './loaders/Preloader';
