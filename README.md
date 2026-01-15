@@ -1,15 +1,15 @@
 # Neural Racer
 
-Neural Racer is a PixiJS-powered 2D racing sandbox where neural network
-populations learn to drive through neuroevolution. It loads SVG tracks,
+Neural Racer is a PixiJS-powered 2D racing sandbox where [neural network](docs/neural_net.md)
+populations learn to drive through [neuroevolution](docs/evolution.md). It loads SVG tracks,
 spawns simulated cars, and iteratively improves their controllers via
 evolutionary strategies (elite carryover, crossover, mutation, hall of fame).
 
 ## What it does
 - Renders a track and cars with PixiJS.
-- Simulates driving physics and sensors for many cars in parallel.
-- Evolves neural controllers over generations (standard, hall-of-fame, all-track modes).
-- Persists evolution progress locally so runs can resume.
+- Simulates [driving physics](docs/physics.md) and sensors for many cars in parallel.
+- Evolves [neural controllers](docs/neural_net.md) over generations (standard, hall-of-fame, all-track modes) via [genetic algorithms](docs/evolution.md).
+- [Persists evolution progress](docs/persistence.md) locally so runs can resume.
 
 ## Screenshots
 1) Race simulation  
@@ -67,6 +67,14 @@ npm test
 - `src/engine/evolution` – generations, epoch runners, hall of fame, persistence.
 - `src/presentation` – UI overlays (evo lab, previews, controls).
 - `public/tracks/*.svg` – sample tracks loaded at startup.
+
+## Documentation
+
+- **[Evolution System](docs/evolution.md)** – Genetic algorithm design, operators, and multi-track strategies
+- **[Neural Network Architecture](docs/neural_net.md)** – Controller design, inputs, outputs, and normalization
+- **[Physics Model](docs/physics.md)** – Vehicle dynamics, forces, and simulation details
+- **[Persistence & Storage](docs/persistence.md)** – How evolution state is saved and compressed
+- **[Project Learnings](docs/learnings.md)** – Practical insights and lessons from development
 
 ## Architecture
 See [docs/architecture.md](docs/architecture.md) for high-level flow, domains, and data movement.
