@@ -133,11 +133,24 @@ class GenerationPreview extends PIXI.Container {
     this.layout.invalidate();
     this.layout.start();
 
+    let maxGenerationScore = Math.max(...this.generation.scores);
+    let minGenerationScore = Math.min(...this.generation.scores.filter(score => score > 1.0));
+    const paddingScore = 0.1 // space between finishline and the worst completed car
+    if(minGenerationScore === maxGenerationScore) {
+      minGenerationScore -= paddingScore
+      maxGenerationScore += paddingScore
+    }
+
     // Create particles for each generation unit
     for(let i = 0; i < this.generation.cars.length; i++) {
       const score = this.generation.scores[i];
       const car = this.generation.cars[i];
-      const scaledScore = score < 1.0 ? score : (1 + (MAX_SCORE-1)/2) + randPow3() * ((MAX_SCORE-1)/8);
+      let scaledScore
+      if(score < 1.0) {
+        scaledScore = score;
+      } else {
+        scaledScore = 1 + paddingScore + (MAX_SCORE - 1 - 2*paddingScore)*(score - minGenerationScore)/(maxGenerationScore - minGenerationScore);
+      }
       const x = scaledScore/MAX_SCORE * TRACK_LENGTH - TRACK_LENGTH/2 + LEFT_PADDING / 2 + Math.random() * UNIT_RADIUS;
       const y = randPow3() * TRACK_WIDTH * 0.25 + TRACK_CENTER_Y_OFFSET
       const color = score > 1.0 ? COMPLETE_COLOR : INCOMPLETE_COLOR;
