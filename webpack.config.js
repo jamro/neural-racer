@@ -19,7 +19,7 @@ module.exports = {
         test: /\.(woff|woff2|eot|ttf|otf)$/i,
         type: 'asset/resource',
         generator: {
-          filename: 'public/font/[name][ext]',
+          filename: 'assets/font/[name][ext]',
         },
       },
     ],
@@ -32,7 +32,7 @@ module.exports = {
       patterns: [
         {
           from: path.resolve(__dirname, 'public'),
-          to: path.resolve(__dirname, 'dist/public'),
+          to: path.resolve(__dirname, 'dist/assets'),
         },
       ],
     }),
