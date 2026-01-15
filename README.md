@@ -68,6 +68,9 @@ npm test
 - `src/presentation` – UI overlays (evo lab, previews, controls).
 - `public/tracks/*.svg` – sample tracks loaded at startup.
 
+## Architecture
+See [docs/architecture.md](docs/architecture.md) for high-level flow, domains, and data movement.
+
 ## Development guide
 See [docs/dev_guide.md](docs/dev_guide.md) for workflows (tracks, assets, config, testing, performance).
 
