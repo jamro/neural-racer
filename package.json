@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "keywords": [],
   "author": "",
@@ -18,8 +20,11 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "copy-webpack-plugin": "^13.0.1",
     "css-loader": "^6.11.0",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
     "html-webpack-plugin": "^5.6.0",
     "style-loader": "^3.3.4",
     "webpack": "^5.94.0",

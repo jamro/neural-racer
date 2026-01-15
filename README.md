@@ -44,6 +44,16 @@ npm run build
 ```
 Outputs go to `dist/` (served by your host of choice).
 
+## Lint
+Run ESLint across `src/`:
+```bash
+npm run lint
+```
+Apply auto-fixes where possible:
+```bash
+npm run lint:fix
+```
+
 ## Project layout (quick map)
 - `src/index.js` – entrypoint wiring the app and HMR.
 - `src/app/Application.js` – boot sequence: preload, renderer init, track load, evolution loop.
