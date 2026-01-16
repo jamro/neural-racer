@@ -1,4 +1,4 @@
-import { Container, Rectangle, Graphics, Text } from 'pixi.js';
+import { Container, Rectangle, Graphics, Sprite, Text } from 'pixi.js';
 
 
 const DEBUG_CULLING = false;
@@ -41,13 +41,14 @@ class CullingContainer extends Container {
       const child = this.children[i];
       if(DEBUG_CULLING && (child == this.debugRect || child == this.debugTextField)) continue
         
-      if(!child.boundsRect && child.constructor.name == 'Graphics') {
+      // NOTE: don't use `constructor.name` here — it can change in production/minified builds.
+      if(!child.boundsRect && child instanceof Graphics) {
         child.boundsRect = new Rectangle(0, 0, 0, 0);
         child.boundsRect.x = child.x + child.bounds.minX
         child.boundsRect.y = child.y + child.bounds.minY
         child.boundsRect.width = child.bounds.maxX - child.bounds.minX
         child.boundsRect.height = child.bounds.maxY - child.bounds.minY
-      } else if(!child.boundsRect && child.constructor.name == 'Sprite') {
+      } else if(!child.boundsRect && child instanceof Sprite) {
         child.boundsRect = new Rectangle(0, 0, 0, 0);
           
         // Calculate bounding rect for rotated sprite
@@ -97,7 +98,12 @@ class CullingContainer extends Container {
       }
 
       if(!child.boundsRect) {
-        console.warn('No bounds rect for child. Object will not be culled.');
+        // Avoid spamming the console every frame for the same object.
+        if(!child.__warnedNoBoundsRect) {
+          // eslint-disable-next-line no-console
+          console.warn('No bounds rect for child. Object will not be culled.', child);
+          child.__warnedNoBoundsRect = true;
+        }
         continue;
       }
 
