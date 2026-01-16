@@ -1,13 +1,13 @@
+import AbstractLoader from './AbstractLoader';
 import SvgTrackLoader from './SvgTrackLoader';
 
 /**
  * Handles loading track SVGs with optional progress reporting.
  */
-class TrackLoader {
-  constructor({ preloader, progressRange = { start: 90, end: 96 } } = {}) {
-    this.preloader = preloader;
-    this.progressRange = progressRange;
-    this.progressReporter = null;
+class TrackLoader extends AbstractLoader {
+  constructor() {
+    super();
+    this.loadedTracks = [];
   }
 
   get defaultTracks() {
@@ -21,35 +21,47 @@ class TrackLoader {
     ];
   }
 
+  async start(onProgress = (pct, text) => {}) {
+    this.loadedTracks = await this.loadTracks(this.defaultTracks, onProgress);
+  }
+
   /**
-   * Load all tracks, reporting progress through the provided preloader.
+   * Load all tracks, reporting progress through the provided callback.
    * @param {Array<{url: string}>} tracks
+   * @param {(pct: number, text: string) => void} onProgress
    * @returns {Promise<Array>}
    */
-  async loadTracks(tracks = this.defaultTracks) {
-    const total = tracks.length;
-    if (total === 0) return [];
+  async loadTracks(tracks = this.defaultTracks, onProgress = () => {}) {
+    const report = (pct, text) => {
+      try {
+        onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);
+      } catch {
+        // ignore progress callback errors
+      }
+    };
 
-    this.progressReporter = this.preloader?.createTrackReporter
-      ? this.preloader.createTrackReporter(total, this.progressRange)
-      : null;
+    const total = tracks.length;
+    if (total === 0) {
+      this.loadedTracks = [];
+      report(100, 'No tracks to load');
+      return this.loadedTracks;
+    }
 
     const loadedTracks = [];
     let completed = 0;
 
+    report(0, `Loading tracks (0/${total})`);
     for (const { url } of tracks) {
       const track = await SvgTrackLoader.load(url);
       loadedTracks.push(track);
 
       completed += 1;
-      this.reportProgress(completed);
+      report((completed / total) * 100, `Loaded track (${completed}/${total})`);
     }
 
-    return loadedTracks;
-  }
-
-  reportProgress(completed) {
-    if (this.progressReporter) this.progressReporter(completed);
+    this.loadedTracks = loadedTracks;
+    report(100, `Tracks loaded (${total}/${total})`);
+    return this.loadedTracks;
   }
 }
 

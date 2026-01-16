@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
 import NetworkPreview from './networkPreview/NetworkPreview';
-import { getUiTurnIconTexture, getUiThrottleIconTexture } from '../../loaders/AssetLoader';
+import { getUiTurnIconTexture, getUiThrottleIconTexture } from '../../loaders/Assets';
 import { COLOR_POSITIVE, COLOR_NEGATIVE } from './networkPreview/NetworkPreviewConstants';
 import CarSensorPreview from './CarSensorPreview';
 

@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import Slider from './Slider';
 import RadarBeamSlider from './RadarBeamSlider';
-import { getUiTurnIconTexture, getUiThrottleIconTexture, getUiSlipIconTexture } from '../../loaders/AssetLoader';
+import { getUiTurnIconTexture, getUiThrottleIconTexture, getUiSlipIconTexture } from '../../loaders/Assets';
 
 export default class InputController extends Container {
   constructor(radarBeamAngles) {

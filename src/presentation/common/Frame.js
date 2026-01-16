@@ -1,5 +1,5 @@
 import { Container, Sprite, Graphics, Text } from 'pixi.js';
-import { getUiFrameHorizontalLineTexture, getUiFrameCornerTexture } from '../../loaders/AssetLoader';
+import { getUiFrameHorizontalLineTexture, getUiFrameCornerTexture } from '../../loaders/Assets';
 
 export default class Frame extends Container {
   constructor(width, height) {

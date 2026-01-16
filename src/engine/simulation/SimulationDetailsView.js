@@ -6,7 +6,7 @@ import {
   getUiFrameHorizontalLineTexture,
   getUiTrackIconTexture,
   getUiWarningIconTexture,
-} from '../../loaders/AssetLoader';
+} from '../../loaders/Assets';
 import Frame from '../../presentation/common/Frame';
 import SpeedSelector from '../../presentation/simulation/ui/SpeedSelector';
 import EvolutionModeButton from '../../presentation/simulation/ui/EvolutionModeButton';

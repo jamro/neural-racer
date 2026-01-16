@@ -1,5 +1,5 @@
 import { Container, Sprite, Texture, RenderTexture } from 'pixi.js';
-import { getTireMarkTexture } from '../../../loaders/AssetLoader';
+import { getTireMarkTexture } from '../../../loaders/Assets';
 
 const TEXTURE_MARGIN = 32;
 const TEXTURE_SIZE = 2048

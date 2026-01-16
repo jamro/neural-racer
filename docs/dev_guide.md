@@ -40,7 +40,7 @@ npm test
 Use `npm run lint:fix` for quick formatting fixes.
 
 ## Asset pipeline
-- Textures/fonts load via `src/loaders/AssetLoader.js`; prefer PNG for textures.
+- Textures/fonts load via `src/loaders/Assets.js`; prefer PNG for textures.
 - Add new images/fonts under `public/` and reference through loader helpers.
 - Clear browser cache/disable cache in devtools when swapping assets.
 

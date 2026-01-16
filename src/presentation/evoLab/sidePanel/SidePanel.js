@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
-import { getUiFrameHorizontalLineTexture } from '../../../loaders/AssetLoader';
+import { getUiFrameHorizontalLineTexture } from '../../../loaders/Assets';
 import TextButton from '../../../presentation/common/TextButton';
 
 class SidePanel extends Container {

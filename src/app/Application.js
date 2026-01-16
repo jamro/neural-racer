@@ -1,17 +1,48 @@
-import { Application as PixiApplication, Ticker } from 'pixi.js';
-import Evolution from '../engine/evolution/Evolution';
 import Config from '../Config';
 import Preloader from '../loaders/Preloader';
-import TrackLoader from '../loaders/TrackLoader';
 
 class Application {
-  constructor({ documentRef = document, windowRef = window } = {}) {
+  constructor({ documentRef = document, windowRef = window, preloader } = {}) {
     this.document = documentRef;
     this.window = windowRef;
 
-    this.preloader = new Preloader(this.document);
-    this.trackLoader = new TrackLoader({ preloader: this.preloader });
     this.config = new Config();
+
+    this.preloader = preloader || new Preloader(this.document, { windowRef: this.window });
+    [
+      { moduleName: 'FontLoader', start: 0, end: 25, initialStatus: 'Loading fonts', doneStatus: 'Fonts loaded' },
+      {
+        moduleName: 'PixiLoader',
+        start: 25,
+        end: 40,
+        initialStatus: 'Initializing renderer. It may take a moment...',
+        doneStatus: 'Renderer initialized',
+        createInstance: ({ Exported, preloader }) =>
+          new Exported({
+            windowRef: preloader.window,
+            maxFPS: this.config.frameRate || 30,
+            onAppReady: app => this.mountCanvas(app),
+          }),
+      },
+      { moduleName: 'AssetLoader', start: 40, end: 85, initialStatus: 'Loading textures', doneStatus: 'Core assets loaded' },
+      { moduleName: 'TrackLoader', start: 85, end: 95, initialStatus: 'Loading tracks', doneStatus: 'Tracks loaded' },
+      {
+        moduleName: 'EvolutionLoader',
+        start: 95,
+        end: 100,
+        initialStatus: 'Initializing evolution',
+        doneStatus: 'Evolution initialized',
+        createInstance: ({ Exported, preloader }) =>
+          new Exported({
+            app: preloader.pixiLoader?.app,
+            tracks: preloader.trackLoader?.loadedTracks || [],
+            config: this.config,
+            beforeInitialize: () => {
+              this.config.setStandardMode();
+            },
+          }),
+      },
+    ].forEach(step => this.preloader.addLoader(step));
 
     this.app = null;
     this.evolution = null;
@@ -20,13 +51,14 @@ class Application {
 
   async start() {
     try {
-      this.preloader.show();
       await this.preloader.load();
 
-      await this.initializeRenderer();
-      const tracks = await this.trackLoader.loadTracks();
+      this.app = this.preloader.pixiLoader?.app;
+      this.evolution = this.preloader.evolutionLoader?.evolution;
+      if (!this.app) throw new Error('Renderer not initialized');
+      if (!this.evolution) throw new Error('Evolution not initialized');
 
-      await this.initializeEvolution(tracks);
+      this.bindResize();
 
       this.preloader.setProgress(100, 'Ready');
       this.preloader.hide();
@@ -64,43 +96,24 @@ class Application {
     this.preloader.hide({ remove: true });
   }
 
-  async initializeRenderer() {
-    this.preloader.setProgress(86, 'Initializing renderer');
-
-    this.app = new PixiApplication();
-    await this.app.init({
-      resizeTo: this.window,
-      backgroundColor: 0xa19a41,
-      antialias: true,
-      resolution: this.window.devicePixelRatio || 1,
-      autoDensity: true,
-    });
-
-    this.mountCanvas();
-  }
-
-  async initializeEvolution(tracks) {
-    this.preloader.setProgress(96, 'Initializing evolution');
-
-    Ticker.shared.maxFPS = this.config.frameRate || 30;
-    this.config.setStandardMode();
-
-    this.evolution = new Evolution(this.app, tracks);
-    await this.evolution.initialize(this.config);
-
-    this.bindResize();
-  }
-
-  mountCanvas() {
+  mountCanvas(app = this.app) {
     const appContainer = this.document.getElementById('app');
     if (!appContainer) {
       throw new Error('App container element #app not found');
     }
 
+    if (!app?.canvas) {
+      throw new Error('Renderer canvas not available');
+    }
+
+    if (appContainer.firstChild === app.canvas) {
+      return;
+    }
+
     if (appContainer.firstChild) {
-      appContainer.replaceChild(this.app.canvas, appContainer.firstChild);
+      appContainer.replaceChild(app.canvas, appContainer.firstChild);
     } else {
-      appContainer.appendChild(this.app.canvas);
+      appContainer.appendChild(app.canvas);
     }
   }
 

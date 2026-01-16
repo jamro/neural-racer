@@ -1,5 +1,5 @@
 import { Container, Sprite, Graphics, Texture } from 'pixi.js';
-import { getCarTexture, getGhostTexture, getShadowTexture } from '../../../loaders/loadCarTexture';
+import { getCarTexture, getGhostTexture, getShadowTexture } from '../../../loaders/Assets';
 
 const DEBUG_RADAR_BEAMS = false;
 

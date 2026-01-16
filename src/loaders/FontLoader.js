@@ -1,7 +1,8 @@
+import AbstractLoader from './AbstractLoader';
 /**
  * Wait for all fonts to be loaded before proceeding
  */
-export default async function waitForFonts(onProgress = () => {}) {
+async function waitForFonts(onProgress = () => {}) {
   const report = (pct, text) => {
     try {
       onProgress(Math.max(0, Math.min(100, Math.round(pct))), text);
@@ -77,3 +78,15 @@ export default async function waitForFonts(onProgress = () => {}) {
   document.body.removeChild(testElement);
   report(100, 'Fonts loaded');
 }
+
+class FontLoader extends AbstractLoader {
+  constructor() {
+    super();
+  }
+
+  async start(progressCallback) {
+    await waitForFonts((pct, text) => progressCallback(pct, text));
+  }
+}
+
+export default FontLoader;

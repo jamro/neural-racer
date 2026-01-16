@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
-import { getCarTexture, getShadowTexture } from '../../loaders/AssetLoader';
+import { getCarTexture, getShadowTexture } from '../../loaders/Assets';
 
 export default class CarSensorPreview extends Container {
   constructor(options = {}) {

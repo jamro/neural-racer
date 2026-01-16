@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite } from 'pixi.js';
 import TiledBackground from './TiledBackground';
-import { getTexture } from '../../../loaders/AssetLoader';
+import { getTexture } from '../../../loaders/Assets';
 import CullingContainer from './CullingContainer';
 import DriftMarks from './DriftMarks';
 import DustContainer from './DustContainer';
