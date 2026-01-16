@@ -24,14 +24,14 @@ class SidePanel extends Container {
 
     this.neuralTestButton = new TextButton("Neural Test", 16, false);
     this.neuralTestButton.visible = false;
-    this.neuralTestButton.on("click", () => {
+    this.neuralTestButton.on("pointertap", () => {
       this.emitNeuralTestEvent();
     });
     this.addChild(this.neuralTestButton);
 
     this.testDriveButton = new TextButton("Test Drive", 16, false);
     this.testDriveButton.visible = false;
-    this.testDriveButton.on("click", () => {
+    this.testDriveButton.on("pointertap", () => {
       this.emitTestDriveEvent();
     });
     this.addChild(this.testDriveButton);

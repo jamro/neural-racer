@@ -28,7 +28,8 @@ class ToggleButtonGroup extends Container {
     this._buttons.push(button);
     button.x = this._nextButtonX;
     button.toggleMode = true;
-    button.on('click', () => {
+    // PixiJS v8: 'click' is mouse-oriented; use pointertap for touch + mouse
+    button.on('pointertap', () => {
       this.value = value
       this.emit('valueChanged', value);
     });

@@ -1,4 +1,4 @@
-import { Container, Graphics, Text, Ticker } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text, Ticker } from 'pixi.js';
 import RichNetworkPreview from '../common/RichNetworkPreview';
 import InputController from './InputController';
 import NeuralCarObject from '../../engine/simulation/car/NeuralCarObject';
@@ -34,9 +34,10 @@ class NeuralLab extends Container {
     }
 
     this.closeButton = new Container();
-    this.closeButton.interactive = true;
+    this.closeButton.eventMode = 'static';
+    this.closeButton.interactive = true; // legacy
     this.closeButton.cursor = 'pointer';
-    this.closeButton.on('click', () => {
+    this.closeButton.on('pointertap', () => {
       this.stopRenderLoop();
       if(this.parent) {
         this.parent.removeChild(this);
@@ -45,6 +46,8 @@ class NeuralLab extends Container {
     const cross = new Graphics();
     cross.rect(-80, -15, 100, 30);
     cross.fill({ color: 0, alpha: 0 });
+    // Ensure the close button is tappable even though it is transparent
+    this.closeButton.hitArea = new Rectangle(-80, -15, 100, 30);
     cross.moveTo(-10, -10);
     cross.lineTo(10, 10);
     cross.moveTo(10, -10);

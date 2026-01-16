@@ -70,9 +70,10 @@ class EvolutionScreen extends Container {
       this.generation.overallScore.averageSpeed
     );
     this.addChild(this.bottomBar);
-    this.bottomBar.evolveButton.on('click', async () => await this.evolve());
-    this.bottomBar.raceButton.on('click', async () => this.emit('evolutionCompleted', this.nextGeneration, false));
-    this.bottomBar.autoPlayButton.on('click', async () => this.emit('evolutionCompleted', this.nextGeneration, true));
+    // PixiJS v8: 'click' is mouse-oriented; use pointertap for touch + mouse
+    this.bottomBar.evolveButton.on('pointertap', async () => await this.evolve());
+    this.bottomBar.raceButton.on('pointertap', async () => this.emit('evolutionCompleted', this.nextGeneration, false));
+    this.bottomBar.autoPlayButton.on('pointertap', async () => this.emit('evolutionCompleted', this.nextGeneration, true));
     this.bottomBar.evolveButton.enabled = false;
     this.bottomBar.evolveButton.visible = true;
 

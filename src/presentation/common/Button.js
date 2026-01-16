@@ -1,4 +1,4 @@
-import { Container, Sprite } from 'pixi.js';
+import { Container, Rectangle, Sprite } from 'pixi.js';
 import { getButtonBgOffMiddleTexture, getButtonBgOffSideTexture, getButtonBgOnMiddleTexture, getButtonBgOnSideTexture } from '../../resources/Assets';
 
 class Button extends Container {
@@ -48,7 +48,9 @@ class Button extends Container {
       this.addChild(content);
     }
 
-    this.interactive = true;
+    // PixiJS v8: use eventMode instead of interactive
+    this.eventMode = 'static';
+    this.interactive = true; // keep for backwards compatibility
     this.cursor = 'pointer';
     this.on('pointerdown', this.onPointerDown, this);
     this.on('pointerup', this.onPointerUp, this);
@@ -67,7 +69,8 @@ class Button extends Container {
 
   set enabled(enabled) {
     this._enabled = enabled;
-    this.interactive = enabled;
+    this.eventMode = enabled ? 'static' : 'none';
+    this.interactive = enabled; // legacy
     this.cursor = enabled ? 'pointer' : 'default';
     this.refreshAppearance();
   }
@@ -152,6 +155,10 @@ class Button extends Container {
       this._content.x = this.buttonWidth / 2;
     }
     this.alpha = this._enabled ? 1 : 0.5;
+
+    // Make hit-testing consistent on touch devices (transparent textures otherwise miss taps)
+    // Background sprites are positioned at y=-8 and are taller than buttonHeight.
+    this.hitArea = new Rectangle(-8, -8, this.buttonWidth + 16, this.buttonHeight + 16);
   }
 
   onPointerUpOutside() {
