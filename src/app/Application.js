@@ -1,5 +1,5 @@
 import Config from '../Config';
-import Preloader from '../loaders/Preloader';
+import Preloader from '../resources/preloader/Preloader';
 
 class Application {
   constructor({ documentRef = document, windowRef = window, preloader } = {}) {

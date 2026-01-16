@@ -28,7 +28,7 @@ Then open `http://localhost:3000`.
 - `src/engine/simulation` – car physics, sensors, collision and track interaction.
 - `src/engine/evolution` – genomes, generations, hall-of-fame/all-track runners.
 - `src/presentation` – UI overlays (evo lab, previews, controls).
-- `src/loaders` – asset loading, SVG track parsing, texture helpers.
+- `src/resources` – assets + preloader + loader modules.
 - `public/tracks/*.svg` – sample tracks; use `template.svg` as a base for new ones.
 
 ## Testing and quality checks
@@ -40,7 +40,7 @@ npm test
 Use `npm run lint:fix` for quick formatting fixes.
 
 ## Asset pipeline
-- Textures/fonts load via `src/loaders/Assets.js`; prefer PNG for textures.
+- Textures/fonts load via `src/resources/Assets.js`; prefer PNG for textures.
 - Add new images/fonts under `public/` and reference through loader helpers.
 - Clear browser cache/disable cache in devtools when swapping assets.
 

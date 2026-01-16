@@ -1,5 +1,5 @@
 import { ParticleContainer, Particle } from 'pixi.js';
-import { getDustTexture } from '../../../loaders/Assets';
+import { getDustTexture } from '../../../resources/Assets';
 
 
 const DUST_COLORS = [

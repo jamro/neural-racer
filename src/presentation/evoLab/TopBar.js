@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { getUiFrameHorizontalLineTexture } from '../../loaders/Assets';
+import { getUiFrameHorizontalLineTexture } from '../../resources/Assets';
 
 
 class TopBar extends Container {

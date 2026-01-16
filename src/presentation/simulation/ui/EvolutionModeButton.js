@@ -2,7 +2,7 @@ import TextButton from '../../common/TextButton';
 import { 
   getUiEvoAutoTexture,
   getUiEvoManualTexture,
-} from '../../../loaders/Assets';
+} from '../../../resources/Assets';
 import { Sprite } from 'pixi.js';
 
 

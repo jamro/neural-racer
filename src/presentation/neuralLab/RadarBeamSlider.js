@@ -1,5 +1,5 @@
 import { Container, Graphics, Circle, Sprite, Text } from 'pixi.js';
-import { getShadowTexture, getCarTexture } from '../../loaders/Assets';
+import { getShadowTexture, getCarTexture } from '../../resources/Assets';
 
 const RADIUS_PIXELS = 250; // Radius of radar beams in pixels
 const MIN_DISTANCE_FROM_ORIGIN = 80; // Minimum distance from origin where sliders start (to prevent knob overlap)

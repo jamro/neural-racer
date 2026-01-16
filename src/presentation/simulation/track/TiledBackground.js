@@ -1,5 +1,5 @@
 import { Container, TilingSprite, Texture } from 'pixi.js';
-import { getGrassTexture } from '../../../loaders/Assets';
+import { getGrassTexture } from '../../../resources/Assets';
 
 class TiledBackground extends Container {
   constructor(texture) {

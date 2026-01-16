@@ -1,6 +1,6 @@
 import { Container } from 'pixi.js';
 import EvolutionScreen from './EvolutionScreen';
-import { setAutoEvolveSetting } from '../../loaders/settings';
+import { setAutoEvolveSetting } from '../../resources/settings';
 
 class EvoLab extends Container {
   constructor() {

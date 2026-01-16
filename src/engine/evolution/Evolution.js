@@ -1,6 +1,6 @@
 import Simulation from '../simulation/Simulation';
 import { Generation, serializeGeneration, deserializeGeneration } from './Generation';
-import Database from '../../loaders/Database';
+import Database from '../../resources/Database';
 import GenerationHistory from './GenerationHistory';
 import HallOfFame from './HallOfFame';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,7 +8,7 @@ import EvolutionEpochRunner from './epochRunner/EvolutionEpochRunner';
 import HallOfFameEpochRunner from './epochRunner/HallOfFameEpochRunner';
 import AllTracksEpochRunner from './epochRunner/AllTracksEpochRunner';
 import EvoLab from '../../presentation/evoLab/EvoLab';
-import { getAutoEvolveSetting, setAutoEvolveSetting } from '../../loaders/settings';
+import { getAutoEvolveSetting, setAutoEvolveSetting } from '../../resources/settings';
 import { ALL_TRACKS_NAME } from './epochRunner/AllTracksEpochRunner';
 
 const CURRENT_EVOLUTION_FILENAME = 'current-evolution';

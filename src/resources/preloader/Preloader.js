@@ -1,11 +1,11 @@
 import PreloaderView from './PreloaderView';
 
 const LOADER_IMPORTERS = {
-  FontLoader: () => import('./FontLoader'),
-  AssetLoader: () => import('./AssetLoader'),
-  TrackLoader: () => import('./TrackLoader'),
-  PixiLoader: () => import('./PixiLoader'),
-  EvolutionLoader: () => import('./EvolutionLoader'),
+  FontLoader: () => import('../loaders/FontLoader'),
+  AssetLoader: () => import('../loaders/AssetLoader'),
+  TrackLoader: () => import('../loaders/TrackLoader'),
+  PixiLoader: () => import('../loaders/PixiLoader'),
+  EvolutionLoader: () => import('../loaders/EvolutionLoader'),
 };
 
 const clampPct = pct => Math.max(0, Math.min(100, pct));

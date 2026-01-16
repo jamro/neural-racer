@@ -1,5 +1,5 @@
 import './index.css';
-import Preloader from './loaders/Preloader';
+import Preloader from './resources/preloader/Preloader';
 
 const preloader = new Preloader(document, { windowRef: window });
 preloader.show();

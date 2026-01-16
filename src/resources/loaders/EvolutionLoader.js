@@ -14,7 +14,7 @@ export default class EvolutionLoader extends AbstractLoader {
     const report = typeof progressCallback === 'function' ? progressCallback : () => {};
 
     report(0, 'Loading evolution module');
-    const mod = await import('../engine/evolution/Evolution');
+    const mod = await import('../../engine/evolution/Evolution');
     const Evolution = mod?.default;
     if (!Evolution) {
       throw new Error('Evolution module does not have a default export');

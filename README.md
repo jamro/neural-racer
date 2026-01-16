@@ -66,6 +66,7 @@ npm test
 - `src/engine/simulation` – car physics, sensors, track interaction, view scaling.
 - `src/engine/evolution` – generations, epoch runners, hall of fame, persistence.
 - `src/presentation` – UI overlays (evo lab, previews, controls).
+- `src/resources` – assets, preloader UI, and loader modules (SVG track parsing under `src/resources/loaders/track`).
 - `public/tracks/*.svg` – sample tracks loaded at startup.
 
 ## Documentation

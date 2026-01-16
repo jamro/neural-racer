@@ -1,5 +1,5 @@
 import AbstractLoader from './AbstractLoader';
-import { loadTextures, getTextureKeys } from './Assets';
+import { loadTextures, getTextureKeys } from '../Assets';
 
 export default class AssetLoader extends AbstractLoader {
   constructor() {

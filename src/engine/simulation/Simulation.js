@@ -1,6 +1,6 @@
 import SimulationView from '../../presentation/simulation/SimulationView';
 import { metersToPixels } from '../../presentation/simulation/unitConversion';
-import { getSimulationSpeedSetting, setSimulationSpeedSetting } from '../../loaders/settings';
+import { getSimulationSpeedSetting, setSimulationSpeedSetting } from '../../resources/settings';
 
 const COMPLETE_DELAY = 20;
 const LEADER_RELOAD_DELAY = 20;

@@ -1,7 +1,7 @@
 import ToggleButtonGroup from '../../common/ToggleButtonGroup';
 import Button from '../../common/Button';
 import { Sprite } from 'pixi.js';
-import { getUiSpeedSlowTexture, getUiSpeedNormalTexture, getUiSpeedFastTexture, getUiSpeedSuperFastTexture } from '../../../loaders/Assets';
+import { getUiSpeedSlowTexture, getUiSpeedNormalTexture, getUiSpeedFastTexture, getUiSpeedSuperFastTexture } from '../../../resources/Assets';
 
 class SpeedSelector extends ToggleButtonGroup {
   constructor() {

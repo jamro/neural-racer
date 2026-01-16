@@ -1,5 +1,5 @@
 import AbstractLoader from './AbstractLoader';
-import SvgTrackLoader from './SvgTrackLoader';
+import SvgTrackLoader from './track/SvgTrackLoader';
 
 /**
  * Handles loading track SVGs with optional progress reporting.

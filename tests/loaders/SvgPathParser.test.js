@@ -1,4 +1,4 @@
-import SvgPathParser from '../../src/loaders/SvgPathParser';
+import SvgPathParser from '../../src/resources/loaders/track/SvgPathParser';
 
 describe('SvgPathParser', () => {
   describe('parsePathToSegments', () => {

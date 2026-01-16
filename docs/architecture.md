@@ -16,7 +16,7 @@ High-level map of the main runtime pieces and how data moves between them.
 - **Evolution (`src/engine/evolution`)**: genomes, fitness scoring, crossover/mutation, hall-of-fame/all-track runners; updates network weights.
 - **Neural nets (`src/engine/neuralNetwork`)**: network execution backing each car’s controller.
 - **Presentation (`src/presentation`)**: UI overlays and previews consuming simulation/evolution state (shared components outside EvoLab/NeuralLab too).
-- **Loaders (`src/loaders`)**: assets (textures/fonts), SVG track parsing, settings helpers; used by runtime and tests.
+- **Resources & loaders (`src/resources`)**: assets (textures/fonts), preload UI, and loader modules. Track parsing lives under `src/resources/loaders/track` (e.g. `SvgTrackLoader`, `SvgPathParser`); used by runtime and tests.
 - **Config (`src/Config.js`)**: runtime knobs for simulation speed, population size, mutation parameters, quality.
 
 ## Data flow (simplified)
@@ -31,6 +31,6 @@ High-level map of the main runtime pieces and how data moves between them.
 - Minimize display object churn; batch where possible (see network/particle previews).
 
 ## Extensibility hints
-- New tracks: add SVG under `public/tracks/`, parsed through `SvgTrackLoader`.
+- New tracks: add SVG under `public/tracks/`, parsed through `SvgTrackLoader` (`src/resources/loaders/track/SvgTrackLoader.js`).
 - New sensors/physics tweaks: adjust simulation modules; ensure fitness and config stay consistent.
 - New UI panels: add under `src/presentation/**`, wiring into existing stores/controllers.

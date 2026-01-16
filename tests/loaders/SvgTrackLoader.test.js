@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import SvgTrackLoader from '../../src/loaders/SvgTrackLoader';
+import SvgTrackLoader from '../../src/resources/loaders/track/SvgTrackLoader';
 
 jest.mock('../../src/engine/simulation/track/TrackObject', () => {
   return jest.fn().mockImplementation(() => ({

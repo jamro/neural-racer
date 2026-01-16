@@ -1,5 +1,5 @@
 import { Container, Sprite } from 'pixi.js';
-import { getButtonBgOffMiddleTexture, getButtonBgOffSideTexture, getButtonBgOnMiddleTexture, getButtonBgOnSideTexture } from '../../loaders/Assets';
+import { getButtonBgOffMiddleTexture, getButtonBgOffSideTexture, getButtonBgOnMiddleTexture, getButtonBgOnSideTexture } from '../../resources/Assets';
 
 class Button extends Container {
   constructor(width = 30, content = null, toggleMode = false, inverted = false) {

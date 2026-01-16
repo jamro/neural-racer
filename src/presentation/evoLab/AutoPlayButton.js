@@ -1,7 +1,7 @@
 import TextButton from '../common/TextButton';
 import {
   getUiEvoAutoTexture,
-} from '../../loaders/Assets';
+} from '../../resources/Assets';
 import { Sprite } from 'pixi.js';
 
 class AutoPlayButton extends TextButton {

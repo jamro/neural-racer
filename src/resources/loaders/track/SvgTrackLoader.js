@@ -1,4 +1,4 @@
-import TrackObject from '../engine/simulation/track/TrackObject';
+import TrackObject from '../../../engine/simulation/track/TrackObject';
 import SvgPathParser from './SvgPathParser';
 
 /**

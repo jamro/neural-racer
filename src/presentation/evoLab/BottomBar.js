@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Text } from 'pixi.js';
-import { getUiFrameHorizontalLineTexture, getUiTrackIconTexture } from '../../loaders/Assets';
+import { getUiFrameHorizontalLineTexture, getUiTrackIconTexture } from '../../resources/Assets';
 import TextButton from '../common/TextButton';
 import AutoPlayButton from './AutoPlayButton';
 

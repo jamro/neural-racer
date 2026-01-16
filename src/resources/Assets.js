@@ -1,5 +1,4 @@
 import { Assets } from 'pixi.js';
-import AbstractLoader from './AbstractLoader';
 
 /**
  * Unified texture registry configuration.
