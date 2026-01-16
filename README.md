@@ -5,6 +5,8 @@ populations learn to drive through [neuroevolution](docs/evolution.md). It loads
 spawns simulated cars, and iteratively improves their controllers via
 evolutionary strategies (elite carryover, crossover, mutation, hall of fame).
 
+**Live demo**: [jamro.github.io/neural-racer](https://jamro.github.io/neural-racer/)
+
 ## What it does
 - Renders a track and cars with PixiJS.
 - Simulates [driving physics](docs/physics.md) and sensors for many cars in parallel.
