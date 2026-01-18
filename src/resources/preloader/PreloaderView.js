@@ -124,7 +124,7 @@ class PreloaderView {
 
       const logo = d.createElement('img');
       logo.id = 'nr-preloader-logo';
-      logo.src = '/assets/img/nr_logo.png';
+      logo.src = './assets/img/nr_logo.png';
       logo.alt = 'Neural Racer';
       logo.draggable = false;
       logo.decoding = 'async';
