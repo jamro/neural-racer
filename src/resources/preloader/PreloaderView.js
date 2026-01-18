@@ -43,11 +43,20 @@ class PreloaderView {
             0 0 0 1px rgba(0, 0, 0, 0.30) inset;
           padding: 18px 18px 16px;
         }
+        #nr-preloader-logo {
+          display: block;
+          height: 108px;
+          width: auto;
+          max-width: 100%;
+          margin: 2px auto 22px;
+          filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+          image-rendering: -webkit-optimize-contrast;
+        }
         #nr-preloader-title {
           font-size: 16px;
           font-weight: 600;
           letter-spacing: 0.2px;
-          margin: 0 0 10px;
+          margin: 0 0 14px;
           text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
         }
         #nr-preloader-row {
@@ -113,6 +122,13 @@ class PreloaderView {
       const card = d.createElement('div');
       card.id = 'nr-preloader-card';
 
+      const logo = d.createElement('img');
+      logo.id = 'nr-preloader-logo';
+      logo.src = '/assets/img/nr_logo.png';
+      logo.alt = 'Neural Racer';
+      logo.draggable = false;
+      logo.decoding = 'async';
+
       const title = d.createElement('div');
       title.id = 'nr-preloader-title';
       title.textContent = 'Loading Neural Racer';
@@ -136,6 +152,7 @@ class PreloaderView {
 
       row.appendChild(bar);
       row.appendChild(pct);
+      card.appendChild(logo);
       card.appendChild(title);
       card.appendChild(row);
       card.appendChild(status);
@@ -143,6 +160,19 @@ class PreloaderView {
 
       (d.body || d.documentElement).appendChild(overlay);
       this.overlayEl = overlay;
+    }
+
+    // HMR-safe: add logo if overlay/card were preserved from a previous version.
+    const cardEl = d.getElementById('nr-preloader-card');
+    const titleEl = d.getElementById('nr-preloader-title');
+    if (cardEl && titleEl && !d.getElementById('nr-preloader-logo')) {
+      const logo = d.createElement('img');
+      logo.id = 'nr-preloader-logo';
+      logo.src = '/img/nr_logo.png';
+      logo.alt = 'Neural Racer';
+      logo.draggable = false;
+      logo.decoding = 'async';
+      cardEl.insertBefore(logo, titleEl);
     }
 
     this.progressBarFillEl = d.getElementById('nr-preloader-bar-fill');

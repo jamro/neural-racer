@@ -7,6 +7,8 @@ evolutionary strategies (elite carryover, crossover, mutation, hall of fame).
 
 **Live demo**: [jamro.github.io/neural-racer](https://jamro.github.io/neural-racer/)
 
+**Project trailer & explanation (YouTube)**: [youtu.be/Vc70yLcZxmE](https://youtu.be/Vc70yLcZxmE)
+
 ## What it does
 - Renders a track and cars with PixiJS.
 - Simulates [driving physics](docs/physics.md) and sensors for many cars in parallel.
