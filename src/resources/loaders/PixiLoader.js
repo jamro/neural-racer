@@ -21,7 +21,7 @@ export default class PixiLoader extends AbstractLoader {
     progressCallback(10, 'Initializing Pixi application');
     await this.app.init({
       resizeTo: this.window,
-      backgroundColor: 0xa19a41,
+      backgroundColor: 0x000000,
       antialias: true,
       resolution: this.window.devicePixelRatio || 1,
       autoDensity: true,

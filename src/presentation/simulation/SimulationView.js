@@ -45,6 +45,9 @@ class SimulationView extends Container {
   set graphicsQuality(quality) {
     this.track.view.graphicsQuality = quality;
     this._graphicsQuality = quality;
+    for (const car of this.cars) {
+      car.view.highQuality = (quality === "high");
+    }
   }
 
   get graphicsQuality() {
@@ -71,6 +74,7 @@ class SimulationView extends Container {
   addCar(car) {
     this.cars.push(car);
     this.track.view.carsContainer.addChild(car.view);
+    car.view.highQuality = (this.graphicsQuality === "high");
   }
 
   updateStats(simulation, scoreWeights) {

@@ -31,6 +31,14 @@ class CarView extends Container {
     }
     this.addChild(this.body);
 
+    // simple body as rect
+    this.simpleBody = new Graphics();
+    this.simpleBody.rect(-w/2, -h/2, w, h);
+    this.simpleBody.fill({ color: 0xffffff, alpha: 0.5 });
+    this.simpleBody.stroke({ color: 0xff0000, width: 1 });
+    this.simpleBody.visible = false
+    this.addChild(this.simpleBody);
+
     // ghost - get texture from module (should be preloaded)
     this.ghost = new Sprite(ghostTexture);
     this.ghost.alpha = 0.9;
@@ -50,6 +58,16 @@ class CarView extends Container {
 
     this._isCrashed = false;
     this.crashed = false;
+    this._highQuality = true;
+  }
+
+  set highQuality(highQuality) {
+    this._highQuality = highQuality;
+    this.redrawBody();
+  }
+
+  get highQuality() {
+    return this._highQuality;
   }
 
   set crashed(isCrashed) {
@@ -74,16 +92,19 @@ class CarView extends Container {
   }
 
   redrawBody() {
+    this.simpleBody.visible = !this.highQuality;
     if(this.active) {
       this.radar.visible = true;
-      this.body.visible = true;
+      this.body.visible = this.highQuality;
       this.ghost.visible = false;
-      this.shadow.visible = true;
+      this.shadow.visible = this.highQuality;
+      this.simpleBody.tint = 0xff0000;
     } else {
       this.radar.visible = false;
       this.body.visible = false;
-      this.ghost.visible = true;
+      this.ghost.visible = this.highQuality;
       this.shadow.visible = false;
+      this.simpleBody.tint = 0xffffff;
     }
   }
 

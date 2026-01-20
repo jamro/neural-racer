@@ -160,7 +160,7 @@ class TrackView extends Container {
   addSegment(ax, ay, bx, by) {
     this.canvas.moveTo(ax, ay);
     this.canvas.lineTo(bx, by);
-    this.canvas.stroke({ color: 0x000000, width: this.wallWidth });
+    this.canvas.stroke({ color: 0xffffff, width: this.wallWidth });
   }
 
   addCheckpoint(ax, ay, bx, by) {
